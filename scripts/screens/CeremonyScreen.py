@@ -13,6 +13,7 @@ from .enums import GameScreen
 from ..game_structure.game.settings import game_setting_get
 from ..game_structure.screen_settings import MANAGER
 from ..ui.generate_button import ButtonStyles, get_button_dict
+from scripts.game_structure import game
 
 
 class CeremonyScreen(Screens):
@@ -32,7 +33,9 @@ class CeremonyScreen(Screens):
 
         self.the_cat = Cat.all_cats.get(switch_get_value(Switch.cat), "")
 
-        if self.the_cat.status.is_leader:
+        clan = self.the_cat.status.fetch_clan_object(game.clan)
+
+        if self.the_cat.status.is_leader or self.the_cat.ID in clan.all_leader_predecessors:
             self.header = pygame_gui.elements.UITextBox(
                 "screens.ceremony.heading_leader",
                 ui_scale(pygame.Rect((100, 90), (600, -1))),
@@ -40,6 +43,7 @@ class CeremonyScreen(Screens):
                 manager=MANAGER,
                 text_kwargs={"m_c": self.the_cat},
             )
+            self.life_text = self.the_cat.history.get_lead_ceremony()
         else:
             self.header = pygame_gui.elements.UITextBox(
                 "screens.ceremony.heading_none",
@@ -48,10 +52,6 @@ class CeremonyScreen(Screens):
                 manager=MANAGER,
                 text_kwargs={"m_c": self.the_cat},
             )
-        if self.the_cat.status.is_leader and not self.the_cat.dead:
-            self.life_text = self.the_cat.history.get_lead_ceremony()
-
-        else:
             self.life_text = ""
 
         self.scroll_container = pygame_gui.elements.UIScrollingContainer(

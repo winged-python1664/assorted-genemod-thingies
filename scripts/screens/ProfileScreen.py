@@ -22,6 +22,7 @@ from ..cat.enums import CatAge, CatRank, CatGroup
 from scripts.cat.pelts import Pelt
 from scripts.clan_resources.freshkill import FRESHKILL_ACTIVE
 from scripts.events import handle_fading
+from scripts.events_module.text_adjust import rank_text_adjust
 from scripts.game_structure import image_cache, game
 from scripts.ui.windows.cruel_locked_action import CruelLockedAction
 from ..ui.elements.modified_image import UIModifiedImage
@@ -222,6 +223,8 @@ class ProfileScreen(Screens):
                 self.change_screen(GameScreen.WARRIOR_DEN)
             elif event.ui_element == self.profile_elements.get("leader_den"):
                 self.change_screen(GameScreen.LEADER_DEN)
+            elif event.ui_element == self.profile_elements.get("sc_camp"):
+                self.change_screen(GameScreen.SCSCREEN)
             elif event.ui_element == self.profile_elements["favourite_button"]:
                 self.the_cat.favourite += 1
                 if self.the_cat.favourite > 6 or event.mouse_button == pygame.BUTTON_RIGHT:
@@ -780,6 +783,15 @@ class ProfileScreen(Screens):
                 manager=MANAGER,
                 starting_height=2,
             )
+        elif self.the_cat.status.group.is_starclan():
+            self.profile_elements["sc_camp"] = UISurfaceImageButton(
+                ui_scale(pygame.Rect((113, 380), (112, 28))),
+                "screens.core.sc_camp",
+                get_button_dict(ButtonStyles.ROUNDED_RECT, (112, 28)),
+                object_id="@buttonstyles_rounded_rect",
+                manager=MANAGER,
+                starting_height=2,
+            )
         favorite_button_rect = ui_scale(pygame.Rect((0, 0), (28, 28)))
         favorite_button_rect.topright = ui_scale_offset((-5, 146))
         self.profile_elements["favourite_button"] = UIImageButton(
@@ -814,11 +826,21 @@ class ProfileScreen(Screens):
         if self.open_tab == "history" and self.open_sub_tab == "user notes":
             self.load_user_notes()
 
-        if self.the_cat.status.is_leader and not self.the_cat.dead:
+        clan = self.the_cat.status.fetch_clan_object(game.clan)
+
+        if self.the_cat.status.is_leader or self.the_cat.ID in clan.all_leader_predecessors:
             self.profile_elements["leader_ceremony"] = UIImageButton(
                 ui_scale(pygame.Rect((383, 110), (34, 34))),
                 "",
                 object_id="#leader_ceremony_button",
+                tool_tip_text="screens.profile.leader_ceremony",
+                manager=MANAGER,
+            )
+        if self.the_cat.status.is_leader and self.the_cat.dead or self.the_cat.ID in clan.all_leader_predecessors:
+            self.profile_elements["leader_ceremony_less"] = UIImageButton(
+                ui_scale(pygame.Rect((383, 110), (34, 34))),
+                "",
+                object_id="#leader_ceremony_less_button",
                 tool_tip_text="screens.profile.leader_ceremony",
                 manager=MANAGER,
             )
@@ -1459,6 +1481,13 @@ class ProfileScreen(Screens):
             if mentor_history:
                 life_history.append(mentor_history)
 
+            mess_history = []
+            message_history = self.get_messages()
+            if message_history:
+                mess_history.append(message_history)
+            if mess_history:
+                life_history.append("<br>".join(mess_history))
+
             # now go get the scar history and add that if any exists
             body_history = []
             scar_history = self.get_scar_text()
@@ -1859,6 +1888,34 @@ class ProfileScreen(Screens):
             text = process_text(text, cat_dict)
 
         return text
+
+    def get_messages(self):
+        message_text = []
+        message_history = self.the_cat.history.get_messages(message=True)
+        moons = switch_get_value(Switch.show_history_moons)
+
+        if message_history:
+            for message in message_history:
+                # base adjustment to get the cat's name and moons if needed
+                new_text = event_text_adjust(
+                    Cat,
+                    message["text"],
+                    main_cat=self.the_cat,
+                )
+
+                if moons:
+                    new_text += f" ({i18n.t('general.moon_date', moon=message['moon'])})"
+
+                # the first event keeps the cat's name, consecutive events get to switch it up a bit
+                cat_dict = {
+                    "m_c": (str(self.the_cat.name), choice(self.the_cat.pronouns))
+                }
+                new_text = process_text(new_text, cat_dict)
+                message_text.append(new_text)
+
+            message_history = "<br>".join(message_text)
+
+        return message_history
 
     def get_death_text(self):
         """

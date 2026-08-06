@@ -19,10 +19,6 @@ Original creator: just-some-cat.tumblr.com
 
 Fan-edit creator: SableSteel, and many others
 
-## Downloads
-Note: These are developer builds and are not guaranteed to work!
-- [Nightly Link](https://nightly.link/Chinch-Bug/clangen-genemod/workflows/build/modded)
-
 ## Running from source
 > [!WARNING]
 > Running the game via poetry is no longer supported. Please use uv instead.

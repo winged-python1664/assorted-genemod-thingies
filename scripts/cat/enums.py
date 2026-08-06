@@ -18,6 +18,9 @@ class CatAge(StrEnum):
     def is_baby(self):
         return self in (CatAge.KITTEN, CatAge.NEWBORN)
 
+    def is_newborn(self):
+        return self in (CatAge.NEWBORN)
+
     def can_have_mate(self):
         return self not in (CatAge.KITTEN, CatAge.NEWBORN, CatAge.ADOLESCENT)
 
@@ -44,6 +47,7 @@ class CatRank(StrEnum):
     DEPUTY = "deputy"
     LEADER = "leader"
     ELDER = "elder"
+    PROPHET = "prophet"
 
     # outsider ranks
     LONER = "loner"
@@ -54,7 +58,7 @@ class CatRank(StrEnum):
         return self in (self.NEWBORN, self.KITTEN)
 
     def is_any_medicine_rank(self) -> bool:
-        return self in (self.MEDICINE_CAT, self.MEDICINE_APPRENTICE)
+        return self in (self.MEDICINE_CAT, self.PROPHET, self.MEDICINE_APPRENTICE)
 
     def is_any_mediator_rank(self) -> bool:
         return self in (self.MEDIATOR, self.MEDIATOR_APPRENTICE)
@@ -134,6 +138,9 @@ class CatGroup(StrEnum):
 
     def is_afterlife(self) -> bool:
         return self in (self.DARK_FOREST, self.STARCLAN, self.UNKNOWN_RESIDENCE)
+
+    def is_starclan(self) -> bool:
+        return self in (self.STARCLAN)
 
     def is_any_clan_group(self) -> bool:
         return self in (

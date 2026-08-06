@@ -58,6 +58,7 @@ from scripts.events_module.text_adjust import (
     ceremony_text_adjust,
     adjust_list_text,
     history_text_adjust,
+    mess_text_adjust,
 )
 from scripts.events_module.consequences import unpack_rel_block
 from scripts.clan_package.cotc import (
@@ -129,6 +130,9 @@ def one_moon():
     # Adding in any potential lead den events that have been saved
     if get_clan_setting("lead_den_interaction"):
         handle_lead_den_event()
+
+    if get_clan_setting("moonpool_event"):
+        handle_moonpool_event()
 
     clancount = game.clan.clancount == "multiclan"
     clannames = [game.clan.prefix] + [c.prefix for c in game.clan.all_other_clans]
@@ -330,7 +334,7 @@ def one_moon():
         clan_cats=[c for c in Cat.all_cats_list if c.status.alive_in_player_clan],
         med_cats=find_alive_cats_with_rank(
             Cat,
-            ranks=[CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE],
+            ranks=[CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE, CatRank.PROPHET],
             working=True,
         ),
     )
@@ -368,10 +372,12 @@ def one_moon():
     # Clear the list of cats that died this moon.
     game.just_died.clear()
 
-    # Promote leader and deputy, if needed.
+    # Promote leader, deputy and prophet, if needed.
     for clan in [game.clan] + game.clan.all_other_clans:
         check_leader(clan)
         check_and_promote_deputy(clan)
+        check_prophet(clan)
+        check_and_promote_prophet(clan)
         if not clancount:
             break
 
@@ -409,6 +415,7 @@ def update_afterlife_temper():
             c.status.rank
             not in (
                 CatRank.LEADER,
+                CatRank.PROPHET,
                 CatRank.MEDICINE_CAT,
                 CatRank.DEPUTY,
             )
@@ -671,6 +678,37 @@ def handle_lead_den_event():
 
     set_clan_setting("lead_den_interaction", False)
 
+def handle_moonpool_event():
+    info_dict = get_clan_setting("moonpool_message")
+    clan_cat = Cat.fetch_cat(info_dict["clan_cat_ID"])
+
+    # drop the event if the clan cat is no longer available
+    if not clan_cat.status.alive_in_player_clan:
+        return
+
+    event_text = info_dict["message_text"]
+
+    clan_cat.history.add_message(
+        message_text=mess_text_adjust(
+            info_dict["cat_history"],
+            cat=clan_cat,
+            moon=game.clan.age,
+            age=clan_cat.moons,
+        ),
+    )
+
+    event_text = mess_text_adjust(
+        message_text=info_dict["message_text"],
+        cat=clan_cat,
+        moon=game.clan.age,
+        age=clan_cat.moons,
+    )
+    game.cur_events_list.insert(
+        4, Single_Event(event_text, "misc", [clan_cat.ID], clan=game.clan.group_ID)
+    )
+
+    set_clan_setting("moonpool_event", False)
+
 def mediator_events(cat, clan):
     """Check for mediator events"""
     if get_clan_setting("become_mediator"):
@@ -691,7 +729,7 @@ def mediator_events(cat, clan):
             cat.rank_change(CatRank.MEDIATOR)
 
 def become_healer_events(cat, clan):
-    """Check for queen events"""
+    """Check for healer events"""
     if get_clan_setting("become_healer"):
         # Note: These chances are large since it triggers every moon.
         # Checking every moon has the effect giving older cats more chances to become a mediator
@@ -823,7 +861,7 @@ def handle_focus():
         # get medicine cats
         healthy_meds = find_alive_cats_with_rank(
             Cat,
-            ranks=[CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE],
+            ranks=[CatRank.MEDICINE_CAT, CatRank.PROPHET, CatRank.MEDICINE_APPRENTICE],
             working=True,
         )
         # get warriors to help
@@ -882,7 +920,7 @@ def handle_focus():
         # handle herbs
         healthy_meds = list(
             filter(
-                lambda c: c.status.rank == CatRank.MEDICINE_CAT
+                lambda c: c.status.rank in [CatRank.MEDICINE_CAT, CatRank.PROPHET]
                 and c.status.alive_in_player_clan
                 and not c.not_working(),
                 Cat.all_cats.values(),
@@ -1099,7 +1137,7 @@ def handle_fading(cat, clan, forced=False):
                     if Cat.all_cats.get(mate_id):
                         cat.unset_mate(Cat.all_cats.get(mate_id))
 
-            # If the cat is the current med, leader, or deputy, remove them
+            # If the cat is the current med, prophet, leader, or deputy, remove them
             if clan.leader:
                 if clan.leader.ID == cat.ID:
                     clan.leader = None
@@ -1114,6 +1152,9 @@ def handle_fading(cat, clan, forced=False):
                         )
                     else:
                         clan.medicine_cat = None
+            if clan.prophet:
+                if clan.prophet.ID == cat.ID:
+                    clan.prophet = None
 
             add_cat_to_fade_id(cat.ID)
             cat.set_faded()
@@ -1156,7 +1197,7 @@ def one_moon_outside_cat(cat, other_clan_cats: list = None):
         # cat to elder
         if cat.moons >= cat_class.age_moons[CatAge.SENIOR][0]:
             # exclude the roles that don't really retire
-            if cat.status.rank not in (CatRank.LEADER, CatRank.MEDICINE_CAT):
+            if cat.status.rank not in (CatRank.LEADER, CatRank.MEDICINE_CAT, CatRank.PROPHET):
                 cat.status._change_rank(CatRank.ELDER)
 
     # skill progression needs to be after rank progression
@@ -1553,7 +1594,7 @@ def check_war():
             if not war_events or not enemy_clan or main_clan == enemy_clan:
                 continue
 
-            available_med = find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT], working=True, clan=main_clan.group_ID)
+            available_med = find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT, CatRank.PROPHET], working=True, clan=main_clan.group_ID)
 
             war_events_copy = war_events.copy()
             if not main_clan.leader or not main_clan.deputy or not available_med:
@@ -1596,6 +1637,8 @@ def perform_ceremonies(cat, clan):
         clan.deputy = cat
     if cat.status.rank == CatRank.MEDICINE_CAT and clan.medicine_cat is None:
         clan.medicine_cat = cat
+    if cat.status.rank == CatRank.PROPHET and clan.prophet is None:
+        clan.prophet = cat
 
     # PROMOTE DEPUTY TO LEADER, IF NEEDED -----------------------
 
@@ -1623,11 +1666,16 @@ def perform_ceremonies(cat, clan):
         special_can_retire = get_clan_setting("mediator_retirement") and random.random() < (1/retirement_info["max_mediator_retire_chance"])
     if cat.status.rank == CatRank.QUEEN:
         special_can_retire = random.random() < (1/retirement_info["max_queen_retire_chance"])
-        
+    if cat.status.rank == CatRank.PROPHET:
+        if clan.medicine_cat is not None:
+            special_can_retire = get_clan_setting("healer_retirement") and medicine_cats_can_cover_clan(
+                Cat.all_cats.values(), get_amount_cat_for_one_medic(), clan=clan.group_ID, exclude=cat
+            ) and random.random() < (1/retirement_info["max_healer_retire_chance"])
+
         # retiring to elder den
     if (
         not cat.no_retire
-        and (cat.status.rank in (CatRank.WARRIOR, CatRank.DEPUTY) or cat.status.rank in (CatRank.MEDICINE_CAT, CatRank.MEDIATOR, CatRank.LEADER, CatRank.QUEEN) and special_can_retire)
+        and (cat.status.rank in (CatRank.WARRIOR, CatRank.DEPUTY) or cat.status.rank in (CatRank.MEDICINE_CAT, CatRank.PROPHET, CatRank.MEDIATOR, CatRank.LEADER, CatRank.QUEEN) and special_can_retire)
         and len(cat.apprentice) < 1
         and cat.moons >= retirement_info["min_retirement_age"]
     ):
@@ -1642,6 +1690,10 @@ def perform_ceremonies(cat, clan):
             if cat.status.rank == CatRank.MEDICINE_CAT:
                 clan.remove_med_cat(cat)
             ceremony(cat, CatRank.ELDER)
+            if cat.status.rank == CatRank.PROPHET:
+                clan.prophet = None
+                clan.remove_med_cat(cat)
+        ceremony(cat, CatRank.ELDER)
 
     # apprentice a kitten to either med or warrior
     if cat.moons == cat_class.age_moons[CatAge.ADOLESCENT][0]:
@@ -1660,7 +1712,7 @@ def perform_ceremonies(cat, clan):
                     )
                 )
 
-                # This checks if at least one mediator already has an apprentice.
+                # This checks if at least one queen already has an apprentice.
                 has_mediator_apprentice = False
                 for c in mediator_list:
                     if c.apprentice:
@@ -1846,7 +1898,7 @@ def _is_suitable_medcat_app(cat, clan) -> bool:
     senior_meds = [
         c
         for c in med_cat_list
-        if c.age == "senior" and c.status.rank == CatRank.MEDICINE_CAT
+        if c.age == "senior" and c.status.rank in [CatRank.MEDICINE_CAT, CatRank.PROPHET]
     ]
 
     ancient_meds = [
@@ -2020,7 +2072,7 @@ def ceremony(cat, promoted_to, preparedness="prepared"):
     dead_parents = []
     living_parents = []
     mentor_type = {
-        CatRank.MEDICINE_CAT: [CatRank.MEDICINE_CAT],
+        CatRank.MEDICINE_CAT: [CatRank.MEDICINE_CAT, CatRank.PROPHET],
         CatRank.WARRIOR: [
             CatRank.WARRIOR,
             CatRank.DEPUTY,
@@ -2849,7 +2901,7 @@ def handle_outbreaks(cat, clan):
 
     meds = find_alive_cats_with_rank(
         Cat,
-        [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE],
+        [CatRank.MEDICINE_CAT, CatRank.PROPHET, CatRank.MEDICINE_APPRENTICE],
         working=True,
         sort=True,
         clan=clan.group_ID
@@ -2986,6 +3038,25 @@ def check_leader(clan):
             Single_Event(
                 event_text_adjust(
                     Cat, i18n.t("defaults.warn_no_leader"), clan=clan
+                ),
+                clan=clan.group_ID
+            ),
+        )
+
+def check_prophet(clan):
+    """Checks if prophet is missing."""
+    # check for prophet
+    if clan.prophet:
+        prophet_invalid = clan.prophet.status.group_ID != clan.group_ID
+    else:
+        prophet_invalid = True
+    
+    if prophet_invalid:
+        game.cur_events_list.insert(
+            0,
+            Single_Event(
+                event_text_adjust(
+                    Cat, i18n.t("defaults.warn_no_prophet"), clan=clan
                 ),
                 clan=clan.group_ID
             ),
@@ -3134,6 +3205,112 @@ def check_and_promote_deputy(clan=None):
         game.cur_events_list.append(Single_Event(text, "ceremony", involved_cats,
                                                     clan=clan.group_ID))
 
+def check_and_promote_prophet(clan=None):
+    """Checks if a new prophet needs to be appointed, and appointed them if needed."""
+    if (
+        not clan.prophet
+        or clan.prophet.status.group_ID != clan.group_ID
+        or clan.prophet.status.rank == CatRank.ELDER
+    ):
+        if not get_clan_setting("prophet") and clan == game.clan:
+            game.cur_events_list.insert(0, Single_Event(
+                event_text_adjust(Cat, "defaults.warn_no_prophet", clan=clan), clan=clan.group_ID))
+            return
+        # This determines all the cats who are eligible to be prophet.
+        possible_prophets = list(
+            filter(
+                lambda x: x.status.group_ID == clan.group_ID
+                and x.status.rank == CatRank.MEDICINE_CAT,
+                Cat.all_cats_list,
+            )
+        )
+        if not possible_prophets:
+            possible_prophets = list(
+                filter(
+                    lambda x: x.status.group_ID == clan.group_ID
+                    and x.status.rank == CatRank.MEDICINE_CAT,
+                    Cat.all_cats_list))
+
+        # If there are possible prophets, choose from that list.
+        if possible_prophets:
+            random_cat = random.choice(possible_prophets)
+            involved_cats = [random_cat.ID]
+
+            # Gather prophet and leader status, for determination of the text.
+            if clan.leader:
+                if not clan.leader.status.group_ID == clan.group_ID:
+                    leader_status = "not_here"
+                else:
+                    leader_status = "here"
+            else:
+                leader_status = "not_here"
+
+            if clan.prophet:
+                if not clan.prophet.status.group_ID == clan.group_ID:
+                    prophet_status = "not_here"
+                else:
+                    prophet_status = "here"
+            else:
+                prophet_status = "not_here"
+
+            if leader_status == "here" and prophet_status == "not_here":
+                    if clan.prophet:
+                        previous_prophet_mention = i18n.t(
+                            f"hardcoded.ceremony_prophet_prev{random.choice(range(0, 3))}"
+                        )
+                        involved_cats.append(clan.prophet.ID)
+
+                    else:
+                        previous_prophet_mention = ""
+
+                    text = i18n.t(
+                        "hardcoded.ceremony_prophet",
+                        previous=previous_prophet_mention,
+                    )
+
+                    involved_cats.append(clan.leader.ID)
+            elif leader_status == "not_here" and prophet_status == "here":
+                text = i18n.t("hardcoded.ceremony_prophet_nolead_retiredprophet")
+            elif leader_status == "not_here" and prophet_status == "not_here":
+                text = i18n.t("hardcoded.ceremony_prophet_nolead_noprophet")
+            elif leader_status == "here" and prophet_status == "here":
+                # No additional involved cats
+                text = i18n.t(
+                    f"hardcoded.ceremony_prophet_lead_retiredprophet{random.choice(range(0, 5))}"
+                )
+            else:
+                # This should never happen. Failsafe.
+                text = i18n.t("defaults.prophet_event")
+        else:
+            # If there are no possible prophets, choose someone else, with special text.
+            all_med_cats = list(
+                filter(
+                    lambda x: x.status.group_ID == clan.group_ID
+                    and x.status.rank == CatRank.MEDICINE_CAT,
+                    Cat.all_cats_list,
+                )
+            )
+            if all_med_cats:
+                random_cat = random.choice(all_med_cats)
+                involved_cats = [random_cat.ID]
+                text = i18n.t("hardcoded.ceremony_prophet_unsuitable")
+
+            else:
+                # If there are no healers at all, no one is named prophet.
+                game.cur_events_list.append(
+                    Single_Event(
+                        i18n.t("hardcoded.ceremony_prophet_none"), "ceremony", 
+                        clan=clan.group_ID
+                    )
+                )
+                return
+
+        text = event_text_adjust(Cat, text, main_cat=random_cat, clan=clan)
+        random_cat.rank_change(CatRank.PROPHET)
+        clan.prophet = random_cat
+
+        game.cur_events_list.append(Single_Event(text, "ceremony", involved_cats,
+                                                    clan=clan.group_ID))
 
 load_ceremonies()
 load_war_resources()

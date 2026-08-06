@@ -24,6 +24,8 @@ class Switch(StrEnum):
     traceback = auto()
     biome = auto()
     camp_bg = auto()
+    sc_bg = auto()
+    moonthing = auto()
     game_mode = auto()
     favorite_sub_tab = auto()
     root_cat = auto()
@@ -55,6 +57,8 @@ _switches: Dict[str, Union[str, int, bool, list, dict, None]] = {
     "traceback": None,
     "biome": "",
     "camp_bg": "",
+    "sc_bg": "",
+    "moonthing": "",
     "game_mode": "",
     "favorite_sub_tab": None,
     "root_cat": None,

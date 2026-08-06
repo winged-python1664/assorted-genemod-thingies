@@ -56,10 +56,11 @@ class ClanInfo:
     display_name: str = ""
     leader: Optional[Cat] = None
     deputy: Optional[Cat] = None
-    medicine_cat: Optional[Cat] = None
+    prophet: Optional[Cat] = None
     starting_members: list = field(default_factory=list)
     biome: str = ""
     camp_bg: str = "camp1"
+    sc_bg: str = "classic"
     symbol: str = ""
     starting_season: str = "Newleaf"
     game_mode: str = "classic"
@@ -77,10 +78,11 @@ class ClanInfo:
         self.display_name = ""
         self.leader = None
         self.deputy = None
-        self.medicine_cat = None
+        self.prophet = None
         self.starting_members = []
         self.biome = ""
         self.camp_bg = "camp1"
+        self.sc_bg = "classic"
         self.symbol = ""
         self.starting_season = "Newleaf"
         self.game_mode = "classic"
@@ -90,17 +92,18 @@ class ClanInfo:
     def clear_cats(self):
         self.leader = None
         self.deputy = None
-        self.medicine_cat = None
+        self.prophet = None
         self.starting_members = []
 
     def update(self, saved_info: dict):
         self.display_name = saved_info["display_name"]
         self.leader = saved_info["leader"]
         self.deputy = saved_info["deputy"]
-        self.medicine_cat = saved_info["medicine_cat"]
+        self.prophet = saved_info["prophet"]
         self.starting_members = saved_info["starting_members"]
         self.biome = saved_info["biome"]
         self.camp_bg = saved_info["camp_bg"]
+        self.sc_bg = saved_info["sc_bg"]
         self.symbol = saved_info["symbol"]
         self.starting_season = saved_info["starting_season"]
         self.game_mode = saved_info["game_mode"]
@@ -115,10 +118,11 @@ class ClanInfo:
             "display_name": self.display_name,
             "leader": self.leader,
             "deputy": self.deputy,
-            "medicine_cat": self.medicine_cat,
+            "prophet": self.prophet,
             "starting_members": self.starting_members,
             "biome": self.biome,
             "camp_bg": self.camp_bg,
+            "sc_bg": self.sc_bg,
             "symbol": self.symbol,
             "starting_season": self.starting_season,
             "game_mode": self.game_mode,
@@ -130,7 +134,7 @@ class ClanInfo:
         return (
             not self.leader
             and not self.deputy
-            and not self.medicine_cat
+            and not self.prophet
             and not self.starting_members
         )
 
@@ -149,7 +153,7 @@ class ClanInfo:
         )
 
     def has_high_ranks_filled(self) -> bool:
-        return all([self.leader, self.deputy, self.medicine_cat])
+        return all([self.leader, self.deputy, self.prophet])
 
     def get_high_ranks(self) -> list:
         cat_list = []
@@ -157,8 +161,8 @@ class ClanInfo:
             cat_list.append(self.leader)
         if self.deputy:
             cat_list.append(self.deputy)
-        if self.medicine_cat:
-            cat_list.append(self.medicine_cat)
+        if self.prophet:
+            cat_list.append(self.prophet)
         return cat_list
 
     def get_all_cats(self) -> list:
@@ -279,7 +283,7 @@ class MakeClanScreenBase(Screens):
                 c not in self.clan_info.starting_members
                 and c != self.clan_info.leader
                 and c != self.clan_info.deputy
-                and c != self.clan_info.medicine_cat
+                and c != self.clan_info.prophet
             ):
                 # change non-selected cats to outsiders
                 random_social = choice(
@@ -379,6 +383,17 @@ class MakeClanScreenBase(Screens):
                 return True
 
         return False
+
+    def get_sc_art_path(self, bg) -> Optional[str]:
+        if not bg:
+            return None
+
+        bg_base_dir = "resources/images/camp_bg/sc"
+        light_dark = "dark" if game_setting_get("dark mode") else "light"
+
+        return(
+            f"{bg_base_dir}/{bg}_{light_dark}.png"
+        )
 
     def get_camp_art_path(self, campnum) -> Optional[str]:
         if not campnum:

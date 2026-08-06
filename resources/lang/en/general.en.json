@@ -29,6 +29,10 @@
             "one": "warrior",
             "many": "warriors"
         },
+        "prophet": {
+            "one": "prophet",
+            "many": "prophets"
+        },
         "healer": {
 			"one": "healer",
 			"many": "healers"

@@ -15,11 +15,13 @@ from .LeaderDenScreen import LeaderDenScreen
 from .ListScreen import ListScreen
 from .MedDenScreen import MedDenScreen
 from .MediationScreen import MediationScreen
+from .MoonpoolScreen import MoonpoolScreen
 from .PatrolScreen import PatrolScreen
 from .ProfileScreen import ProfileScreen
 from .RelationshipScreen import RelationshipScreen
 from .RoleScreen import RoleScreen
 from .Screens import Screens
+from .SCScreen import SCScreen
 from .SettingsScreen import SettingsScreen
 from .SpriteInspectScreen import SpriteInspectScreen
 from .StartScreen import StartScreen
@@ -28,6 +30,7 @@ from .WarriorDenScreen import WarriorDenScreen
 from .PredictOffspringScreen import PredictOffspringScreen
 from .enums import GameScreen
 from .make_clan_screens.ChooseCampScreen import ChooseCampScreen
+from .make_clan_screens.ChooseSCScreen import ChooseSCScreen
 from .make_clan_screens.ChooseCardsScreen import ChooseCardsScreen
 from .make_clan_screens.ChooseCatsScreen import ChooseCatsScreen
 from .make_clan_screens.ChooseModeScreen import ChooseModeScreen
@@ -75,6 +78,7 @@ def rebuild_all_screens():
         GameScreen.MAKE_CLAN_CHOOSE_NAME: ChooseNameScreen,
         GameScreen.MAKE_CLAN_CHOOSE_CATS: ChooseCatsScreen,
         GameScreen.MAKE_CLAN_CHOOSE_CAMP: ChooseCampScreen,
+        GameScreen.MAKE_CLAN_CHOOSE_SC: ChooseSCScreen,
         GameScreen.MAKE_CLAN_CHOOSE_SYMBOL: ChooseSymbolScreen,
         GameScreen.MAKE_CLAN_CLAN_CREATED: ClanCreatedScreen,
         GameScreen.ALLEGIANCES: AllegiancesScreen,
@@ -84,6 +88,7 @@ def rebuild_all_screens():
         GameScreen.WARRIOR_DEN: WarriorDenScreen,
         GameScreen.LEADER_DEN: LeaderDenScreen,
         GameScreen.EVENTS: EventsScreen,
+        GameScreen.SCSCREEN: SCScreen,
         GameScreen.SETTINGS: SettingsScreen,
         GameScreen.CLAN_SETTINGS: ClanSettingsScreen,
         GameScreen.START: StartScreen,
@@ -95,6 +100,7 @@ def rebuild_all_screens():
         GameScreen.RELATIONSHIP: RelationshipScreen,
         GameScreen.FAMILY_TREE: FamilyTreeScreen,
         GameScreen.MEDIATION: MediationScreen,
+        GameScreen.MOONPOOL: MoonpoolScreen,
         GameScreen.CHANGE_GENDER: ChangeGenderScreen,
         GameScreen.EVENT_EDIT: EventEditScreen,
     }

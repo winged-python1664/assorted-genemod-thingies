@@ -73,6 +73,10 @@ class RoleScreen(Screens):
                 self.the_cat.status.fetch_clan_object(game.clan).deputy = self.the_cat
                 self.the_cat.rank_change(CatRank.DEPUTY, resort=True)
                 self.update_selected_cat()
+            elif event.ui_element == self.promote_prophet:
+                self.the_cat.status.fetch_clan_object(game.clan).prophet = self.the_cat
+                self.the_cat.rank_change(CatRank.PROPHET, resort=True)
+                self.update_selected_cat()
             elif event.ui_element == self.switch_warrior:
                 self.the_cat.rank_change(CatRank.WARRIOR, resort=True)
                 self.update_selected_cat()
@@ -170,6 +174,13 @@ class RoleScreen(Screens):
             get_button_dict(ButtonStyles.LADDER_MIDDLE, (172, 36)),
             object_id="@buttonstyles_ladder_middle",
             anchors={"top_target": self.promote_leader},
+        )
+        self.promote_prophet = UISurfaceImageButton(
+            ui_scale(pygame.Rect((48, 0), (172, 36))),
+            "screens.role.promote_prophet",
+            get_button_dict(ButtonStyles.LADDER_MIDDLE, (172, 36)),
+            object_id="@buttonstyles_ladder_middle",
+            anchors={"top_target": self.promote_deputy},
         )
 
         # ADULT CAT ROLES
@@ -326,6 +337,7 @@ class RoleScreen(Screens):
         paths = {
             CatRank.LEADER: "leader_icon.png",
             CatRank.DEPUTY: "deputy_icon.png",
+            CatRank.PROPHET: "prophet_icon.png",
             CatRank.MEDICINE_CAT: "medic_icon.png",
             CatRank.MEDICINE_APPRENTICE: "medic_app_icon.png",
             CatRank.MEDIATOR: "mediator_icon.png",
@@ -371,11 +383,17 @@ class RoleScreen(Screens):
             deputy_invalid = clan.deputy.status.group_ID != self.the_cat.status.group_ID
         else:
             deputy_invalid = True
+        
+        if clan.prophet:
+            prophet_invalid = clan.prophet.status.group_ID != self.the_cat.status.group_ID
+        else: 
+            prophet_invalid = True
 
         if self.the_cat.status.rank == CatRank.APPRENTICE:
             # LEADERSHIP
             self.promote_leader.disable()
             self.promote_deputy.disable()
+            self.promote_prophet.disable()
 
             # ADULT CAT ROLES
             self.switch_warrior.enable()
@@ -400,6 +418,7 @@ class RoleScreen(Screens):
                 self.promote_deputy.enable()
             else:
                 self.promote_deputy.disable()
+            self.promote_prophet.disable()
 
             # ADULT CAT ROLES
             self.switch_warrior.disable()
@@ -420,6 +439,7 @@ class RoleScreen(Screens):
                 self.promote_leader.disable()
 
             self.promote_deputy.disable()
+            self.promote_prophet.disable()
 
             # ADULT CAT ROLES
             self.switch_warrior.enable()
@@ -433,9 +453,30 @@ class RoleScreen(Screens):
             self.switch_warrior_app.disable()
             self.switch_mediator_app.disable()
             self.switch_queen_app.disable()
+        elif self.the_cat.status.rank == CatRank.PROPHET:
+            self.promote_leader.disable()
+            self.promote_deputy.disable()
+            self.promote_prophet.disable()
+
+            # ADULT CAT ROLES
+            self.switch_warrior.enable()
+            self.switch_med_cat.enable()
+            self.switch_mediator.disable()
+            self.switch_queen.enable()
+            self.retire.enable()
+
+            # In-TRAINING ROLES:
+            self.switch_med_app.disable()
+            self.switch_warrior_app.disable()
+            self.switch_mediator_app.disable()
+            self.switch_queen_app.disable()
         elif self.the_cat.status.rank == CatRank.MEDICINE_CAT:
             self.promote_leader.disable()
             self.promote_deputy.disable()
+            if prophet_invalid:
+                self.promote_prophet.enable()
+            else:
+                self.promote_prophet.disable()
 
             self.switch_warrior.enable()
             self.switch_med_cat.disable()
@@ -458,6 +499,7 @@ class RoleScreen(Screens):
                 self.promote_deputy.enable()
             else:
                 self.promote_deputy.disable()
+            self.promote_prophet.disable()
 
             self.switch_warrior.enable()
             self.switch_med_cat.enable()
@@ -480,6 +522,7 @@ class RoleScreen(Screens):
                 self.promote_deputy.enable()
             else:
                 self.promote_deputy.disable()
+            self.promote_prophet.disable()
 
             self.switch_warrior.enable()
             self.switch_med_cat.enable()
@@ -502,6 +545,7 @@ class RoleScreen(Screens):
                 self.promote_deputy.enable()
             else:
                 self.promote_deputy.disable()
+            self.promote_prophet.disable()
 
             # ADULT CAT ROLES
             self.switch_warrior.enable()
@@ -518,6 +562,7 @@ class RoleScreen(Screens):
         elif self.the_cat.status.rank == CatRank.MEDICINE_APPRENTICE:
             self.promote_leader.disable()
             self.promote_deputy.disable()
+            self.promote_prophet.disable()
 
             # ADULT CAT ROLES
             self.switch_warrior.disable()
@@ -534,6 +579,7 @@ class RoleScreen(Screens):
         elif self.the_cat.status.rank == CatRank.MEDIATOR_APPRENTICE:
             self.promote_leader.disable()
             self.promote_deputy.disable()
+            self.promote_prophet.disable()
 
             # ADULT CAT ROLES
             self.switch_warrior.disable()
@@ -550,6 +596,7 @@ class RoleScreen(Screens):
         elif self.the_cat.status.rank == CatRank.QUEEN_APPRENTICE:
             self.promote_leader.disable()
             self.promote_deputy.disable()
+            self.promote_prophet.disable()
 
             # ADULT CAT ROLES
             self.switch_warrior.disable()
@@ -566,6 +613,7 @@ class RoleScreen(Screens):
         elif self.the_cat.status.is_leader:
             self.promote_leader.disable()
             self.promote_deputy.disable()
+            self.promote_prophet.disable()
 
             # ADULT CAT ROLES
             self.switch_warrior.enable()
@@ -582,6 +630,7 @@ class RoleScreen(Screens):
         else:
             self.promote_leader.disable()
             self.promote_deputy.disable()
+            self.promote_prophet.disable()
 
             # ADULT CAT ROLES
             self.switch_warrior.disable()
@@ -603,6 +652,8 @@ class RoleScreen(Screens):
             output = "screens.role.blurb_leader"
         elif self.the_cat.status.rank == CatRank.DEPUTY:
             output = "screens.role.blurb_deputy"
+        elif self.the_cat.status.rank == CatRank.PROPHET:
+            output = "screens.role.blurb_prophet"
         elif self.the_cat.status.rank == CatRank.MEDICINE_CAT:
             output = "screens.role.blurb_medicine_cat"
         elif self.the_cat.status.rank == CatRank.MEDIATOR:
@@ -641,6 +692,8 @@ class RoleScreen(Screens):
         del self.promote_leader
         self.promote_deputy.kill()
         del self.promote_deputy
+        self.promote_prophet.kill()
+        del self.promote_prophet
         self.switch_warrior.kill()
         del self.switch_warrior
         self.switch_med_cat.kill()

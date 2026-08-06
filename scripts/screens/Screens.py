@@ -448,6 +448,12 @@ class Screens:
             == Screens.menu_buttons["dens"].child_button_dicts["screens.core.clearing"]
         ):
             self.change_screen(GameScreen.MEDIATION)
+        # OPEN MOONPOOL
+        elif (
+            event.ui_element
+            == Screens.menu_buttons["dens"].child_button_dicts["screens.core.moonpool"]
+        ):
+            self.change_screen(GameScreen.MOONPOOL)
         # GO TO CAMP
         elif event.ui_element in (
             Screens.menu_buttons["back_to_camp"],
@@ -469,6 +475,9 @@ class Screens:
                 for b in ["screens.core.warriors_den", "screens.core.leader_den"]:
                     Screens.menu_buttons["dens"].child_button_dicts[b].enable()
             self.change_screen(GameScreen.CAMP)
+        # GO TO SC CAMP
+        elif event.ui_element == Screens.menu_buttons["sc_camp"]:
+            self.change_screen(GameScreen.SCSCREEN)
         # VIEW CATS
         elif event.ui_element == Screens.menu_buttons["cats"]:
             self.change_screen(GameScreen.LIST)
@@ -641,6 +650,8 @@ class Screens:
             blur_bg = scripts.screens.screens_core.screens_core.default_fullscreen_bgs[
                 theme
             ]["mainmenu_bg"]
+        elif self.name in [GameScreen.SCSCREEN]:
+            blur_bg = scripts.screens.screens_core.screens_core.default_fullscreen_bgs[theme]["classic"]
         elif self.active_blur_bg in self.fullscreen_bgs:
             blur_bg = self.fullscreen_bgs[self.active_blur_bg]
         elif (

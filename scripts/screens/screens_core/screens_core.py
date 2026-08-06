@@ -111,6 +111,7 @@ def rebuild_top_menu_buttons():
         "patrols",
         "main_menu",
         "camp",
+        "sc_camp",
         "allegiances",
         "clan_settings",
         "heading",
@@ -170,6 +171,7 @@ def rebuild_top_menu_buttons():
             "screens.core.medicine_cat_den",
             "screens.core.warriors_den",
             "screens.core.clearing",
+            "screens.core.moonpool",
         ],
         child_dimensions=(150, 30),
         center_children=True,
@@ -211,6 +213,16 @@ def rebuild_top_menu_buttons():
         manager=MANAGER,
         object_id="@buttonstyles_squoval",
         anchors={"top_target": menu_buttons["main_menu"]},
+        starting_height=5,
+    )
+    menu_buttons["sc_camp"] = UISurfaceImageButton(
+        ui_scale(pygame.Rect((25, 5), (123, 30))),
+        "screens.core.sc_camp",
+        get_button_dict(ButtonStyles.SQUOVAL, (123, 30)),
+        visible=False,
+        manager=MANAGER,
+        object_id="@buttonstyles_squoval",
+        anchors={"top_target": menu_buttons["back_to_camp"]},
         starting_height=5,
     )
     # used so we can anchor to the right with numbers that make sense
@@ -280,7 +292,7 @@ def rebuild_top_menu_buttons():
         )
 
         menu_buttons["heading"].change_layer(9)
-        
+
     rebuild_moon_n_season_indicator()
 
 
@@ -517,6 +529,20 @@ def rebuild_bgs():
         "dark": {"default": bg_dark},
     }
 
+    sc_bgs = get_sc_bgs()
+    for theme in ("light", "dark"):
+        for name, sc_bg in sc_bgs[theme].items():
+            default_game_bgs[theme][name] = pygame.transform.scale(
+                sc_bg,
+                scripts.game_structure.screen_settings.game_screen_size,
+            )
+    
+    if sc_bg:
+        try:
+            sc_nr = game.clan.sc_bg
+        except AttributeError:
+            sc_nr = "classic"
+
     temp_screen_size = scripts.game_structure.screen_settings.screen.get_size()
 
     default_fullscreen_bgs = {
@@ -538,6 +564,10 @@ def rebuild_bgs():
                 pygame.image.load("resources/images/urbg.png").convert(),
                 temp_screen_size,
             ),
+            "classic": pygame.transform.scale(
+                pygame.image.load(f"resources/images/camp_bg/sc/{sc_nr}_{theme}.png").convert(),
+                temp_screen_size,
+            )
         },
         "dark": {
             "default": pygame.transform.scale(bg_dark, temp_screen_size),
@@ -557,6 +587,10 @@ def rebuild_bgs():
                 pygame.image.load("resources/images/urbg.png").convert(),
                 temp_screen_size,
             ),
+            "classic": pygame.transform.scale(
+                pygame.image.load(f"resources/images/camp_bg/sc/{sc_nr}_{theme}.png").convert(),
+                temp_screen_size,
+            )
         },
     }
 
@@ -568,6 +602,7 @@ def rebuild_bgs():
                 "darkforest",
                 "unknown_residence",
                 "starclan",
+                "classic",
             ):
                 default_fullscreen_bgs[theme][name] = process_blur_bg(
                     default_fullscreen_bgs[theme][name], theme=theme
@@ -583,17 +618,19 @@ def rebuild_bgs():
                 default_fullscreen_bgs[theme][name] = process_blur_bg(
                     default_fullscreen_bgs[theme][name], theme=theme, blur_radius=10
                 )
-            elif name == "starclan":
+            elif name in ["starclan", "classic"]:
                 default_fullscreen_bgs[theme][name] = process_blur_bg(
                     default_fullscreen_bgs[theme][name], theme=theme, blur_radius=2
                 )
 
     camp_bgs = get_camp_bgs()
+    sc_bgs = get_sc_bgs()
 
     for theme in ("light", "dark"):
         for name, camp_bg in camp_bgs[theme].items():
             default_fullscreen_bgs[theme][name] = process_blur_bg(camp_bg, theme=theme)
-
+        for name, sc_bg in sc_bgs[theme].items():
+            default_fullscreen_bgs[theme][name] = process_blur_bg(sc_bg, theme=theme)
 
 def get_camp_bgs():
     camp_bg_base_dir = "resources/images/camp_bg/"
@@ -649,6 +686,36 @@ def get_camp_bgs():
             ),
             "Leaf-fall": pygame.transform.scale(
                 pygame.image.load(all_backgrounds[7]).convert(),
+                scripts.game_structure.screen_settings.screen.get_size(),
+            ),
+        },
+    }
+
+def get_sc_bgs():
+    sc_bg_base_dir = "resources/images/camp_bg"
+
+    try:
+        sc_nr = game.clan.sc_bg
+    except AttributeError:
+        sc_nr = "classic"
+
+    sc_bgs = []
+    for light_dark in ("light", "dark"):
+        platform_dir = (
+            f"{sc_bg_base_dir}/sc/{sc_nr}_{light_dark}.png"
+        )
+        sc_bgs.append(platform_dir)
+
+    return {
+        "light": {
+            "classic": pygame.transform.scale(
+                pygame.image.load(sc_bgs[0]).convert(),
+                scripts.game_structure.screen_settings.screen.get_size(),
+            ),
+        },
+        "dark": {
+            "classic": pygame.transform.scale(
+                pygame.image.load(sc_bgs[1]).convert(),
                 scripts.game_structure.screen_settings.screen.get_size(),
             ),
         },
