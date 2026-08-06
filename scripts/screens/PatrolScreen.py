@@ -404,6 +404,7 @@ class PatrolScreen(Screens):
             self.choose_living_dropdown.show()
         self.show_mute_buttons()
         self.show_menu_buttons()
+        Screens.menu_buttons["sc_camp"].hide()
 
         if (
             self.in_progress_data is not None
@@ -419,6 +420,7 @@ class PatrolScreen(Screens):
         self.update_heading_text("general.clan", text_kwargs={"name": game.clan.prefix})
         self.show_mute_buttons()
         self.show_menu_buttons()
+        Screens.menu_buttons["sc_camp"].hide()
 
     def display_change_save(self) -> Dict:
         if self.start_patrol_thread is not None and self.start_patrol_thread.is_alive():

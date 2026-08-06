@@ -15,6 +15,7 @@ class GameScreen(StrEnum):
     MAKE_CLAN_CHOOSE_NAME = "choose_name_screen"
     MAKE_CLAN_CHOOSE_CATS = "choose_cats_screen"
     MAKE_CLAN_CHOOSE_CAMP = "choose_camp_screen"
+    MAKE_CLAN_CHOOSE_SC = "choose_sc_screen"
     MAKE_CLAN_CHOOSE_SYMBOL = "choose_symbol_screen"
     MAKE_CLAN_CLAN_CREATED = "clan_created_screen"
 
@@ -25,12 +26,14 @@ class GameScreen(StrEnum):
     PATROL = "patrol_screen"
     ALLEGIANCES = "allegiances_screen"
     CLAN_SETTINGS = "clan_settings_screen"
+    SCSCREEN = "sc_screen"
 
     # den/work screens
     LEADER_DEN = "leader_den_screen"
     MED_DEN = "med_den_screen"
     WARRIOR_DEN = "warrior_den_screen"
     MEDIATION = "mediation_screen"
+    MOONPOOL = "moonpool_screen"
 
     PROFILE = "profile_screen"
     # screens accessed through profile

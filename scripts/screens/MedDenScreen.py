@@ -431,7 +431,7 @@ class MedDenScreen(Screens):
 
         # get the med cats
         self.meds = find_alive_cats_with_rank(
-            Cat, [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE], sort=True, clan=game.selected_clan.group_ID
+            Cat, [CatRank.MEDICINE_CAT, CatRank.PROPHET, CatRank.MEDICINE_APPRENTICE], sort=True, clan=game.selected_clan.group_ID
         )
 
         if not self.meds:

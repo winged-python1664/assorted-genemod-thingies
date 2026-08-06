@@ -158,6 +158,7 @@ class ClanSettingsScreen(Screens):
         self.show_menu_buttons()
         self.show_mute_buttons()
         self.set_disabled_menu_buttons(["clan_settings"])
+        Screens.menu_buttons["sc_camp"].hide()
 
         self.general_settings_button = UISurfaceImageButton(
             ui_scale(pygame.Rect((100, 140), (150, 30))),

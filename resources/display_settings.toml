@@ -21,6 +21,7 @@
         "filter genes" = true
         "ageup dead" = false
         "youthful dead" = false
+        "ageup newborns" = false
         gore = false
         discord = false
         show_changelog = true
@@ -88,6 +89,7 @@
         retirement = false
         leader_retirement = false
         healer_retirement = false
+        prophet_retirement = false
         mediator_retirement = false
         become_mediator = false
         become_healer = false

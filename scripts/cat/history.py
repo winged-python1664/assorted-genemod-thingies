@@ -27,6 +27,7 @@ class History:
         queen_influence=None,
         app_ceremony=None,
         lead_ceremony=None,
+        message_events=None,
         possible_history=None,
         died_by=None,
         scar_events=None,
@@ -47,6 +48,7 @@ class History:
         )
         self.app_ceremony = app_ceremony if app_ceremony else {}
         self.lead_ceremony = lead_ceremony if lead_ceremony else None
+        self.message_events = message_events if message_events else []
         self.possible_history = possible_history if possible_history else {}
         self.died_by = died_by if died_by else []
         self.scar_events = scar_events if scar_events else []
@@ -102,6 +104,14 @@ class History:
             "graduation_age": age,
             "moon": moon
             },
+        "message_events": [
+            {
+                "message_text": text
+            },
+            {
+                "message_text": text
+            }
+        ]
         "lead_ceremony": full ceremony text,
         "possible_history": {
             "condition name": {
@@ -172,6 +182,7 @@ class History:
             "queen_influence": self.queen_influence,
             "app_ceremony": self.app_ceremony,
             "lead_ceremony": self.lead_ceremony,
+            "message_events": self.message_events,
             "afterlife_acceptance": self.afterlife_acceptance,
             "possible_history": self.possible_history,
             "died_by": self.died_by,
@@ -518,6 +529,18 @@ class History:
             "moon": game.clan.age,
         }
 
+
+    def add_message(self, message_text):
+        if not game.clan:
+            return
+
+        self.message_events.append(
+            {
+                "text": message_text,
+                "moon": game.clan.age,
+            }
+        )
+
     def add_possible_history(
         self,
         condition: str,
@@ -814,3 +837,7 @@ class History:
             return self.scar_events
         elif death:
             return self.died_by
+
+    def get_messages(self, message=False):
+        if message:
+            return self.message_events

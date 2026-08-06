@@ -26,7 +26,7 @@
         "reroll_tooltip": "reroll all cats",
         "leader_title": "pick a leader to guide the Clan through any obstacles",
         "deputy_title": "choose a deputy to support the leader and take charge when things go awry",
-        "medcat_title": " choose a healer to heal the Clan and commune with their ancestors",
+        "prophet_title": " choose a prophet to heal the Clan and commune with the stars",
         "recruit_title_range": "recruit %{min}-%{max} cats into the Clan, choose wisely",
         "recruit_title_single": {
             "one": "recruit 1 cat into the Clan, choose wisely",
@@ -40,7 +40,7 @@
             "many": "grant this cat {PRONOUN/m_c/poss} %{count} lives"
         },
         "choose_deputy": "this cat will support the leader",
-        "choose_medcat": "this cat will aid the clan",
+        "choose_prophet": "this cat will aid the clan",
         "recruit": "recruit",
         "season_tooltip": "Switch starting season to %{season}.",
         "choose_random_background": "choose a random background",
@@ -68,6 +68,9 @@
         "Forest": "Forest",
         "Mountainous": "Mountains",
         "Plains": "Plains",
-        "Beach": "Beach"
+        "Beach": "Beach",
+        "sc": "StarClan Camp",
+        "sc_classic": "Classic",
+        "sc_nest": "Rookery"
     }
 }

@@ -36,9 +36,9 @@ class ChooseCatsScreen(MakeClanScreenBase):
         "deputy_empty": pygame.image.load(f"{path}/deputy_empty.png").convert_alpha(),
         "deputy_chosen": pygame.image.load(f"{path}/deputy_chosen.png").convert_alpha(),
         "deputy_gone": pygame.image.load(f"{path}/deputy_gone.png").convert_alpha(),
-        "med_empty": pygame.image.load(f"{path}/med_empty.png").convert_alpha(),
-        "med_chosen": pygame.image.load(f"{path}/med_chosen.png").convert_alpha(),
-        "med_gone": pygame.image.load(f"{path}/med_gone.png").convert_alpha(),
+        "prophet_empty": pygame.image.load(f"{path}/prophet_empty.png").convert_alpha(),
+        "prophet_chosen": pygame.image.load(f"{path}/prophet_chosen.png").convert_alpha(),
+        "prophet_gone": pygame.image.load(f"{path}/prophet_gone.png").convert_alpha(),
         "1_empty": pygame.image.load(f"{path}/first_empty.png").convert_alpha(),
         "1_chosen": pygame.image.load(f"{path}/first_chosen.png").convert_alpha(),
         "1_gone": pygame.image.load(f"{path}/first_gone.png").convert_alpha(),
@@ -59,11 +59,11 @@ class ChooseCatsScreen(MakeClanScreenBase):
 
         self.selected_cat: Optional[Cat] = None
         self.rank_override = None
-        self.rank_overrides = ["leader", "deputy", "medicine_cat", "warrior"]
+        self.rank_overrides = ["leader", "deputy", "prophet", "warrior"]
 
         self.need_leader = True
         self.need_deputy = True
-        self.need_med = True
+        self.need_prophet = True
 
     def screen_switches(self):
         super().screen_switches()
@@ -75,8 +75,8 @@ class ChooseCatsScreen(MakeClanScreenBase):
         self.need_deputy = self.get_config_during_creation(
             "clan_creation.ranks_needed.deputy"
         )
-        self.need_med = self.get_config_during_creation(
-            "clan_creation.ranks_needed.medicine_cat"
+        self.need_prophet = self.get_config_during_creation(
+            "clan_creation.ranks_needed.prophet"
         )
 
         # step button are created at the bottom of the screen by default, so now
@@ -294,8 +294,8 @@ class ChooseCatsScreen(MakeClanScreenBase):
                         self.clan_info.leader = None
                     elif self.selected_cat == self.clan_info.deputy:
                         self.clan_info.deputy = None
-                    elif self.selected_cat == self.clan_info.medicine_cat:
-                        self.clan_info.medicine_cat = None
+                    elif self.selected_cat == self.clan_info.prophet:
+                        self.clan_info.prophet = None
 
                 self.refresh_cat_images_and_info(self.selected_cat)
                 self.refresh_text_and_buttons()
@@ -359,8 +359,8 @@ class ChooseCatsScreen(MakeClanScreenBase):
                     and c != self.clan_info.leader
                 ]
             )
-        if self.need_med:
-            self.clan_info.medicine_cat = choice(
+        if self.need_prophet:
+            self.clan_info.prophet = choice(
                 [
                     c
                     for c in possible_cats
@@ -381,7 +381,7 @@ class ChooseCatsScreen(MakeClanScreenBase):
                         not in [
                             self.clan_info.leader,
                             self.clan_info.deputy,
-                            self.clan_info.medicine_cat,
+                            self.clan_info.prophet,
                         ]
                         and c not in self.clan_info.starting_members
                     ]
@@ -410,12 +410,12 @@ class ChooseCatsScreen(MakeClanScreenBase):
     def _assign_cat(self):
         """Assigns the selected cat to the next required role"""
         cat = self.selected_cat
-        if not self.clan_info.leader and (self.need_leader and self.rank_override not in ["deputy", "medicine_cat", "warrior"]):
+        if not self.clan_info.leader and (self.need_leader and self.rank_override not in ["deputy", "prophet", "warrior"]):
             self.clan_info.leader = cat
-        elif not self.clan_info.deputy and (self.need_deputy and self.rank_override not in ["leader", "medicine_cat", "warrior"]):
+        elif not self.clan_info.deputy and (self.need_deputy and self.rank_override not in ["leader", "prophet", "warrior"]):
             self.clan_info.deputy = cat
-        elif not self.clan_info.medicine_cat and (self.need_med and self.rank_override not in ["deputy", "leader", "warrior"]):
-            self.clan_info.medicine_cat = cat
+        elif not self.clan_info.prophet and (self.need_prophet and self.rank_override not in ["deputy", "leader", "warrior"]):
+            self.clan_info.prophet = cat
         else:
             if not self.clan_info.starting_members:
                 self.clan_info.starting_members = [cat]
@@ -478,11 +478,11 @@ class ChooseCatsScreen(MakeClanScreenBase):
             self.elements["select_cat"].hide()
             self.elements["error_message"].hide()
 
-        # Show the error message if you try to choose a child for leader, deputy, or med cat.
+        # Show the error message if you try to choose a child for leader, deputy, or prophet.
         elif (
             self.selected_cat  # if we have a cat selected
             and (not self.clan_info.has_high_ranks_filled()
-            and (self.need_leader or self.need_deputy or self.need_med) and self.rank_override != "warrior")  # and we don't have a leadership role
+            and (self.need_leader or self.need_deputy or self.need_prophet) and self.rank_override != "warrior")  # and we don't have a leadership role
             and self.selected_cat.age  # and cat age is in one of these
             in (
                 CatAge.NEWBORN,
@@ -504,7 +504,7 @@ class ChooseCatsScreen(MakeClanScreenBase):
 
             # Change button text for different ranks
             # LEAD
-            if not self.clan_info.leader and (self.need_leader and self.rank_override not in ["deputy", "medicine_cat", "warrior"]):
+            if not self.clan_info.leader and (self.need_leader and self.rank_override not in ["deputy", "prophet", "warrior"]):
                 self.elements["select_cat"].kill()
                 self.elements["select_cat"] = UIImageButton(
                     ui_scale(pygame.Rect((234, 348), (332, 52))),
@@ -522,7 +522,7 @@ class ChooseCatsScreen(MakeClanScreenBase):
                     text_kwargs={"m_c": self.selected_cat},
                 )
             # DEP
-            elif not self.clan_info.deputy and (self.need_deputy and self.rank_override not in ["leader", "medicine_cat", "warrior"]):
+            elif not self.clan_info.deputy and (self.need_deputy and self.rank_override not in ["leader", "prophet", "warrior"]):
                 self.elements["select_cat"].kill()
                 self.elements["select_cat"] = UIImageButton(
                     ui_scale(pygame.Rect((209, 348), (384, 52))),
@@ -531,12 +531,12 @@ class ChooseCatsScreen(MakeClanScreenBase):
                     starting_height=2,
                     manager=MANAGER,
                 )
-            # MED
-            elif not self.clan_info.medicine_cat and (self.need_med and self.rank_override not in ["deputy", "leader", "warrior"]):
+            # PROPHET
+            elif not self.clan_info.prophet and (self.need_prophet and self.rank_override not in ["deputy", "leader", "warrior"]):
                 self.elements["select_cat"].kill()
                 self.elements["select_cat"] = UIImageButton(
                     ui_scale(pygame.Rect((260, 342), (306, 58))),
-                    i18n.t("screens.make_clan.choose_medcat")
+                    i18n.t("screens.make_clan.choose_prophet")
                     + "    ",  # it's necessary for centering...
                     object_id="#aid_clan_button",
                     starting_height=2,
@@ -597,10 +597,10 @@ class ChooseCatsScreen(MakeClanScreenBase):
                 manager=MANAGER,
                 visible=False,
             )
-            self.elements["med"] = pygame_gui.elements.UIImage(
+            self.elements["prophet"] = pygame_gui.elements.UIImage(
                 ui_scale(pygame.Rect((0, 440), (800, 260))),
                 pygame.transform.scale(
-                    self.ui_images["med_empty"],
+                    self.ui_images["prophet_empty"],
                     ui_scale_dimensions((800, 260)),
                 ),
                 manager=MANAGER,
@@ -657,8 +657,8 @@ class ChooseCatsScreen(MakeClanScreenBase):
             self.elements["title"].set_text("screens.make_clan.leader_title")
         elif not self.clan_info.deputy and self.need_deputy:
             self.elements["title"].set_text("screens.make_clan.deputy_title")
-        elif not self.clan_info.medicine_cat and self.need_med:
-            self.elements["title"].set_text("screens.make_clan.medcat_title")
+        elif not self.clan_info.prophet and self.need_prophet:
+            self.elements["title"].set_text("screens.make_clan.prophet_title")
         elif not self.clan_info.has_maximum_cats():
             min_cats = max(
                 1,
@@ -687,7 +687,7 @@ class ChooseCatsScreen(MakeClanScreenBase):
         # TOGGLE HEAD VISIBLE - we hide them all to begin with, to give us a blank canvas
         for head in [
             "deputy",
-            "med",
+            "prophet",
             "1_cat",
             "2_cat",
             "3_cat",
@@ -728,7 +728,7 @@ class ChooseCatsScreen(MakeClanScreenBase):
             self.elements["deputy"].show()
             image = "chosen"
             if self.clan_info.leader:
-                self.elements["med"].show()
+                self.elements["prophet"].show()
         if not self.need_deputy:
             self.elements["deputy"].show()
             image = "gone"
@@ -740,21 +740,21 @@ class ChooseCatsScreen(MakeClanScreenBase):
             )
         )
 
-        # med cat
+        # prophet
         image = "empty"
-        if self.clan_info.medicine_cat:
-            self.elements["med"].show()
+        if self.clan_info.prophet:
+            self.elements["prophet"].show()
             image = "chosen"
             if self.clan_info.leader and self.clan_info.deputy:
                 self.elements["1_cat"].show()
-        if not self.need_med:
+        if not self.need_prophet:
             image = "gone"
-            self.elements["med"].show()
+            self.elements["prophet"].show()
             self.elements["1_cat"].show()
 
-        self.elements["med"].set_image(
+        self.elements["prophet"].set_image(
             pygame.transform.scale(
-                self.ui_images[f"med_{image}"],
+                self.ui_images[f"prophet_{image}"],
                 ui_scale_dimensions((800, 260)),
             )
         )
@@ -869,7 +869,7 @@ class ChooseCatsScreen(MakeClanScreenBase):
         chosen_cats = [
             self.clan_info.leader,
             self.clan_info.deputy,
-            self.clan_info.medicine_cat,
+            self.clan_info.prophet,
         ] + self.clan_info.starting_members
 
         # CAT IMAGES
@@ -975,7 +975,7 @@ class ChooseCatsScreen(MakeClanScreenBase):
                 self.get_config_during_creation("clan_creation.maximum_membership") == 1
                 and selected.age not in (CatAge.KITTEN, CatAge.ADOLESCENT)
             )
-        ) and self.rank_override not in ["deputy", "medicine_cat", "warrior"]:
+        ) and self.rank_override not in ["deputy", "prophet", "warrior"]:
             self.elements["cat_name"].set_text(
                 str(selected.name)
                 + " --> "

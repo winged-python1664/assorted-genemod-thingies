@@ -628,6 +628,9 @@ dev_tools = false
   # set to false (NO QUOTES) to ensure the debug patrol fails
   debug_ensure_patrol_outcome = ""
 
+  # set to true to prevent the clan from communing with their ancestors
+  no_starclan = false
+
 [event_generation]
   # forces event with this id to occur
   debug_ensure_event_id = ""
@@ -779,7 +782,7 @@ dev_tools = false
   [clan_creation.ranks_needed]
     leader = true
     deputy = true
-    medicine_cat = true
+    prophet = true
 
   [clan_creation.rank_weights]
     kitten = 1
@@ -1223,6 +1226,7 @@ dev_tools = false
           "kitten",
           "queen/pregnant",
           "elder",
+          "prophet",
           "healer",
           "healer apprentice",
           "apprentice",
@@ -1261,6 +1265,7 @@ dev_tools = false
   [prey.prey_requirement]
       leader = 3
       deputy = 3
+      prophet = 2
       healer = 2
       "healer apprentice" = 1.5
       "mediator apprentice" = 1.5
@@ -1343,7 +1348,7 @@ dev_tools = false
 
   [settings.force_disable]
     "modded_kits" = false
-    
+
 [reputation]
   # manages reputation quotas
   [reputation.other_clans]

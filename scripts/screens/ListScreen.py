@@ -269,7 +269,7 @@ class ListScreen(Screens):
         if not game.last_list_forProfile:
             self.death_status = "living"
             self.current_group = "general.your_clan"
-        
+
         group_names = ["general.your_clan", "general.cotc", "general.cbtc"]
         if game.clan and game.clan.clancount == "multiclan":
             group_names += [clan.name for clan in game.clan.all_other_clans]

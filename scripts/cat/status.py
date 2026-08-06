@@ -22,6 +22,7 @@ class Status:
         CatRank.MEDICINE_CAT: CatSocial.CLANCAT,
         CatRank.MEDIATOR: CatSocial.CLANCAT,
         CatRank.QUEEN: CatSocial.CLANCAT,
+        CatRank.PROPHET: CatSocial.CLANCAT,
         CatRank.DEPUTY: CatSocial.CLANCAT,
         CatRank.LEADER: CatSocial.CLANCAT,
         CatRank.ELDER: CatSocial.CLANCAT,
@@ -558,7 +559,7 @@ class Status:
                 new_rank = CatRank.KITTEN
             # we don't need to change leaders and deps if they're going to an afterlife
             if (
-                new_rank in (CatRank.LEADER, CatRank.DEPUTY)
+                new_rank in (CatRank.LEADER, CatRank.DEPUTY, CatRank.PROPHET)
                 and not new_group_type.is_afterlife()
             ):
                 if age == CatAge.SENIOR:

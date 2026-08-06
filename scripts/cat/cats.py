@@ -43,6 +43,7 @@ from scripts.events_module.thoughts.generate_thoughts import (
     new_thought,
     get_other_cat_for_thought,
 )
+from scripts.events_module.text_adjust import rank_text_adjust
 from scripts.cat_relations.inheritance import Inheritance
 from scripts.cat_relations.inheritance2 import inheritance_db
 from scripts.cat_relations.relationship import Relationship
@@ -109,6 +110,7 @@ class Cat:
         CatRank.MEDIATOR,
         CatRank.MEDICINE_APPRENTICE,
         CatRank.MEDICINE_CAT,
+        CatRank.PROPHET,
         CatRank.DEPUTY,
         CatRank.LEADER,
     ]
@@ -570,8 +572,9 @@ class Cat:
         nb_chance = randint(0, 75)
 
         # GENDER IDENTITY
-        if self.age.is_baby() or self.disable_random:
+        if self.age.is_newborn() or self.disable_random:
             # newborns can't be trans, sorry babies
+            # newborns can't be trans, but babies can >:3
             nb_chance = 0
             trans_chance = 0
         self.genderalign = ""
@@ -959,6 +962,7 @@ class Cat:
 
     def exile(self):
         """This is used to send a cat into exile."""
+        old_group = self.status.group
 
         self.status.exile_from_group()
         self.get_new_thought(CatThought.ON_EXILE)
@@ -1125,6 +1129,7 @@ class Cat:
 
     def leave_clan(self, new_social_status: CatSocial):
         """Removes cat from the Clan willingly. Makes status changes and removes apprentices."""
+        old_group = self.status.group
         if not new_social_status:
             new_social_status = choice(
                 (CatSocial.KITTYPET, CatSocial.LONER, CatSocial.ROGUE)
@@ -1144,6 +1149,7 @@ class Cat:
 
     def become_lost(self, status=None):
         """Makes a Clan cat a lost cat. Makes status changes and removes apprentices."""
+        old_group = self.status.group
 
         if self.status.is_leader:
             self.status.fetch_clan_object().leader = None
@@ -1210,6 +1216,7 @@ class Cat:
 
         clan = self.status.fetch_clan_object(game.clan)
         old_rank = self.status.rank
+        old_group = self.status.group
 
         # this is a private function, but it's meant to be used here.
         self.status._change_rank(new_rank)  # pylint: disable=protected-access
@@ -1223,7 +1230,7 @@ class Cat:
                 fetched_cat.update_mentor()
 
         # If they have any apprentices, make sure they are still valid:
-        if old_rank == CatRank.MEDICINE_CAT and clan:
+        if old_rank in [CatRank.MEDICINE_CAT, CatRank.PROPHET] and clan:
             clan.remove_med_cat(self)
 
         if old_rank in [CatRank.LEADER, CatRank.DEPUTY]:
@@ -1235,8 +1242,17 @@ class Cat:
             elif new_rank != CatRank.DEPUTY and clan.deputy and clan.deputy.ID == self.ID:
                 clan.deputy = None
                 clan.deputy_predecessors += 1
+        elif old_rank == CatRank.PROPHET:
+            if new_rank != CatRank.PROPHET and clan.prophet and clan.prophet.ID == self.ID or old_rank == CatRank.PROPHET and self.dead:
+                clan.prophet = None
+                clan.prophet_predecessors +=1
+                clan.all_prophet_predecessors + [self.ID]
+            if new_rank != CatRank.MEDICINE_CAT and clan is not None:
+                clan.remove_med_cat(self)
         elif new_rank not in [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE] and old_rank in [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE]:
             clan.remove_med_cat(self)
+        elif new_rank == CatRank.PROPHET and old_rank == CatRank.MEDICINE_CAT:
+            pass
 
         elif self.status.rank == CatRank.MEDICINE_CAT:
             if clan is not None:
@@ -1374,6 +1390,7 @@ class Cat:
                 mentor_influence={},
                 app_ceremony={},
                 lead_ceremony=None,
+                message_events={},
                 possible_history={},
                 died_by=[],
                 scar_events=[],
@@ -1392,6 +1409,7 @@ class Cat:
                 mentor_influence={},
                 app_ceremony={},
                 lead_ceremony=None,
+                message_events={},
                 possible_history={},
                 died_by=[],
                 scar_events=[],
@@ -1430,6 +1448,11 @@ class Cat:
                         history_data["lead_ceremony"]
                         if "lead_ceremony" in history_data
                         else None
+                    ),
+                    message_events=(
+                        history_data["message_events"]
+                        if "message_events" in history_data
+                        else {}
                     ),
                     possible_history=(
                         history_data["possible_history"]
@@ -1480,6 +1503,7 @@ class Cat:
                 mentor_influence={},
                 app_ceremony={},
                 lead_ceremony=None,
+                message_events={},
                 possible_history={},
                 died_by=[],
                 scar_events=[],
@@ -2558,7 +2582,7 @@ class Cat:
         # Match jobs
         if (
             self.status.rank == CatRank.MEDICINE_APPRENTICE
-            and potential_mentor.status.rank != CatRank.MEDICINE_CAT
+            and potential_mentor.status.rank not in [CatRank.MEDICINE_CAT, CatRank.PROPHET]
         ):
             return False
         if (

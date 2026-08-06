@@ -39,6 +39,7 @@ from scripts.clan_resources.point_of_interest import (
     clear_pois,
 )
 from scripts.config import get_config
+from scripts.events_module.text_adjust import rank_text_adjust
 from scripts.events_module.future.future_event import FutureEvent
 from scripts.events_module.generate_events import OngoingEvent
 from scripts.game_structure import constants
@@ -80,9 +81,12 @@ class Clan:
         display_name=None,
         leader=None,
         deputy=None,
+        prophet=None,
         medicine_cat=None,
         biome="Forest",
         camp_bg=None,
+        sc_bg=None,
+        moonthing=None,
         symbol=None,
         game_mode="classic",
         cruel_cards: list[str] = None,
@@ -102,6 +106,12 @@ class Clan:
         if starting_members is None:
             starting_members = []
 
+        if sc_bg is None:
+            sc_bg = "classic"
+
+        if moonthing is None:
+            moonthing = "moonpool"
+
         self.group_ID = CatGroup.PLAYER_CLAN_ID
         self.save_id = save_id
         self.name = display_name if display_name else save_id
@@ -113,11 +123,17 @@ class Clan:
         self.leader = leader
         self._leader_lives = 9
         self.leader_predecessors = 0
+        self.all_leader_predecessors = []
         self.deputy = deputy
         self.deputy_predecessors = 0
+        self.all_deputy_predecessors = []
+        self.prophet = prophet
+        self.prophet_predecessors = 0
+        self.all_prophet_predecessors = []
         self.medicine_cat = medicine_cat
         self.med_cat_list = []
         self.med_cat_predecessors = 0
+        self.all_med_cat_predecessors = []
 
         self.med_cat_number = len(
             self.med_cat_list
@@ -130,6 +146,8 @@ class Clan:
         self.biome = biome
         self.override_biome = None
         self.camp_bg = camp_bg
+        self.sc_bg = sc_bg
+        self.moonthing = moonthing
         self.chosen_symbol = symbol
         self.game_mode = game_mode
         self.pregnancy_data = {}
@@ -138,6 +156,8 @@ class Clan:
 
         switch_set_value(Switch.biome, biome)
         switch_set_value(Switch.camp_bg, camp_bg)
+        switch_set_value(Switch.sc_bg, sc_bg)
+        switch_set_value(Switch.moonthing, moonthing)
         switch_set_value(Switch.game_mode, game_mode)
 
         # Reputation is for loners/kittypets/outsiders in general that wish to join the clan.
@@ -214,6 +234,10 @@ class Clan:
             self.leader.rank_change(CatRank.LEADER, new_thought=False)
             self.clan_cats.append(self.leader.ID)
 
+        if self.prophet and self.prophet.status.alive_in_player_clan:
+            self.prophet.rank_change(CatRank.PROPHET, new_thought=False)
+            self.clan_cats.append(self.prophet.ID)
+
         if self.medicine_cat and self.medicine_cat.status.alive_in_player_clan:
             self.clan_cats.append(self.medicine_cat.ID)
             self.med_cat_list.append(self.medicine_cat.ID)
@@ -247,6 +271,9 @@ class Clan:
                 CatRank.MEDIATOR,
                 CatRank.DEPUTY,
                 CatRank.ELDER,
+                CatRank.PROPHET,
+                CatRank.QUEEN,
+                CatRank.QUEEN_APPRENTICE
             )
         )
 
@@ -263,6 +290,9 @@ class Clan:
         self.add_cat(self.instructor)
         self.all_other_clans = []
 
+        if self.instructor.status.rank == CatRank.LEADER:
+            clan.all_leader_predecessors.append(self.instructor.ID)
+
         key_copy = tuple(Cat.all_cats.keys())
         for i in key_copy:  # Going through all currently existing cats
             # cat_class is a Cat-object
@@ -275,6 +305,7 @@ class Clan:
             if (
                 Cat.all_cats[i] != self.leader
                 and Cat.all_cats[i] != self.medicine_cat
+                and Cat.all_cats[i] != self.prophet
                 and Cat.all_cats[i] != self.deputy
                 and Cat.all_cats[i] != self.instructor
                 and not_found
@@ -350,6 +381,14 @@ class Clan:
             random_camp_options = ["camp1", "camp2"]
             random_camp = choice(random_camp_options)
             switch_set_value(Switch.camp_bg, random_camp)
+
+        if switch_get_value(Switch.sc_bg) is None:
+            sc_bg = "classic"
+            switch_set_value(Switch.sc_bg, sc_bg)
+
+        if switch_get_value(Switch.moonthing) is None:
+            moonthing = "moonpool"
+            switch_set_value(Switch.moonthing, moonthing)
 
         # if no game mode chosen, set to Classic
         if switch_get_value(Switch.game_mode) == "":
@@ -427,7 +466,7 @@ class Clan:
         if self.save_id is not None:
             _ = (
                 f"{self.save_id}: led by {self.leader.name}"
-                f"with {self.medicine_cat.name} as med. cat"
+                f" with {self.prophet.name} as prophet"
             )
             return _
 
@@ -454,6 +493,15 @@ class Clan:
             self.deputy = deputy
             Cat.all_cats[deputy.ID].rank_change(CatRank.DEPUTY)
             self.deputy_predecessors += 1
+
+    def new_prophet(self, prophet):
+        """
+        TODO: DOCS
+        """
+        if prophet:
+            self.prophet = prophet
+            Cat.all_cats[prophet.ID].rank_change(CatRank.PROPHET)
+            self.prophet_predecessors += 1
 
     def new_medicine_cat(self, medicine_cat):
         """
@@ -509,6 +557,8 @@ class Clan:
             "clanage": self.age,
             "biome": self.biome,
             "camp_bg": self.camp_bg,
+            "sc_bg": self.sc_bg,
+            "moonthing": self.moonthing,
             "clan_symbol": self.chosen_symbol,
             "gamemode": self.game_mode,
             "cruel_cards": self.cruel_cards,
@@ -538,6 +588,7 @@ class Clan:
             clan_data["leader"] = None
 
         clan_data["leader_predecessors"] = self.leader_predecessors
+        clan_data["all_leader_predecessors"] = ",".join([str(i) for i in self.all_leader_predecessors])
 
         # DEPUTY DATA
         if self.deputy:
@@ -546,6 +597,16 @@ class Clan:
             clan_data["deputy"] = None
 
         clan_data["deputy_predecessors"] = self.deputy_predecessors
+        clan_data["all_deputy_predecessors"] = ",".join([str(i) for i in self.all_deputy_predecessors])
+
+        # PROPHET DATA
+        if self.prophet:
+            clan_data["prophet"] = self.prophet.ID
+        else:
+            clan_data["prophet"] = None
+        
+        clan_data["prophet_predecessors"] = self.prophet_predecessors
+        clan_data["all_prophet_predecessors"] = ",".join([str(i) for i in self.all_prophet_predecessors])
 
         # MED CAT DATA
         if self.medicine_cat:
@@ -554,6 +615,7 @@ class Clan:
             clan_data["med_cat"] = None
         clan_data["med_cat_number"] = self.med_cat_number
         clan_data["med_cat_predecessors"] = self.med_cat_predecessors
+        clan_data["all_med_cat_predecessors"] = self.all_med_cat_predecessors
 
         # LIST OF CLAN CATS
         clan_data["clan_cats"] = ",".join([str(i) for i in self.clan_cats])
@@ -677,6 +739,11 @@ class Clan:
         else:
             deputy = None
 
+        if clan_data["prophet"]:
+            prophet = Cat.all_cats[clan_data["prophet"]]
+        else:
+            prophet = None
+
         if clan_data["med_cat"]:
             med_cat = Cat.all_cats[clan_data["med_cat"]]
         else:
@@ -701,6 +768,7 @@ class Clan:
             ),  # if no displayname is found, clan init just uses save_id
             leader=leader,
             deputy=deputy,
+            prophet=prophet,
             medicine_cat=med_cat,
             biome=clan_data["biome"],
             camp_bg=clan_data["camp_bg"],
@@ -731,8 +799,37 @@ class Clan:
         )
         game.clan.leader_lives = leader_lives
         game.clan.leader_predecessors = clan_data["leader_predecessors"]
+        if "all_leader_predecessors" in clan_data:
+            game.clan.all_leader_predecessors = clan_data.get(
+                "all_leader_predecessors", []
+            )
+        else:
+            game.clan.all_leader_predecessors = ""
+
+        if "sc_bg" in clan_data:
+            game.clan.sc_bg = clan_data["sc_bg"]
+        else:
+            game.clan.sc_bg = "classic"
+
+        if "moonthing" in clan_data:
+            game.clan.moonthing = clan_data["moonthing"]
+        else:
+            game.clan.moonthing = choice["moonpool", "moonstone"]
 
         game.clan.deputy_predecessors = clan_data["deputy_predecessors"]
+        if "all_deputy_predecessors" in clan_data:
+            game.clan.all_deputy_predecessors = clan_data.get(
+                "all_deputy_predecessors", []
+            )
+        else:
+            game.clan.all_deputy_predecessors = ""
+        game.clan.prophet_predecessors = clan_data["prophet_predecessors"]
+        if "all_prophet_predecessors" in clan_data:
+            game.clan.all_prophet_predecessors = clan_data.get(
+                "all_prophet_predecessors", []
+            )
+        else:
+            game.clan.all_prophet_predecessors = ""
         game.clan.med_cat_predecessors = clan_data["med_cat_predecessors"]
         game.clan.med_cat_number = clan_data["med_cat_number"]
         # Allows for the custom pronouns to show up in the add pronoun list after the game has closed and reopened.
@@ -789,10 +886,16 @@ class Clan:
                     leader=other_clan.get("leader"),
                     leader_lives=other_clan.get("leader_lives"),
                     leader_predecessors=other_clan.get("leader_predecessors", 0),
+                    all_leader_predecessors=other_clan.get("all_leader_predecessors", []) if "all_leader_predecessors" in other_clan else "",
                     deputy=other_clan.get("deputy"),
                     deputy_predecessors=other_clan.get("deputy_predecessors", 0),
+                    all_deputy_predecessors=other_clan.get("all_deputy_predecessors", []) if "all_deputy_predecessors" in other_clan else "",
                     medicine_cat=other_clan.get("medicine_cat"),
+                    prophet=other_clan.get("prophet"),
+                    prophet_predecessors=other_clan.get("prophet_predecessors"),
+                    all_prophet_predecessors=other_clan.get("all_prophet_predecessors", []) if "all_prophet_predecessors" in other_clan else "",
                     med_cat_predecessors=other_clan.get("med_cat_predecessors", 0),
+                    all_med_cat_predecessors=other_clan.get("all_med_cat_predecessors", []) if "all_med_cat_predecessors" in other_clan else "",
                     ID=ID,
                 )
                 if "relations" in other_clan:
@@ -1264,13 +1367,18 @@ class Clan:
             if isinstance(Cat.fetch_cat(self.deputy), Cat)
             else None
         )
+        prophet = (
+            Cat.fetch_cat(self.prophet)
+            if isinstance(Cat.fetch_cat(self.prophet), Cat)
+            else None
+        )
         medicine_cats = find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT])
 
         all_other_cats = [
             i
             for i in Cat.all_cats_list
             if i.status.rank
-            not in (CatRank.LEADER, CatRank.DEPUTY, CatRank.MEDICINE_CAT)
+            not in (CatRank.LEADER, CatRank.DEPUTY, CatRank.MEDICINE_CAT, CatRank.PROPHET)
             and i.status.alive_in_player_clan
         ]
 
@@ -1292,6 +1400,13 @@ class Clan:
             aggression_list += [deputy.personality.aggression] * 2
             lawfulness_list += [deputy.personality.lawfulness] * 2
             stability_list += [deputy.personality.stability] * 2
+
+        # 1x influence
+        if prophet:
+            sociability_list += [prophet.personality.sociability] * 1
+            aggression_list += [prophet.personality.aggression] * 1
+            lawfulness_list += [prophet.personality.lawfulness] * 1
+            stability_list += [prophet.personality.stability] * 1
 
         # collective influence
         if medicine_cats:
@@ -1323,7 +1438,7 @@ class Clan:
                 statistics.median([i.personality.stability for i in all_other_cats])
             )
 
-        # mean of [leader, leader, leader, deputy, deputy, medicine_cats, all_other_cats]
+        # mean of [leader, leader, leader, deputy, deputy, prophet, medicine_cats, all_other_cats]
         clan_sociability = round(statistics.mean(sociability_list))
         clan_aggression = round(statistics.mean(aggression_list))
         clan_lawfulness = round(statistics.mean(lawfulness_list))
@@ -1427,10 +1542,16 @@ class OtherClan:
         leader=None, 
         leader_lives=9, 
         leader_predecessors=0, 
+        all_leader_predecessors=[],
         deputy=None, 
         deputy_predecessors=0, 
+        all_deputy_predecessors=[],
+        prophet=None,
+        prophet_predecessors=0,
+        all_prophet_predecessors=[],
         medicine_cat=None, 
         med_cat_predecessors=0, 
+        all_med_cat_predecessors=[],
         ID: str = 0
     ):
         self.group_ID = ID
@@ -1506,10 +1627,16 @@ class OtherClan:
         self.leader = Cat.all_cats.get(leader)
         self.leader_lives = leader_lives if leader else 0
         self.leader_predecessors = leader_predecessors
+        self.all_leader_predecessors = all_leader_predecessors
         self.deputy = Cat.all_cats.get(deputy)
         self.deputy_predecessors = deputy_predecessors
+        self.all_deputy_predecessors = all_deputy_predecessors
+        self.prophet = Cat.all_cats.get(prophet)
+        self.prophet_predecessors = prophet_predecessors
+        self.all_prophet_predecessors = all_prophet_predecessors
         self.medicine_cat = Cat.all_cats.get(medicine_cat)
         self.med_cat_predecessors = med_cat_predecessors
+        self.all_med_cat_predecessors = all_med_cat_predecessors
         self.med_cat_list = []
         self.med_cat_number = len(self.med_cat_list)
 
@@ -1524,6 +1651,9 @@ class OtherClan:
                 CatRank.MEDIATOR,
                 CatRank.DEPUTY,
                 CatRank.ELDER,
+                CatRank.PROPHET,
+                CatRank.QUEEN,
+                CatRank.QUEEN_APPRENTICE,
             ))
             self.instructor = Cat(
                 status_dict={
@@ -1534,6 +1664,10 @@ class OtherClan:
                     BACKSTORIES["backstory_categories"]["clan_guide_backstories"]
                 ),
             )
+
+            if self.instructor.status.rank == CatRank.LEADER:
+                clan.all_leader_predecessors.append(self.instructor.ID)
+
             self.instructor.dead_for = randint(20, 200)
             self.instructor.status.group_history.insert(0, {"rank": instructor_rank, "group": self.group_ID, "moons_as": self.instructor.moons})
             game.clan.add_cat(self.instructor)
@@ -1556,6 +1690,9 @@ class OtherClan:
                     CatRank.MEDIATOR,
                     CatRank.DEPUTY,
                     CatRank.ELDER,
+                    CatRank.PROPHET,
+                    CatRank.QUEEN,
+                    CatRank.QUEEN_APPRENTICE,
                 )
             )
             self.instructor = Cat(
@@ -1571,7 +1708,7 @@ class OtherClan:
             cat_range = get_config("clan_creation.neighbourclan_cats")
             self.new_leader(create_cat(CatRank.LEADER, biome=self.biome, kittypet=use_special, clan=self.group_ID))
             self.new_deputy(create_cat(CatRank.DEPUTY, biome=self.biome, kittypet=use_special, clan=self.group_ID))
-            self.new_medicine_cat(create_cat(CatRank.MEDICINE_CAT, biome=self.biome, kittypet=use_special, clan=self.group_ID))
+            self.new_prophet(create_cat(CatRank.PROPHET, biome=self.biome, kittypet=use_special, clan=self.group_ID))
             for i in range(randint(cat_range[0], cat_range[1])):
                 create_cat(choices(list(rank_weights.keys()), list(rank_weights.values()))[0], biome=self.biome, kittypet = use_special, clan=self.group_ID)
     @property
@@ -1599,10 +1736,16 @@ class OtherClan:
             "leader" : self.leader.ID if self.leader else None,
             "leader_lives" : self.leader_lives,
             "leader_predecessors" : self.leader_predecessors,
+            "all_leader_predecessors" : self.all_leader_predecessors,
             "deputy" : self.deputy.ID if self.deputy else None,
             "deputy_predecessors": self.deputy_predecessors,
+            "all_deputy_predecessors": self.all_deputy_predecessors,
+            "prophet": self.prophet.ID if self.prophet else None,
+            "prophet_predecessors": self.prophet_predecessors,
+            "all_prophet_predecessors": self.all_prophet_predecessors,
             "medicine_cat": self.medicine_cat.ID if self.medicine_cat else None,
             "med_cat_predecessors": self.med_cat_predecessors,
+            "all_med_cat_predecessors": self.all_med_cat_predecessors,
         }
 
     def new_leader(self, leader):
@@ -1626,12 +1769,21 @@ class OtherClan:
             Cat.all_cats[deputy.ID].rank_change(CatRank.DEPUTY)
             self.deputy_predecessors += 1
 
+    def new_prophet(self, prophet):
+        """
+        TODO: DOCS
+        """
+        if prophet:
+            self.prophet = prophet
+            Cat.all_cats[prophet.ID].rank_change(CatRank.PROPHET)
+            self.prophet_predecessors += 1
+
     def new_medicine_cat(self, medicine_cat):
         """
         TODO: DOCS
         """
         if medicine_cat:
-            if medicine_cat.status.rank != CatRank.MEDICINE_CAT:
+            if medicine_cat.status.rank not in [CatRank.MEDICINE_CAT, CatRank.PROPHET]:
                 Cat.all_cats[medicine_cat.ID].rank_change(CatRank.MEDICINE_CAT)
             if medicine_cat.ID not in self.med_cat_list:
                 self.med_cat_list.append(medicine_cat.ID)

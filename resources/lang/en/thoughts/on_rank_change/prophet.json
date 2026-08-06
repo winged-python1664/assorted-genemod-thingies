@@ -1,0 +1,15 @@
+[
+    {
+        "id": "becoming_prophet",
+        "strings": [
+            "Hopes {PRONOUN/m_c/subject} can serve {PRONOUN/m_c/poss} clan well"
+        ],
+        "involved_cats": {
+            "m_c": {
+                "status": [
+                    "prophet"
+                ]
+            }
+        }
+    }
+]

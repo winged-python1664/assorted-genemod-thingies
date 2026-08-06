@@ -75,6 +75,7 @@ class AllegiancesScreen(Screens):
         self.show_mute_buttons()
         self.set_disabled_menu_buttons(["allegiances"])
         self.update_heading_text(game.clan.name)
+        Screens.menu_buttons["sc_camp"].hide()
 
         if not self.current_clan or self.current_clan not in [game.clan, "cotc"] + game.clan.all_other_clans:
             self.current_clan = game.clan
@@ -383,6 +384,18 @@ class AllegiancesScreen(Screens):
             outputs.append(
                 [
                     f"<b><u>{i18n.t('general.deputy', count=1).upper()}</u></b>",
+                    x[0],
+                    x[1],
+                    x[2]
+                ]
+            )
+
+        # Prophet Box:
+        if self.current_clan.prophet and not (self.current_clan.prophet.dead or self.current_clan.prophet.status.is_outsider):
+            x = self.generate_one_entry(self.current_clan.prophet)
+            outputs.append(
+                [
+                    f"<b><u>{i18n.t('general.prophet', count=1).upper()}</u></b>",
                     x[0],
                     x[1],
                     x[2]

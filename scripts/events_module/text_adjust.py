@@ -512,6 +512,11 @@ def event_text_adjust(
         deputy = Cat.fetch_cat(clan.deputy if clan else game.clan.deputy)
         replace_dict["dep_name"] = (str(deputy.name), choice(deputy.pronouns))
 
+    # prophet_name
+    if "prophet_name" in text:
+        prophet = Cat.fetch_cat(clan.prophet if clan else game.clan.prophet)
+        replace_dict["prophet_name"] = (str(prophet.name), choice(prophet.pronouns))
+
     # med_name
     if "med_name" in text:
         try:
@@ -768,6 +773,45 @@ def ceremony_text_adjust(
     return adjust_text, random_living_parent, random_dead_parent
 
 
+
+def mess_text_adjust(message_text, cat, moon, age):
+    cat = {
+        "m_c": (str(cat.name), choice(cat.pronouns))
+    }
+
+    if "clan_age" in message_text:
+        message_text = message_text.replace("clan_age", str(moon))
+    if "cat_age" in message_text:
+        message_text = message_text.replace("cat_age", str(age))
+    if "clan_leader" in message_text:
+        message_text = message_text.replace("clan_leader", str(game.clan.leader))
+    if "clan_deputy" in message_text:
+        message_text = message_text.replace("clan_deputy", str(game.clan.deputy))
+    if "clan_deputy" in message_text:
+        message_text = message_text.replace("clan_deputy", str(game.clan.prophet))
+
+    return message_text
+
+def rank_text_adjust(text, cat, rank, clan, moon, age):
+    if "article" in text:
+        if rank in [CatRank.APPRENTICE, CatRank.ELDER]:
+            text = text.replace("article", str("an"))
+        else:
+            text = text.replace("article", str("a"))
+
+    cat = {
+        "m_c": (str(cat.name), choice(cat.pronouns)),
+    }
+
+    if "rank" in text:
+        text = text.replace("rank", str(rank))
+    if "c_n" in text:
+        text = text.replace("c_n", str(clan.name))
+    if "catage" in text:
+        text = text.replace("catage", str(age))
+
+    text = text.replace("medicine cat", "healer")
+    return text
 
 
 def get_leader_life_notice(leader_name: str, clan) -> str:

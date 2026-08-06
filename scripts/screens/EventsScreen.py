@@ -504,6 +504,7 @@ class EventsScreen(Screens):
         self.set_disabled_menu_buttons(["events"])
         self.update_heading_text(curr_clan.name)
         self.show_menu_buttons()
+        Screens.menu_buttons["sc_camp"].hide()
 
     def reset_page_buttons(self, is_page_update=False):
         """

@@ -14,6 +14,12 @@
       "settings.force_enable.deputy": true
     }
   },
+  "starless_skies": {
+    "card_art": "behavior/starless_skies.png",
+    "modifiers": {
+      "event_generation.no_starclan": true
+    }
+  },
   "enmity": {
     "card_art": "behavior/resolute.png",
     "modifiers": {

@@ -168,7 +168,7 @@ class ChooseCampScreen(MakeClanScreenBase):
                 self.refresh_text_and_buttons()
             elif event.ui_element == self.elements["next_step"]:
                 self.clan_info.camp_bg = f"camp{self.selected_camp_tab}"
-                self.change_screen(GameScreen.MAKE_CLAN_CHOOSE_SYMBOL)
+                self.change_screen(GameScreen.MAKE_CLAN_CHOOSE_SC)
 
         return super().handle_event(event)
 
