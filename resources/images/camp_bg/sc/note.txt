@@ -1,0 +1,1 @@
+hypothetically there might be light/dark versions of the camps, which is why theres 2 textures despite them being identical. no promises when/if I'll make that tho, sry!
