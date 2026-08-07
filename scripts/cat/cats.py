@@ -2271,7 +2271,7 @@ class Cat:
             if (
                 "blood loss" in new_injury.also_got
                 and len(
-                    find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT], working=True, clan=self.status.group_ID)
+                    find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT, CatRank.PROPHET], working=True, clan=self.status.group_ID)
                 )
                 != 0
             ):
