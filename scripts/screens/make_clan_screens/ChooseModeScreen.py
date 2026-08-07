@@ -225,7 +225,7 @@ class ChooseModeScreen(MakeClanScreenBase):
         cat_range = get_config("clan_creation.quickstart_cats")
         self.clan_info.leader = create_cat(CatRank.WARRIOR, kittypet=use_special)
         self.clan_info.deputy = create_cat(CatRank.WARRIOR, kittypet=use_special)
-        self.clan_info.medicine_cat = create_cat(CatRank.WARRIOR, kittypet=use_special)
+        self.clan_info.prophet = create_cat(CatRank.WARRIOR, kittypet=use_special)
         members = []
         rank_weights = self.get_config_during_creation("clan_creation.rank_weights")
         for _ in range(randrange(cat_range[0], cat_range[1]+1)):
