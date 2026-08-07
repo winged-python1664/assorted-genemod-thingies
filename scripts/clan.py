@@ -814,7 +814,7 @@ class Clan:
         if "moonthing" in clan_data:
             game.clan.moonthing = clan_data["moonthing"]
         else:
-            game.clan.moonthing = choice["moonpool", "moonstone"]
+            game.clan.moonthing = "moonpool"
 
         game.clan.deputy_predecessors = clan_data["deputy_predecessors"]
         if "all_deputy_predecessors" in clan_data:
