@@ -5,6 +5,7 @@
       "prey.prey_requirement": {
         "leader": 4,
         "deputy": 4,
+        "prophet": 3,
         "healer": 3,
         "healer apprentice": 2,
         "mediator apprentice": 2,
