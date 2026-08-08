@@ -40,8 +40,8 @@ class ClanCreatedScreen(MakeClanScreenBase):
             cat_to_show = self.clan_info.leader
         elif self.clan_info.deputy:
             cat_to_show = self.clan_info.deputy
-        elif self.clan_info.medicine_cat:
-            cat_to_show = self.clan_info.medicine_cat
+        elif self.clan_info.prophet:
+            cat_to_show = self.clan_info.prophet
         else:
             cat_to_show = self.clan_info.starting_members[0]
 
