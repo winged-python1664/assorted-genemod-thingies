@@ -215,6 +215,11 @@ class ProfileScreen(Screens):
                 and event.ui_element == self.profile_elements["leader_ceremony"]
             ):
                 self.change_screen(GameScreen.CEREMONY)
+            elif (
+                "leader_ceremony_less" in self.profile_elements
+                and event.ui_element == self.profile_elements["leader_ceremony_less"]
+            ):
+                self.change_screen(GameScreen.CEREMONY)
             elif event.ui_element == self.profile_elements.get("med_den"):
                 self.change_screen(GameScreen.MED_DEN)
             elif event.ui_element == self.profile_elements.get("mediation"):

@@ -938,6 +938,7 @@ def create_new_cat(
     original_group: CatGroup = None,
     thought: Optional[CatThought] = None,
     moons: int = None,
+    dead_for: int=None,
     gender: str = None,
     alive: bool = True,
     outside: bool = False,
@@ -963,6 +964,7 @@ def create_new_cat(
     :param str thought: if you need to give a custom thought, set it here
     :param bool outside: set this as True to generate the cat as an outsider instead of as part of the Clan - default: False (Clan cat)
     :param int moons: set the age of the new cat(s) - default: None (will be random or if kit/litter is true, will be kitten.
+    :param int dead_for: set as the moons the new cat(s) have been dead for = default: None
     :param str gender: set the gender (BIRTH SEX) of the cat - default: None (will be random)
     :param bool alive: set this as False to generate the cat as already dead - default: True (alive)
     :param str parent1: Cat ID to set as the biological parent1
@@ -1023,6 +1025,8 @@ def create_new_cat(
         elif rank == CatRank.WARRIOR:
             moons = randint(23, 120)
         elif rank == CatRank.MEDICINE_CAT:
+            moons = randint(23, 140)
+        elif rank == CatRank.PROPHET:
             moons = randint(23, 140)
         elif rank == CatRank.ELDER:
             moons = randint(120, 130)
@@ -1094,7 +1098,7 @@ def create_new_cat(
             else:
                 new_cat.moons = 0
                 new_cat.status = Status(**{"group_ID": new_cat.status.group_ID,
-                                           "rank": CatRank.NEWBORN, "age": CatAge.NEWBORN})
+                    "rank": CatRank.NEWBORN, "age": CatAge.NEWBORN})
                 new_cat.dead = True
                 new_cat.get_new_thought(CatThought.ON_DEATH)
                 new_cat.history.add_death(
@@ -1124,9 +1128,11 @@ def create_new_cat(
         # clancat adults should have already generated with a clan-ish name, thus they skip all of this re-naming
         # little babies will take a clancat name, we love indoctrination
         if not outside and (kit or litter or moons < 12) and (not original_group or not game.used_group_IDs[original_group].is_any_clan_group()):
+            if alive == False:
+                return
             # babies change name, in case their initial name isn't clan-ish
             new_cat.change_name()
-        elif not original_group or not game.used_group_IDs[original_group].is_any_clan_group():
+        elif not original_group or not game.used_group_IDs[original_group].is_any_clan_name_group():
             name_categories = [
                 "silly_names",
                 "human_names",
@@ -1259,6 +1265,15 @@ def create_new_cat(
                 new_cat.name.suffix = ""
         if not alive:
             new_cat.die()
+            if dead_for is not None:
+                new_cat.status.add_to_group(
+                    new_group_ID=group
+                )
+                new_cat.status.change_current_moons_as(dead_for)
+                if group == "4":
+                    new_cat.history.add_afterlife_acceptance(
+                        CatGroup.DARK_FOREST, False, False, False
+                        )
 
         # newbie thought
         new_cat.get_new_thought(thought)

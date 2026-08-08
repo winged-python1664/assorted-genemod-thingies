@@ -148,6 +148,14 @@ class CatGroup(StrEnum):
             self.OTHER_CLAN,
         )
 
+    def is_any_clan_name_group(self) -> bool:
+        return self in(
+            self.PLAYER_CLAN,
+            self.OTHER_CLAN,
+            self.STARCLAN,
+            self.DARK_FOREST
+        )
+
 
 class CatCompatibility(Enum):
     NEGATIVE = auto()

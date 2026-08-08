@@ -1663,6 +1663,7 @@ class Cat:
 
         extra_lives = num_of_lives_to_give - len(life_givers)
         possible_lives = ceremony_dict["lives"]
+        possible_starters = ceremony_dict["starter"]
         lives = []
         used_lives = []
         used_virtues = []
@@ -1671,7 +1672,12 @@ class Cat:
             if not giver_cat:
                 continue
             life_list = []
+            starter_list = []
+            for life in possible_starters:
+                starter_list.extend(list(possible_starters[life]["life_giving"]))
             for life in possible_lives:
+                if self.ID in game.clan.all_instructors:
+                    return
                 tags = possible_lives[life]["tags"]
                 rank = giver_cat.status.rank
 
@@ -1699,6 +1705,10 @@ class Cat:
                 elif (
                     "leader_former_mate" in tags
                     and giver_cat.ID not in self.previous_mates
+                ):
+                    continue
+                elif (
+                    "starter" in tags
                 ):
                     continue
                 if "leader_mentor" in tags and giver_cat.ID not in self.former_mentor:
@@ -1735,14 +1745,21 @@ class Cat:
                         break
                     attempted.append(chosen_life)
                     i += 1
-                else:
-                    print(
-                        f"WARNING: life list had no items for giver #{giver_cat.ID}. Using default life. "
-                        f"If you are a beta tester, please report and ping scribble along with "
-                        f"all the info you can about the giver cat mentioned in this warning."
-                    )
-                    chosen_life = ceremony_dict["default_life"]
                     break
+                else:
+                    if game.clan.age == 0:
+                        chosen_life = choice(starter_list)
+                        attempted.append(chosen_life)
+                        i += 1
+                        break
+                    else:
+                        print(
+                            f"WARNING: life list had no items for giver #{giver_cat.ID}. Using default life. "
+                            f"If you are a beta tester, please report and ping scribble along with "
+                            f"all the info you can about the giver cat mentioned in this warning."
+                        )
+                        chosen_life = ceremony_dict["default_life"]
+                        break
 
             used_lives.append(chosen_life)
             if "virtue" in chosen_life:
@@ -1830,7 +1847,17 @@ class Cat:
         else:
             outro = "this should not appear"
 
-        full_ceremony = "<br><br>".join([intro, all_lives, outro])
+        inst_ceremony = leader_ceremony_text_adjust(
+            Cat,
+            "m_c_star's leader ceremony was performed before the time of these Clans.",
+            leader=self,
+        )
+
+        if self.ID in game.clan.all_instructors:
+            full_ceremony = inst_ceremony
+            print("all instructors", game.clan.all_instructors)
+        else:
+            full_ceremony = "<br><br>".join([intro, all_lives, outro])
         self.history.lead_ceremony = full_ceremony
 
     # ---------------------------------------------------------------------------- #
@@ -2635,7 +2662,7 @@ class Cat:
         """Takes mentor's ID as argument, mentor could just be set via this function."""
         # No !!
         if isinstance(new_mentor, Cat):
-            print("Everything is terrible!! (new_mentor {new_mentor} is a Cat D:)")
+            print(f"Everything is terrible!! (new_mentor {new_mentor} is a Cat D:)")
             return
 
         # Check if cat can have a mentor

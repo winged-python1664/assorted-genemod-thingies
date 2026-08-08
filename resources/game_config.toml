@@ -767,6 +767,15 @@ dev_tools = false
   # range of outsiders to generate upon Clan creation
   starting_outsiders = [0, 0]
 
+  # range of StarClan cats to generate upon Clan creation
+  starting_sc = [0, 0]
+
+  # range of Unknown Residence cats to generate upon Clan creation
+  starting_ur = [0, 0]
+
+  # range of Dark Forest cats to generate upon Clan creation
+  starting_df = [0, 0]
+
   # range of cats to pick on quickstart (not counting the leader, deputy, and healer)
   quickstart_cats = [4, 7]
 
