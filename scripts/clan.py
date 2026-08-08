@@ -16,7 +16,7 @@ import i18n
 import ujson
 
 from scripts.cat.cats import Cat, create_cat, cat_class, BACKSTORIES
-from scripts.cat.enums import CatRank, CatGroup, CatSocial
+from scripts.cat.enums import CatRank, CatGroup, CatSocial, CatThought
 from scripts.cat.names import names
 from scripts.cat.save_load import (
     save_cats,
@@ -141,6 +141,7 @@ class Clan:
         self.age = 0
         self.starting_season = starting_season
         self.instructor = None
+        self.all_instructors = []
         # This is the first cat in starclan, to "guide" the other dead cats there.
         self.clan_cats = []
         self.biome = biome
@@ -290,8 +291,9 @@ class Clan:
         self.add_cat(self.instructor)
         self.all_other_clans = []
 
-        if self.instructor.status.rank == CatRank.LEADER:
+        if self.instructor.status == CatRank.LEADER:
             clan.all_leader_predecessors.append(self.instructor.ID)
+        self.all_instructors.append(self.instructor.ID)
 
         key_copy = tuple(Cat.all_cats.keys())
         for i in key_copy:  # Going through all currently existing cats
@@ -343,6 +345,74 @@ class Clan:
                 outside=True
             )
 
+        rank_options = [
+            CatRank.LEADER,
+            CatRank.DEPUTY,
+            CatRank.PROPHET,
+            CatRank.MEDICINE_CAT,
+            CatRank.WARRIOR,
+            CatRank.MEDIATOR,
+            CatRank.QUEEN,
+            CatRank.ELDER,
+            CatRank.APPRENTICE,
+            CatRank.MEDICINE_APPRENTICE,
+            CatRank.MEDIATOR_APPRENTICE,
+            CatRank.QUEEN_APPRENTICE,
+            CatRank.KITTEN,
+        ]
+        rank_weights = [1, 1, 1, 2, 3, 1, 1, 2, 2, 2, 1, 1, 1]
+
+        clan_options = []
+        if self.clancount == "multiclan":
+            clan_options.append("1")
+
+        cc = 4
+        for i in game.clan.all_other_clans:
+            cc += 1
+            clan_options.append(str(cc))
+
+        allowed_range_sc = get_config("clan_creation.starting_sc")
+        number_sc = randint(allowed_range_sc[0], allowed_range_sc[1])
+        for i in range(number_sc):
+            create_new_cat(
+                Cat,
+                backstory=choice(
+                    BACKSTORIES["backstory_categories"]["starting_sc"]
+                ),
+                rank=choices(rank_options, rank_weights),
+                original_group=choice(clan_options) if self.clancount == "multiclan" else "1",
+                thought=choice([CatThought.WHILE_DEAD]),
+                dead_for=randint(20, 150),
+                alive=False,
+                group="2",
+            )
+        allowed_range_ur = get_config("clan_creation.starting_ur")
+        number_ur = randint(allowed_range_ur[0], allowed_range_ur[1])
+        for i in range(number_ur):
+            create_new_cat(
+                Cat,
+                original_social=choice([CatSocial.KITTYPET, CatSocial.LONER, CatSocial.LONER, CatSocial.ROGUE, CatSocial.ROGUE]),
+                thought=choice([CatThought.WHILE_DEAD]),
+                dead_for=randint(20, 150),
+                alive=False,
+                group="3",
+            )
+        allowed_range_df = get_config("clan_creation.starting_df")
+        number_df = randint(allowed_range_df[0], allowed_range_df[1])
+        for i in range(number_df):
+            create_new_cat(
+                Cat,
+                backstory=choice(
+                    BACKSTORIES["backstory_categories"]["starting_df"]
+                ),
+                rank=choices(rank_options, rank_weights),
+                original_group=choice(clan_options) if self.clancount == "multiclan" else "1",
+                thought=choice([CatThought.WHILE_DEAD]),
+                dead_for=randint(50, 150),
+                alive=False,
+                group="4",
+            )
+
         for cat_id in Cat.all_cats:
             if cat_id not in self.clan_cats:
                 self.clan_cats.append(cat_id)
@@ -368,6 +438,9 @@ class Clan:
         # create leader's ceremony and give lives
         if self.leader:
             self.leader.generate_lead_ceremony()
+        if self.instructor.status.rank == CatRank.LEADER:
+            self.all_leader_predecessors.append(self.instructor.ID)
+            self.instructor.generate_lead_ceremony()
         if self.clancount == "multiclan":
             for clan in self.all_other_clans:
                 clan.leader.generate_lead_ceremony()
@@ -772,6 +845,8 @@ class Clan:
             medicine_cat=med_cat,
             biome=clan_data["biome"],
             camp_bg=clan_data["camp_bg"],
+            sc_bg=clan_data["sc_bg"],
+            moonthing=clan_data["moonthing"],
             game_mode=clan_data["gamemode"],
             relations=clan_data.get("relations", {CatGroup.PLAYER_CLAN_ID:{}}),
             cruel_cards=[
@@ -841,6 +916,11 @@ class Clan:
                 else:
                     game.clan.custom_pronouns = clan_data["custom_pronouns"]
 
+        if "all_instructors" in clan_data:
+            game.clan.all_instructors = clan_data["all_instructors"]
+        else:
+            game.clan.all_instructors = []
+
         # Instructor Info
         if clan_data["instructor"] in Cat.all_cats:
             game.clan.instructor = Cat.all_cats[clan_data["instructor"]]
@@ -849,6 +929,7 @@ class Clan:
             elif game.clan.instructor.status.get_last_living_group() != CatGroup.PLAYER_CLAN_ID:
                 game.clan.instructor.status.group_history[0]["group"] = CatGroup.PLAYER_CLAN_ID
             game.clan.add_cat(game.clan.instructor)
+            game.clan.all_instructors.append(game.clan.instructor.ID)
         else:
             game.clan.instructor = Cat(
                 status_dict={
@@ -862,6 +943,7 @@ class Clan:
             game.clan.instructor.status.group_history.insert(0, {"rank": game.clan.instructor.status.rank, "group": CatGroup.PLAYER_CLAN_ID, "moons_as": self.instructor.moons})
             # update_sprite(game.clan.instructor)
             game.clan.add_cat(game.clan.instructor)
+            game.clan.all_instructors.append(game.clan.instructor.ID)
 
         # check for symbol
         if "clan_symbol" in clan_data:
@@ -1667,6 +1749,7 @@ class OtherClan:
 
             if self.instructor.status.rank == CatRank.LEADER:
                 clan.all_leader_predecessors.append(self.instructor.ID)
+                self.instructor.generate_lead_ceremony()
 
             self.instructor.dead_for = randint(20, 200)
             self.instructor.status.group_history.insert(0, {"rank": instructor_rank, "group": self.group_ID, "moons_as": self.instructor.moons})
@@ -1703,6 +1786,10 @@ class OtherClan:
             )
             self.instructor.dead_for = randint(20, 200)
             self.instructor.status.group_history.insert(0, {"rank": instructor_rank, "group": self.group_ID, "moons_as": self.instructor.moons})
+
+            if self.instructor.status.rank == CatRank.LEADER:
+                self.all_leader_predecessors.append(self.instructor.ID)
+                self.instructor.generate_lead_ceremony()
 
             use_special = get_config("clan_creation.use_special_roller")
             cat_range = get_config("clan_creation.neighbourclan_cats")

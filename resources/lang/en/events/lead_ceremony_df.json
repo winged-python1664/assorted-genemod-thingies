@@ -46,6 +46,69 @@
           "virtue": ["energy", "strength", "determination"]
         },
 
+  "starter": {
+    "starter_one": {
+      "tags": ["starter"],
+      "lead_trait": [],
+      "star_trait": [],
+      "rank": [],
+      "life_giving": [
+        {
+          "text": "r_c approaches the new leader, gaze fixed into m_c's eyes as if {PRONOUN/r_c/subject} {VERB/r_c/are/is} trying to understand the depths of {PRONOUN/m_c/poss} soul. After a moment, {PRONOUN/r_c/subject} {VERB/r_c/touch/touches} {PRONOUN/r_c/poss} nose to m_c's head, giving {PRONOUN/m_c/object} a life for [virtue].",
+          "virtue": ["energy", "strength", "determination", "efficiency", "ambition", "persistence", "determination", "judgement", "harsh judgement", "brutality", "duty", "hunger for battle", "greed", "authority", "protection", "pride", "hope", "regret", "inspiration", "daring to do what must be done", "confidence", "resilience", "level-headedness", "caution in the heat of battle", "the strength to carry on alone", "inspiring obedience", "independence"]
+        }
+      ]
+    },
+    "starter_two": {
+      "tags": ["starter"],
+      "lead_trait": [],
+      "star_trait": [],
+      "rank": [],
+      "life_giving": [
+        {
+          "text": "r_c approaches the new leader, gaze fixed into m_c's eyes as if {PRONOUN/r_c/subject} {VERB/r_c/are/is} trying to understand the depths of {PRONOUN/m_c/poss} soul. After a moment, {PRONOUN/r_c/subject} {VERB/r_c/touch/touches} {PRONOUN/r_c/poss} nose to m_c's head, giving {PRONOUN/m_c/object} a life for [virtue].",
+          "virtue": ["energy", "strength", "determination", "efficiency", "ambition", "persistence", "determination", "judgement", "harsh judgement", "brutality", "duty", "hunger for battle", "greed", "authority", "protection", "pride", "hope", "regret", "inspiration", "daring to do what must be done", "confidence", "resilience", "level-headedness", "caution in the heat of battle", "the strength to carry on alone", "inspiring obedience", "independence"]
+        }
+      ]
+    },
+    "starter_three": {
+      "tags": ["starter"],
+      "lead_trait": [],
+      "star_trait": [],
+      "rank": [],
+      "life_giving": [
+        {
+          "text": "r_c approaches the new leader, gaze fixed into m_c's eyes as if {PRONOUN/r_c/subject} {VERB/r_c/are/is} trying to understand the depths of {PRONOUN/m_c/poss} soul. After a moment, {PRONOUN/r_c/subject} {VERB/r_c/touch/touches} {PRONOUN/r_c/poss} nose to m_c's head, giving {PRONOUN/m_c/object} a life for [virtue].",
+          "virtue": ["energy", "strength", "determination", "efficiency", "ambition", "persistence", "determination", "judgement", "harsh judgement", "brutality", "duty", "hunger for battle", "greed", "authority", "protection", "pride", "hope", "regret", "inspiration", "daring to do what must be done", "confidence", "resilience", "level-headedness", "caution in the heat of battle", "the strength to carry on alone", "inspiring obedience", "independence"]
+        }
+      ]
+    },
+    "starter_four": {
+      "tags": ["starter"],
+      "lead_trait": [],
+      "star_trait": [],
+      "rank": [],
+      "life_giving": [
+        {
+          "text": "r_c approaches the new leader, gaze fixed into m_c's eyes as if {PRONOUN/r_c/subject} {VERB/r_c/are/is} trying to understand the depths of {PRONOUN/m_c/poss} soul. After a moment, {PRONOUN/r_c/subject} {VERB/r_c/touch/touches} {PRONOUN/r_c/poss} nose to m_c's head, giving {PRONOUN/m_c/object} a life for [virtue].",
+          "virtue": ["energy", "strength", "determination", "efficiency", "ambition", "persistence", "determination", "judgement", "harsh judgement", "brutality", "duty", "hunger for battle", "greed", "authority", "protection", "pride", "hope", "regret", "inspiration", "daring to do what must be done", "confidence", "resilience", "level-headedness", "caution in the heat of battle", "the strength to carry on alone", "inspiring obedience", "independence"]
+        }
+      ]
+    },
+    "starter_five": {
+      "tags": ["starter"],
+      "lead_trait": [],
+      "star_trait": [],
+      "rank": [],
+      "life_giving": [
+        {
+          "text": "r_c approaches the new leader, gaze fixed into m_c's eyes as if {PRONOUN/r_c/subject} {VERB/r_c/are/is} trying to understand the depths of {PRONOUN/m_c/poss} soul. After a moment, {PRONOUN/r_c/subject} {VERB/r_c/touch/touches} {PRONOUN/r_c/poss} nose to m_c's head, giving {PRONOUN/m_c/object} a life for [virtue].",
+          "virtue": ["energy", "strength", "determination", "efficiency", "ambition", "persistence", "determination", "judgement", "harsh judgement", "brutality", "duty", "hunger for battle", "greed", "authority", "protection", "pride", "hope", "regret", "inspiration", "daring to do what must be done", "confidence", "resilience", "level-headedness", "caution in the heat of battle", "the strength to carry on alone", "inspiring obedience", "independence"]
+        }
+      ]
+    }
+  },
+
   "lives": {
     "only_guide": {
       "tags": ["new_clan", "guide"],
