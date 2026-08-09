@@ -853,7 +853,6 @@ class Clan:
             biome=clan_data["biome"],
             camp_bg=clan_data["camp_bg"],
             sc_bg=clan_data["sc_bg"],
-            moonthing=clan_data["moonthing"],
             game_mode=clan_data["gamemode"],
             relations=clan_data.get("relations", {CatGroup.PLAYER_CLAN_ID:{}}),
             cruel_cards=[
