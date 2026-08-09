@@ -298,7 +298,7 @@ class Clan:
         self.add_cat(self.instructor)
         self.all_other_clans = []
 
-        if self.instructor.status == CatRank.LEADER:
+        if self.instructor.status.rank == CatRank.LEADER:
             clan.all_leader_predecessors.append(self.instructor.ID)
         self.all_instructors.append(self.instructor.ID)
 
