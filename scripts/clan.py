@@ -285,6 +285,13 @@ class Clan:
             ),
         )
 
+        if game.clan.clancount == "multiclan":
+            for clan in game.clan.all_other_clans:
+                if clan.instructor.status.group == CatGroup.STARCLAN:
+                    game.starclan.adjust_facets_by_cat(clan.instructor)
+                elif clan.instructor.status.group == CatGroup.DARK_FOREST:
+                    game.dark_forest.adjust_facets_by_cat(clan.instructor)
+
         self.clancount = clancount
         self.instructor.status.group_history.insert(0, {"rank": instructor_rank, "group": CatGroup.PLAYER_CLAN_ID, "moons_as": self.instructor.moons})
         self.instructor.dead_for = randint(20, 200)
