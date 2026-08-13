@@ -38,6 +38,7 @@ from .make_clan_screens.ChooseClancountScreen import ChooseClancountScreen
 from .make_clan_screens.ChooseNameScreen import ChooseNameScreen
 from .make_clan_screens.ChooseSymbolScreen import ChooseSymbolScreen
 from .make_clan_screens.ClanCreatedScreen import ClanCreatedScreen
+from .make_clan_screens.ChooseCodeScreen import ChooseCodeScreen
 
 # ---------------------------------------------------------------------------- #
 #                                  UI RULES                                    #
@@ -81,6 +82,7 @@ def rebuild_all_screens():
         GameScreen.MAKE_CLAN_CHOOSE_SC: ChooseSCScreen,
         GameScreen.MAKE_CLAN_CHOOSE_SYMBOL: ChooseSymbolScreen,
         GameScreen.MAKE_CLAN_CLAN_CREATED: ClanCreatedScreen,
+        GameScreen.MAKE_CLAN_CHOOSE_CODE: ChooseCodeScreen,
         GameScreen.ALLEGIANCES: AllegiancesScreen,
         GameScreen.CAMP: ClanScreen,
         GameScreen.LIST: ListScreen,
