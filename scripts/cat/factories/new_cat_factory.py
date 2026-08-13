@@ -272,9 +272,13 @@ class NewCatFactory(BaseCatFactory, ABC):
         trans_chance = cls.rng.randint(0, 50)
         nb_chance = cls.rng.randint(0, 75)
 
-        if age.is_baby():
+        if age.is_newborn():
+        # still spreading my trans babies propaganda
             trans_chance = 0
             nb_chance = 0
+        if age.is_baby():
+            trans_chance = cls.rng.randint(0, 70)
+            nb_chance = cls.rng.randint(0, 95)
 
         # GENDER IDENTITY
         gender["genderalign"] = ""
