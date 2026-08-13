@@ -481,7 +481,7 @@
           "virtue": ["acceptance", "bravery", "certainty", "clear judgement", "confidence", "courage", "determination", "endurance", "sympathy", "farsightedness", "friendship", "instincts", "mercy", "strength", "unity"]
         },
         {
-          "text": "As r_c gives a life for [virtue], {PRONOUN/r_c/subject} {VERB/m_c/urge/urges} m_c to keep {PRONOUN/m_c/poss} head on straight and to remember to sheathe {PRONOUN/r_c/poss} claws.",
+          "text": "As r_c gives a life for [virtue], {PRONOUN/r_c/subject} {VERB/r_c/urge/urges} m_c to keep {PRONOUN/m_c/poss} head on straight and to remember to sheathe {PRONOUN/m_c/poss} claws.",
           "virtue": ["acceptance", "bravery", "certainty", "clear judgement", "confidence", "courage", "determination", "endurance", "sympathy", "farsightedness", "friendship", "instincts", "mercy", "strength", "unity"]
         }
       ]
@@ -687,9 +687,9 @@
       ]
     },
   
-    "sneaky_warrior": {
+    "cunning_warrior": {
       "tags": [],
-      "lead_trait": ["sneaky"],
+      "lead_trait": ["cunning"],
       "star_trait": [],
       "rank": ["warrior", "deputy"],
       "life_giving": [
@@ -700,10 +700,10 @@
       ]
     },
   
-    "sneaky_starclanwarrior": {
+    "cunning_starclanwarrior": {
       "tags": [],
       "lead_trait": [],
-      "star_trait": ["sneaky"],
+      "star_trait": ["cunning"],
       "rank": ["warrior", "elder", "healer", "prophet", "mediator", "apprentice", "deputy", "queen", "queen_apprentice", "mediator apprentice", "healer apprentice"],
       "life_giving": [
         {

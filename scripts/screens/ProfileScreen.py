@@ -326,6 +326,7 @@ class ProfileScreen(Screens):
                     self.the_cat.genderalign
                 )
                 self.the_cat.pronouns = new_pronouns
+                self.the_cat.get_new_thought()
 
                 self.clear_profile()
                 self.build_profile()
@@ -465,7 +466,7 @@ class ProfileScreen(Screens):
                 self.not_fav_tab.hide()
             elif event.ui_element == self.save_text:
                 self.user_notes = sub(
-                    r"[^A-Za-z0-9<->/.()*'&#!?,| _+=@~:;[]{}%$^`]+",
+                    r"[^A-Za-z0-9<->/.()*'&#!?,| _+=@~:;\[\]{}%$^`]+",
                     "",
                     self.notes_entry.get_text(),
                 )
@@ -637,7 +638,9 @@ class ProfileScreen(Screens):
 
         # initialize thoughts if they have none
         if not self.the_cat.thought:
-            if self.the_cat.status.is_other_clancat and game.clan.clancount == "singleclan":
+            if self.the_cat in [game.clan.instructor] + [clan.instructor for clan in game.clan.all_other_clans if clan.instructor]:
+                self.the_cat.get_new_thought(CatThought.IS_GUIDE)
+            elif self.the_cat.status.is_other_clancat and game.clan.clancount == "singleclan":
                 # this isn't great, but it's only being run if someone checks an
                 # other clan cat when booting the game before doing a timeskip
                 other_clan_cats = [
@@ -654,10 +657,6 @@ class ProfileScreen(Screens):
         cat_name = shorten_text_to_fit(cat_name, 500, 20)
         if self.the_cat.dead:
             cat_name = i18n.t("general.dead_label", name=cat_name)
-
-        # Instructor thoughts
-        if self.the_cat.dead and self.the_cat in [game.clan.instructor] + [clan.instructor for clan in game.clan.all_other_clans if clan.instructor]:
-            self.the_cat.get_new_thought(CatThought.IS_GUIDE)
 
         self.profile_elements["cat_name"] = pygame_gui.elements.UITextBox(
             cat_name,
@@ -1137,7 +1136,9 @@ class ProfileScreen(Screens):
         output += "\n"
 
         # CAT SKILLS
-        output += the_cat.skills.skill_string()
+        output += the_cat.skills.skill_string(
+            is_adolescent=(the_cat.age == CatAge.ADOLESCENT)
+        )
         # NEWLINE ----------
         output += "\n"
 
@@ -1480,11 +1481,6 @@ class ProfileScreen(Screens):
             app_history = self.get_apprenticeship_text()
             if app_history:
                 life_history.append(app_history)
-
-            # Get mentorship text if it exists
-            mentor_history = self.get_mentorship_text()
-            if mentor_history:
-                life_history.append(mentor_history)
 
             mess_history = []
             message_history = self.get_messages()
@@ -1869,31 +1865,6 @@ class ProfileScreen(Screens):
         apprenticeship_history = process_text(apprenticeship_history, cat_dict)
         return apprenticeship_history
 
-    def get_mentorship_text(self):
-        """
-
-        returns full list of previously mentored apprentices.
-
-        """
-
-        text = ""
-        # Doing this is two steps
-        all_real_apprentices = [
-            str(Cat.fetch_cat(i).name)
-            for i in self.the_cat.former_apprentices
-            if isinstance(Cat.fetch_cat(i), Cat)
-        ]
-        if all_real_apprentices:
-            text = i18n.t(
-                "cat.history.mentored",
-                apprentices=adjust_list_text(all_real_apprentices),
-            )
-            cat_dict = {"m_c": (str(self.the_cat.name), choice(self.the_cat.pronouns))}
-
-            text = process_text(text, cat_dict)
-
-        return text
-
     def get_messages(self):
         message_text = []
         message_history = self.the_cat.history.get_messages(message=True)
@@ -2146,7 +2117,7 @@ class ProfileScreen(Screens):
                     cond[0] = temp
                     break
 
-        all_illness_injuries = self.chunks(all_illness_injuries, 4)
+        all_illness_injuries = self.get_list_chunks(all_illness_injuries, 4)
 
         if not all_illness_injuries:
             self.conditions_page = 0
