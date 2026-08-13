@@ -586,10 +586,12 @@ class Pelt:
 
                 elif KITgrade == 2:
                     #body
-                    white_pattern.append(choice(['underbelly1', 'mask n mantle', 'blossomfall']))
+                    white_pattern.append(choice(['underbelly1', 'mask n mantle']))
 
                     white_pattern.append(choice(['break/right no', 'break/left no'] + [None] * 14))
                     white_pattern.append(choice(['break/pants'] + [None] * 9))
+
+                    white_pattern.append(choice(['blossomfall'] + [None] * 15))
 
                     #paws
                     nropaws = 4
