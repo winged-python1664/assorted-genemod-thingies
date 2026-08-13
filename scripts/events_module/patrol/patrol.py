@@ -251,7 +251,7 @@ class Patrol:
                     self.patrol_statuses["normal adult"] += 1
                 else:
                     self.patrol_statuses["normal adult"] = 1
-            if cat.status.rank == CatRank.MEDICINE_CAT:
+            if cat.status.rank in [CatRank.MEDICINE_CAT, CatRank.PROPHET]:
                 if "healer adult" in self.patrol_statuses:
                     self.patrol_statuses["healer adult"] += 1
                 else:
@@ -262,7 +262,11 @@ class Patrol:
         # PATROL LEADER AND RANDOM CAT CAN NOT CHANGE AFTER SET-UP
 
         # DETERMINE PATROL LEADER
-        # sets medcat as leader if they're in the patrol
+        # sets prophet as leader if they're in the patrol
+        if CatRank.PROPHET in self.patrol_status_lis:
+            index = self.patrol_status_list.index(CatRank.PROPHET)
+            self.patrol_leader = self.patrol_cats[index]
+            # if theres no prophet, but there is a healer, set them as patrol leader
         if CatRank.MEDICINE_CAT in self.patrol_status_list:
             index = self.patrol_status_list.index(CatRank.MEDICINE_CAT)
             self.patrol_leader = self.patrol_cats[index]
@@ -408,7 +412,7 @@ class Patrol:
         # this next one is needed for Classic specifically
         patrol_type = (
             "med"
-            if [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE]
+            if [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE, CatRank.PROPHET]
             in self.patrol_status_list
             and get_clan_setting("patrol_lock_meds")
             else patrol_type
