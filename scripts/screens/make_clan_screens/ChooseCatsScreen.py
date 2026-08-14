@@ -555,8 +555,8 @@ class ChooseCatsScreen(MakeClanScreenBase):
             needed_rank = CatRank.LEADER
         elif self.need_deputy and not self.clan_info.deputy:
             needed_rank = CatRank.DEPUTY
-        elif self.need_med and not self.clan_info.medicine_cat:
-            needed_rank = CatRank.MEDICINE_CAT
+        elif self.need_prophet and not self.clan_info.prophet:
+            needed_rank = CatRank.PROPHET
         else:
             needed_rank = "member"
 
