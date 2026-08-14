@@ -42,7 +42,6 @@ from scripts.clan_resources.point_of_interest import (
     clear_pois,
 )
 from scripts.config import get_config
-from scripts.events_module.text_adjust import rank_text_adjust
 from scripts.events_module.future.future_event import FutureEvent
 from scripts.events_module.generate_events import OngoingEvent
 from scripts.game_structure import constants

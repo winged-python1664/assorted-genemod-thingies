@@ -49,7 +49,6 @@ from scripts.events_module.thoughts.generate_thoughts import (
     new_thought,
     get_other_cat_for_thought,
 )
-from scripts.events_module.text_adjust import rank_text_adjust
 from scripts.cat_relations.inheritance import Inheritance
 from scripts.cat_relations.inheritance2 import inheritance_db
 from scripts.cat_relations.relationship import Relationship
@@ -905,6 +904,66 @@ class Cat:
                 ids.append(child_id)
 
         return ids
+
+    def rank_change(self, new_rank: CatRank, resort=False, new_thought=True):
+        """Changes the status of a cat. Additional functions are needed if you want to make a cat a leader or deputy.
+        :param new_rank: CatRank that the cat is becoming
+        :param resort: If sorting type is 'rank', and resort is True, it will resort the cat list. This should
+                only be true for non-timeskip status changes.
+        :param new_thought: If true, cat will receive a special rank change thought. Default is True
+        """
+
+        clan = self.status.fetch_clan_object(game.clan)
+        old_rank = self.status.rank
+
+        # this is a private function, but it's meant to be used here.
+        self.status._change_rank(new_rank)  # pylint: disable=protected-access
+
+        self.name.status = new_rank
+
+        self.update_mentor()
+        for app in self.apprentice.copy():
+            fetched_cat = Cat.fetch_cat(app)
+            if isinstance(fetched_cat, Cat):
+                fetched_cat.update_mentor()
+
+        # If they have any apprentices, make sure they are still valid:
+        if old_rank == CatRank.MEDICINE_CAT and clan:
+            clan.remove_med_cat(self)
+
+        if old_rank in [CatRank.LEADER, CatRank.DEPUTY]:
+            if not clan or not hasattr(clan, "deputy"):
+                pass
+            elif new_rank != CatRank.LEADER and clan.leader and clan.leader.ID == self.ID:
+                clan.leader = None
+                clan.leader_predecessors += 1
+            elif new_rank != CatRank.DEPUTY and clan.deputy and clan.deputy.ID == self.ID:
+                clan.deputy = None
+                clan.deputy_predecessors += 1
+        elif new_rank not in [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE] and old_rank in [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE]:
+            clan.remove_med_cat(self)
+
+        elif self.status.rank == CatRank.MEDICINE_CAT:
+            if clan is not None:
+                clan.new_medicine_cat(self)
+
+        # update thought
+        if new_thought and new_rank not in (
+            CatRank.NEWBORN,
+            CatRank.KITTEN,
+        ):  # newborn and kitten aren't really "ranks" to be promoted to
+            self.get_new_thought(CatThought.ON_RANK_CHANGE)
+        # however we don't want kittens to somehow have a newborn thought, so we'll have them reset to a normal kitten thought
+        # just in case
+        if new_thought and new_rank == CatRank.KITTEN:
+            self.get_new_thought()
+
+        # update class dictionary
+        self.all_cats[self.ID] = self
+
+        # If we have it sorted by rank, we also need to re-sort
+        if switch_get_value(Switch.sort_type) == "rank" and resort:
+            Cat.sort_cats()
 
     def rank_change_traits_skill(self, mentor):
         """Updates trait and skill upon ceremony"""

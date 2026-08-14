@@ -22,7 +22,6 @@ from ..cat.enums import CatAge, CatRank, CatGroup
 from scripts.cat.pelts import Pelt
 from scripts.clan_resources.freshkill import FRESHKILL_ACTIVE
 from scripts.events import handle_fading
-from scripts.events_module.text_adjust import rank_text_adjust
 from scripts.game_structure import image_cache, game
 from scripts.ui.windows.cruel_locked_action import CruelLockedAction
 from ..ui.elements.modified_image import UIModifiedImage

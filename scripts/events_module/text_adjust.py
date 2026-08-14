@@ -790,27 +790,6 @@ def mess_text_adjust(message_text, cat, moon, age):
 
     return message_text
 
-def rank_text_adjust(text, cat, rank, clan, moon, age):
-    if "article" in text:
-        if rank in [CatRank.APPRENTICE, CatRank.ELDER]:
-            text = text.replace("article", str("an"))
-        else:
-            text = text.replace("article", str("a"))
-
-    cat = {
-        "m_c": (str(cat.name), choice(cat.pronouns)),
-    }
-
-    if "rank" in text:
-        text = text.replace("rank", str(rank))
-    if "c_n" in text:
-        text = text.replace("c_n", str(clan.name))
-    if "catage" in text:
-        text = text.replace("catage", str(age))
-
-    text = text.replace("medicine cat", "healer")
-    return text
-
 
 def get_leader_life_notice(leader_name: str, clan) -> str:
     """
