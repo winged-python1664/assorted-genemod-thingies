@@ -595,15 +595,15 @@
         }
     },
     {
-        "id": "sneaky_prophet",
+        "id": "stealth_prophet",
         "strings": [
             "Seems to be hiding something in the medicine {PRONOUN/m_c/subject} {VERB/m_c/give/gives} to the leader"
         ],
         "involved_cats": {
             "m_c": {
                 "stat": {
-                    "trait": [
-                        "sneaky"
+                    "skill": [
+                        "STEALTH,1"
                     ]
                 }
             }
@@ -740,8 +740,7 @@
         "involved_cats": {
             "m_c": {
                 "status": [
-                    "medicine cat",
-                    "medicine cat apprentice"
+                    "prophet"
                 ]
             },
             "r_c": {
@@ -782,7 +781,7 @@
         "involved_cats": {
             "m_c": {
                 "status": [
-                    "medicine cat"
+                    "prophet"
                 ],
                 "backstory": [
                     "kittypet1",
@@ -968,7 +967,7 @@
         "involved_cats": {
             "m_c": {
                 "status": [
-                    "medicine cat"
+                    "prophet"
                 ]
             },
             "r_c": {
@@ -989,7 +988,7 @@
         "involved_cats": {
             "m_c": {
                 "status": [
-                    "medicine cat"
+                    "prophet"
                 ]
             },
             "r_c": {
