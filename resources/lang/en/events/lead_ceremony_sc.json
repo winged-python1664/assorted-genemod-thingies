@@ -48,7 +48,7 @@
       "rank": [],
       "life_giving": [
         {
-          "text": "r_c steps up to m_c, nodding {PRONOUN/r_c/poss} head in acknowledgement. {PRONOUN/r_c/subject} {VERB/r_c/touch/touches} {PRONOUN/r_c/poss} nose to m_c's brow, granting a life for [virtue].",
+          "text": "r_c steps up to m_c, nodding {PRONOUN/r_c/poss} head in acknowledgement. {PRONOUN/r_c/subject/CAP} {VERB/r_c/touch/touches} {PRONOUN/r_c/poss} nose to m_c's brow, granting a life for [virtue].",
           "virtue": ["acceptance", "bravery", "certainty", "clear judgement", "confidence", "courage", "determination", "endurance", "sympathy", "farsightedness", "friendship", "instincts", "mercy", "strength", "unity", "empathy", "grace", "humility", "integrity", "persistence", "resilience", "happiness", "honesty", "humor", "justice", "mentoring", "trust", "clear sight", "devotion", "faith", "patience", "selflessness", "wisdom", "adventure", "curiosity", "forgiveness", "hope", "perspective", "protection"]
         }
       ]

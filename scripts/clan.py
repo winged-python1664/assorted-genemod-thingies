@@ -302,7 +302,7 @@ class Clan:
         self.all_other_clans = []
 
         if self.instructor.status.rank == CatRank.LEADER:
-            clan.all_leader_predecessors.append(self.instructor.ID)
+            self.all_leader_predecessors.append(self.instructor.ID)
         self.all_instructors.append(self.instructor.ID)
 
         key_copy = tuple(Cat.all_cats.keys())

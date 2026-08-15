@@ -263,7 +263,7 @@ class Patrol:
 
         # DETERMINE PATROL LEADER
         # sets prophet as leader if they're in the patrol
-        if CatRank.PROPHET in self.patrol_status_lis:
+        if CatRank.PROPHET in self.patrol_status_list:
             index = self.patrol_status_list.index(CatRank.PROPHET)
             self.patrol_leader = self.patrol_cats[index]
             # if theres no prophet, but there is a healer, set them as patrol leader
