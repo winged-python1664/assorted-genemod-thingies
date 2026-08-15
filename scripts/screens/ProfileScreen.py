@@ -144,13 +144,13 @@ class ProfileScreen(Screens):
         self.cat_thought = None
         self.cat_name = None
         self.placeholder_tab_4 = None
-        self.placeholder_tab_3 = None
         self.placeholder_tab_2 = None
         self.backstory_tab_button = None
         self.dangerous_tab_button = None
         self.personal_tab_button = None
         self.roles_tab_button = None
         self.relations_tab_button = None
+        self.affinity_tab_button = None
         self.back_button = None
         self.previous_cat_button = None
         self.next_cat_button = None
@@ -570,15 +570,15 @@ class ProfileScreen(Screens):
             manager=MANAGER,
         )
 
-        self.placeholder_tab_3 = UISurfaceImageButton(
+        self.affinity_tab_button = UISurfaceImageButton(
             ui_scale(pygame.Rect((400, 622), (176, 30))),
-            "",
+            "screens.profile.tab_affinity",
             get_button_dict(ButtonStyles.PROFILE_MIDDLE, (176, 30)),
             object_id="@buttonstyles_profile_middle",
             starting_height=1,
             manager=MANAGER,
         )
-        self.placeholder_tab_3.disable()
+        self.affinity_tab_button.disable()
 
         self.placeholder_tab_4 = UISurfaceImageButton(
             ui_scale(pygame.Rect((576, 622), (176, 30))),
@@ -622,7 +622,7 @@ class ProfileScreen(Screens):
         self.dangerous_tab_button.kill()
         self.backstory_tab_button.kill()
         self.conditions_tab_button.kill()
-        self.placeholder_tab_3.kill()
+        self.affinity_tab_button.kill()
         self.placeholder_tab_4.kill()
         self.inspect_button.kill()
         self.close_current_tab()
