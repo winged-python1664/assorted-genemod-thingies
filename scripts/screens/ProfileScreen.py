@@ -144,13 +144,13 @@ class ProfileScreen(Screens):
         self.cat_thought = None
         self.cat_name = None
         self.placeholder_tab_4 = None
+        self.placeholder_tab_3 = None
         self.placeholder_tab_2 = None
         self.backstory_tab_button = None
         self.dangerous_tab_button = None
         self.personal_tab_button = None
         self.roles_tab_button = None
         self.relations_tab_button = None
-        self.affinity_tab_button = None
         self.back_button = None
         self.previous_cat_button = None
         self.next_cat_button = None
@@ -570,15 +570,15 @@ class ProfileScreen(Screens):
             manager=MANAGER,
         )
 
-        self.affinity_tab_button = UISurfaceImageButton(
+        self.placeholder_tab_3 = UISurfaceImageButton(
             ui_scale(pygame.Rect((400, 622), (176, 30))),
-            "screens.profile.tab_affinity",
+            "",
             get_button_dict(ButtonStyles.PROFILE_MIDDLE, (176, 30)),
             object_id="@buttonstyles_profile_middle",
             starting_height=1,
             manager=MANAGER,
         )
-        self.affinity_tab_button.disable()
+        self.placeholder_tab_3.disable()
 
         self.placeholder_tab_4 = UISurfaceImageButton(
             ui_scale(pygame.Rect((576, 622), (176, 30))),
@@ -622,7 +622,7 @@ class ProfileScreen(Screens):
         self.dangerous_tab_button.kill()
         self.backstory_tab_button.kill()
         self.conditions_tab_button.kill()
-        self.affinity_tab_button.kill()
+        self.placeholder_tab_3.kill()
         self.placeholder_tab_4.kill()
         self.inspect_button.kill()
         self.close_current_tab()
@@ -1360,6 +1360,9 @@ class ProfileScreen(Screens):
         ### General
         self.info_list += f"ID: {self.the_cat.ID}\n"
         self.info_list += f"Personality Facets: Lawfulness ({self.the_cat.personality.lawfulness}), Sociability ({self.the_cat.personality.sociability}), Aggression ({self.the_cat.personality.aggression}), Stability ({self.the_cat.personality.stability})\n"
+
+        self.info_list += f"StarClan Affinity: {self.the_cat.starclan_affinity}\n"
+        self.info_list += f"Dark Forest Affinity: {self.the_cat.dark_forest_affinity}\n"
 
         if self.the_cat.pelt.scars:
             self.info_list += f"Scars: {self.the_cat.pelt.scars}\n"

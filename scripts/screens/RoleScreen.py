@@ -473,10 +473,13 @@ class RoleScreen(Screens):
         elif self.the_cat.status.rank == CatRank.MEDICINE_CAT:
             self.promote_leader.disable()
             self.promote_deputy.disable()
+            self.promote_prophet.enable()
+            """
             if prophet_invalid:
                 self.promote_prophet.enable()
             else:
                 self.promote_prophet.disable()
+            """
 
             self.switch_warrior.enable()
             self.switch_med_cat.disable()
