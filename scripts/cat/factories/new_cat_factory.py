@@ -271,14 +271,17 @@ class NewCatFactory(BaseCatFactory, ABC):
 
         trans_chance = cls.rng.randint(0, 50)
         nb_chance = cls.rng.randint(0, 75)
+        agender_chance = cls.rng.randint(0, 100)
 
         if age.is_newborn():
         # still spreading my trans babies propaganda
             trans_chance = 0
             nb_chance = 0
+            agender_chance = 0
         if age.is_baby():
             trans_chance = cls.rng.randint(0, 70)
             nb_chance = cls.rng.randint(0, 95)
+            agender_chance = cls.rng.randint(0, 120)
 
         # GENDER IDENTITY
         gender["genderalign"] = ""
@@ -289,6 +292,8 @@ class NewCatFactory(BaseCatFactory, ABC):
             gender["genderalign"] = 'intersex '
         if nb_chance == 1:
             gender["genderalign"] += "sam"
+        elif agender_chance == 1:
+            gender["genderalign"] += "agender"
         elif (gender["sex"] == "molly" or (gender["sex"] == 'intersex' and 'Y' not in phenotype.sexgene)):
             if trans_chance == 1:
                 gender["genderalign"] += "trans tom"

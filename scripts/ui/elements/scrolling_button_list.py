@@ -46,7 +46,7 @@ class UIScrollingButtonList(UIModifiedScrollingContainer):
         self.vert_scroll_bar = None
 
         super().__init__(
-            relative_rect=ui_scale(relative_rect.copy()),
+            relative_rect=relative_rect.copy(),
             manager=manager,
             container=container,
             starting_height=starting_height,
@@ -64,7 +64,7 @@ class UIScrollingButtonList(UIModifiedScrollingContainer):
             y_pos = -2 if prev_element else 0
 
             self.buttons[child] = UISurfaceImageButton(
-                ui_scale(pygame.Rect((0, y_pos), self.child_rect)),
+                pygame.Rect((0, y_pos), self.child_rect),
                 child,
                 get_button_dict(self.button_style, self.child_rect),
                 manager=manager,
@@ -97,7 +97,7 @@ class UIScrollingButtonList(UIModifiedScrollingContainer):
                     else self.selected_list.append(name)
                 )
                 pygame.event.post(
-                    pygame.event.Event(SELECTION_CHANGED, {"element": self})
+                    pygame.event.Event(SELECTION_CHANGED, {"ui_element": self})
                 )
                 break
 
@@ -113,7 +113,7 @@ class UIScrollingButtonList(UIModifiedScrollingContainer):
                         other_button.enable()
                     button.disable()
                 pygame.event.post(
-                    pygame.event.Event(SELECTION_CHANGED, {"element": self})
+                    pygame.event.Event(SELECTION_CHANGED, {"ui_element": self})
                 )
                 break
 
@@ -125,12 +125,11 @@ class UIScrollingButtonList(UIModifiedScrollingContainer):
             self.vert_scroll_bar.hide()
 
     def set_selected_list(self, new_list):
-        self.selected_list.clear()
         self.selected_list = new_list
         if self.disable_selection:
             for item in self.selected_list:
                 self.buttons[item].disable()
-        pygame.event.post(pygame.event.Event(SELECTION_CHANGED, {"element": self}))
+        pygame.event.post(pygame.event.Event(SELECTION_CHANGED, {"ui_element": self}))
 
     def new_item_list(self, item_list):
         """

@@ -31,7 +31,6 @@ class TestNewCatCreation(unittest.TestCase):
 
         game.clan = Clan(save_id="test")
         game.clan.biome = "Forest"
-        game.clan.override_biome = False
         game.clan.camp_bg = "camp1"
         game.clan.starting_season = "Newleaf"
         game.clan.game_mode = "classic"
@@ -49,21 +48,55 @@ class TestNewCatCreation(unittest.TestCase):
                 )
 
                 cat_list = updated_create_new_cat(
-                    option_dict, involved_cats={}, other_clan=self.other_clan
+                    option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
                 )
                 test_cat = cat_list[0]
 
                 self.assertEqual(
-                    test_cat.status.rank,
                     rank,
+                    test_cat.status.rank,
                     msg=f"{rank} was not assigned correctly as the current rank.",
                 )
                 if rank != CatRank.NEWBORN:
                     self.assertEqual(
-                        list(test_cat.status.all_ranks.keys())[0],
                         rank_list[i - 1],
+                        list(test_cat.status.all_ranks.keys())[0],
                         msg=f"{rank_list[i - 1]} was not assigned correctly as a past rank.",
                     )
+
+        with self.subTest("Testing clancat rank assignments"):
+            option_dict = InvolvedCatDict(
+                can_create_new_cat={},
+                status=["clancat"],
+            )
+
+            cat_list = updated_create_new_cat(
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
+            )
+            test_cat = cat_list[0]
+
+            self.assertIn(
+                test_cat.status.rank,
+                [r for r in [*CatRank] if r.is_any_clancat_rank()],
+                msg=f"Cat was not assigned correctly as a clancat rank.",
+            )
+
+            option_dict = InvolvedCatDict(
+                can_create_new_cat={},
+                status=["loner"],
+                past_status=["clancat"],
+            )
+
+            cat_list = updated_create_new_cat(
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
+            )
+            test_cat = cat_list[0]
+
+            self.assertIn(
+                list(test_cat.status.all_ranks.keys())[-2],
+                [r for r in [*CatRank] if r.is_any_clancat_rank()],
+                msg=f"Cat was not assigned correctly as a clancat rank.",
+            )
 
         # test that group IDs are being given correctly
         group_list = [
@@ -86,6 +119,7 @@ class TestNewCatCreation(unittest.TestCase):
                     involved_cats={
                         "m_c": extra_cat,
                     },
+                    clan=game.clan,
                     other_clan=self.other_clan,
                 )
 
@@ -124,6 +158,7 @@ class TestNewCatCreation(unittest.TestCase):
                 cat_list = updated_create_new_cat(
                     option_dict,
                     involved_cats={},
+                    clan=game.clan,
                     other_clan=self.other_clan,
                 )
 
@@ -146,6 +181,7 @@ class TestNewCatCreation(unittest.TestCase):
                 cat_list = updated_create_new_cat(
                     option_dict,
                     involved_cats={},
+                    clan=game.clan,
                     other_clan=self.other_clan,
                 )
 
@@ -173,6 +209,7 @@ class TestNewCatCreation(unittest.TestCase):
             cat_list = updated_create_new_cat(
                 option_dict,
                 involved_cats={},
+                clan=game.clan,
                 other_clan=self.other_clan,
             )
 
@@ -195,7 +232,7 @@ class TestNewCatCreation(unittest.TestCase):
                 )
 
                 cat_list = updated_create_new_cat(
-                    option_dict, involved_cats={}, other_clan=self.other_clan
+                    option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
                 )
                 test_cat = cat_list[0]
 
@@ -214,7 +251,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat = cat_list[0]
 
@@ -230,7 +267,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat = cat_list[0]
 
@@ -247,7 +284,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat = cat_list[0]
 
@@ -268,7 +305,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={"m_c": mate1}, other_clan=self.other_clan
+                option_dict, involved_cats={"m_c": mate1}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat = cat_list[0]
 
@@ -286,6 +323,7 @@ class TestNewCatCreation(unittest.TestCase):
             cat_list = updated_create_new_cat(
                 option_dict,
                 involved_cats={"m_c": mate1, "r_c": mate2},
+                clan=game.clan,
                 other_clan=self.other_clan,
             )
             test_cat = cat_list[0]
@@ -317,7 +355,7 @@ class TestNewCatCreation(unittest.TestCase):
                 stat=StatDict(trait=["calm"]),
             )
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat = cat_list[0]
 
@@ -335,7 +373,7 @@ class TestNewCatCreation(unittest.TestCase):
                 stat=StatDict(skill=["CLIMBER,2"]),
             )
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat: Cat = cat_list[0]
 
@@ -357,7 +395,7 @@ class TestNewCatCreation(unittest.TestCase):
                 stat=StatDict(skill=["CLIMBER,2"]),
             )
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat: Cat = cat_list[0]
 
@@ -380,7 +418,7 @@ class TestNewCatCreation(unittest.TestCase):
                 stat=StatDict(skill=["CLIMBER,2"], trait=["calm"], must_have_both=True),
             )
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat: Cat = cat_list[0]
 
@@ -410,7 +448,7 @@ class TestNewCatCreation(unittest.TestCase):
                 ),
             )
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat: Cat = cat_list[0]
 
@@ -430,7 +468,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat: Cat = cat_list[0]
 
@@ -447,7 +485,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat: Cat = cat_list[0]
 
@@ -465,7 +503,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat: Cat = cat_list[0]
 
@@ -485,7 +523,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat: Cat = cat_list[0]
 
@@ -508,7 +546,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat: Cat = cat_list[0]
 
@@ -526,7 +564,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat = cat_list[0]
 
@@ -543,7 +581,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat = cat_list[0]
 
@@ -564,7 +602,7 @@ class TestNewCatCreation(unittest.TestCase):
                 )
 
                 cat_list = updated_create_new_cat(
-                    option_dict, involved_cats={}, other_clan=self.other_clan
+                    option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
                 )
                 test_cat = cat_list[0]
 
@@ -582,7 +620,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat = cat_list[0]
 
@@ -602,7 +640,7 @@ class TestNewCatCreation(unittest.TestCase):
                 )
 
                 cat_list = updated_create_new_cat(
-                    option_dict, involved_cats={}, other_clan=self.other_clan
+                    option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
                 )
                 test_cat = cat_list[0]
 
@@ -620,7 +658,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat = cat_list[0]
 
@@ -639,7 +677,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat = cat_list[0]
 
@@ -656,7 +694,7 @@ class TestNewCatCreation(unittest.TestCase):
             )
 
             cat_list = updated_create_new_cat(
-                option_dict, involved_cats={}, other_clan=self.other_clan
+                option_dict, involved_cats={}, clan=game.clan, other_clan=self.other_clan
             )
             test_cat = cat_list[0]
 
@@ -665,18 +703,12 @@ class TestNewCatCreation(unittest.TestCase):
                 msg=f"Warrior was not given a suffix.",
             )
 
-
-# this works when run locally but for some reason github actions will always crash it
-# this is no fault of the test because it does work!
-# but when run through actions it thinks that a function in Relationships doesn't exist.
-# so if you want to double-check litter creation, then uncomment this test and run it locally.
-"""
     def test_litter_creation(self):
         with self.subTest("Testing litter creation"):
-            parent = Cat(
+            parent = TestCatFactory.create_cat(
                 status_dict=StatusDict(rank=CatRank.LONER), disable_random=True
             )
-            adoptive = Cat(
+            adoptive = TestCatFactory.create_cat(
                 status_dict=StatusDict(rank=CatRank.LONER), disable_random=True
             )
 
@@ -691,6 +723,7 @@ class TestNewCatCreation(unittest.TestCase):
             cat_list = updated_create_new_cat(
                 option_dict,
                 involved_cats={"m_c": parent, "r_c": adoptive},
+                clan=game.clan,
                 other_clan=self.other_clan,
             )
 
@@ -754,4 +787,3 @@ class TestNewCatCreation(unittest.TestCase):
                     0,
                     msg="Created a litter, but the kit doesn't have a relationship toward the adoptive parent!",
                 )
-"""
