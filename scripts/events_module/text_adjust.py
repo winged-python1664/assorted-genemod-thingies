@@ -343,10 +343,12 @@ def ongoing_event_text_adjust(Cat, text, clan=None, other_clan_name=None):
         cat_dict["lead_name"] = (str(clan.leader.name), choice(clan.leader.pronouns))
     if "dep_name" in text:
         cat_dict["dep_name"] = (str(clan.deputy.name), choice(clan.deputy.pronouns))
+    if "prophet_name" in text:
+        cat_dict["prophet_name"] = (str(clan.prophet.name), choice(clan.prophet.pronouns))
     if "med_name" in text:
-        meds = find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT], working=True, clan=clan.group_ID)
+        meds = find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT, CatRank.PROPHET], working=True, clan=clan.group_ID)
         kitty = choice(
-            meds if meds else find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT], clan=clan.group_ID)
+            meds if meds else find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT, CatRank.PROPHET], clan=clan.group_ID)
         )
         cat_dict["med_name"] = (str(kitty.name), choice(kitty.pronouns))
 
@@ -484,11 +486,11 @@ def event_text_adjust(
         try:
             med = choice(
                 find_alive_cats_with_rank(
-                    Cat, [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE], working=True, clan=clan.group_ID)
+                    Cat, [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE, CatRank.PROPHET], working=True, clan=clan.group_ID)
             )
         except:
             med = choice(
-                find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT], clan=clan.group_ID)
+                find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT, CatRank.PROPHET], clan=clan.group_ID)
             )
         replace_dict["med_name"] = (str(med.name), choice(med.pronouns))
 

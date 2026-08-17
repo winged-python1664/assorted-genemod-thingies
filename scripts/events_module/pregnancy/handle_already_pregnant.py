@@ -318,12 +318,12 @@ def handle_two_moon_pregnant(cat: Cat, clan):
         possible_events = events["birth"]["death"]
         # just makin sure meds aren't mentioned if they aren't around or if they are a parent
         meds = find_alive_cats_with_rank(
-            Cat, [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE], sort=True, clan=clan.group_ID
+            Cat, [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE, CatRank.PROPHET], sort=True, clan=clan.group_ID
         )
         mate_is_med = [mate_id for mate_id in cat.mate if mate_id in meds]
         if not meds or cat in meds or len(mate_is_med) > 0:
             for event in possible_events:
-                if CatRank.MEDICINE_CAT in event:
+                if (CatRank.MEDICINE_CAT, CatRank.PROPHET) in event:
                     possible_events.remove(event)
 
         if cat.status.is_outsider:
@@ -352,11 +352,11 @@ def handle_two_moon_pregnant(cat: Cat, clan):
             cat.history.add_possible_history("blood loss", death_text=death_event)
             possible_events = events["birth"]["difficult_birth"]
             # just makin sure meds aren't mentioned if they aren't around or if they are a parent
-            meds = find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE], clan=clan.group_ID)
+            meds = find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE, CatRank.PROPHET], clan=clan.group_ID)
             mate_is_med = [mate_id for mate_id in cat.mate if mate_id in meds]
             if not meds or cat in meds or len(mate_is_med) > 0:
                 for event in possible_events:
-                    if CatRank.MEDICINE_CAT in event:
+                    if (CatRank.MEDICINE_CAT, CatRank.PROPHET) in event:
                         possible_events.remove(event)
 
             event_list.append(choice(possible_events))

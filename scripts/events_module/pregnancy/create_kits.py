@@ -668,11 +668,11 @@ def get_balanced_kit_chance(first_parent: Cat, second_parent: Cat, is_affair, cl
             inverse_chance = get_config("pregnancy.modded_primary_chance_mated")
     
     is_med = False
-    if first_parent.status.rank in (CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE):
+    if first_parent.status.rank in (CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE, CatRank.PROPHET):
         is_med = True
     elif second_parent:
         for p in second_parent:
-            if p != "Surrogate" and p.status.rank in (CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE):
+            if p != "Surrogate" and p.status.rank in (CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE, CatRank.PROPHET):
                 is_med = True
 
     if is_med:

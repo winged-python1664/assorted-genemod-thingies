@@ -100,7 +100,7 @@ def create_bio_parents(Cat, flip=False, second_parent=True, age=None, clan=None)
         if blood_parent:
             blood_parent.get_new_thought(thought)
 
-            if blood_parent.status.rank == CatRank.MEDICINE_CAT:
+            if blood_parent.status.rank in [CatRank.MEDICINE_CAT, CatRank.PROPHET]:
                 blood_parent.backstory = choice(["medicine_cat", "disgraced1"])
             else:
                 blood_parent.backstory = choice(
@@ -109,7 +109,7 @@ def create_bio_parents(Cat, flip=False, second_parent=True, age=None, clan=None)
                 )
         if blood_parent2:
             blood_parent2.get_new_thought(thought)
-            if blood_parent2.status.rank == CatRank.MEDICINE_CAT:
+            if blood_parent2.status.rank in [CatRank.MEDICINE_CAT, CatRank.PROPHET]:
                 blood_parent2.backstory = choice(
                     ["medicine_cat", "disgraced1"])
             else:
@@ -245,6 +245,11 @@ def create_new_cat_block(
         ):
             rank = CatRank.WARRIOR
             break
+        elif match.group(1) in (
+            CatRank.PROPHET
+        ):
+            rank = CatRank.MEDICINE_CAT
+            break
         elif match.group(1) in [
             CatRank.NEWBORN,
             CatRank.KITTEN,
@@ -293,7 +298,7 @@ def create_new_cat_block(
                 Cat.age_moons[CatAge.ADOLESCENT][0],
                 Cat.age_moons[CatAge.ADOLESCENT][1],
             )
-        elif rank in [CatRank.WARRIOR, CatRank.MEDIATOR, CatRank.MEDICINE_CAT]:
+        elif rank in [CatRank.WARRIOR, CatRank.MEDIATOR, CatRank.MEDICINE_CAT, CatRank.PROPHET]:
             age = randint(
                 Cat.age_moons["young adult"][0], Cat.age_moons["senior adult"][1]
             )
@@ -345,9 +350,9 @@ def create_new_cat_block(
         chosen_backstory = choice(
             BACKSTORIES["backstory_categories"]["abandoned_backstories"]
         )
-    elif rank == CatRank.MEDICINE_CAT and cat_social == CatSocial.CLANCAT:
+    elif rank in [CatRank.MEDICINE_CAT, CatRank.PROPHET] and cat_social == CatSocial.CLANCAT:
         chosen_backstory = choice(["medicine_cat", "disgraced1"])
-    elif rank == CatRank.MEDICINE_CAT:
+    elif rank in [CatRank.MEDICINE_CAT, CatRank.PROPHET]:
         chosen_backstory = choice(["wandering_healer1", "wandering_healer2"])
     else:
         if cat_social in (CatSocial.CLANCAT, "former clancat"):
@@ -843,6 +848,8 @@ def find_clan_cats(Cat, Relationship, event, in_event_cats: dict, i: int, attrib
                 other.leader_lives = 0
             if cat.status.rank == CatRank.DEPUTY:
                 other.deputy = None
+            if cat.status.rank == CatRank.PROPHET:
+                other.prophet = None
             if cat.status.rank == CatRank.MEDICINE_CAT:
                 other.remove_med_cat(cat)
             if cat.status.rank in [CatRank.LEADER, CatRank.DEPUTY]:
@@ -870,10 +877,14 @@ def find_clan_cats(Cat, Relationship, event, in_event_cats: dict, i: int, attrib
             other.leader_lives = 0
         if give_mates[0].status.rank == CatRank.DEPUTY:
             other.deputy = None
+        if give_mates[0].status.rank == CatRank.PROPHET:
+            other.prophet = None
         if give_mates[0].rank == CatRank.MEDICINE_CAT:
             other.remove_med_cat(cat)
         if give_mates[0].status.rank in [CatRank.LEADER, CatRank.DEPUTY]:
             give_mates[0].status._change_rank(CatRank.WARRIOR)
+        if give_mates[0].status.rank == CatRank.PROPHET:
+            give_mates[0].status._change_rank(CatRank.MEDICINE_CAT)
 
     if "dead" in attribute_list:
         for cat in picked_cats:
@@ -1029,9 +1040,7 @@ def create_new_cat(
             moons = randint(6, 11)
         elif rank == CatRank.WARRIOR:
             moons = randint(23, 120)
-        elif rank == CatRank.MEDICINE_CAT:
-            moons = randint(23, 140)
-        elif rank == CatRank.PROPHET:
+        elif rank in [CatRank.MEDICINE_CAT, CatRank.PROPHET]:
             moons = randint(23, 140)
         elif rank == CatRank.ELDER:
             moons = randint(120, 130)
@@ -1437,7 +1446,6 @@ def gather_cat_objects(
             return list(found_cat_list)
 
     return list(out_set)
-
 
 def unpack_rel_block(
     Cat,
