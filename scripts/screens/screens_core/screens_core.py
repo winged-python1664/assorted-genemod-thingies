@@ -529,20 +529,6 @@ def rebuild_bgs():
         "dark": {"default": bg_dark},
     }
 
-    sc_bgs = get_sc_bgs()
-    for theme in ("light", "dark"):
-        for name, sc_bg in sc_bgs[theme].items():
-            default_game_bgs[theme][name] = pygame.transform.scale(
-                sc_bg,
-                scripts.game_structure.screen_settings.game_screen_size,
-            )
-    
-    if sc_bg:
-        try:
-            sc_nr = game.clan.sc_bg
-        except AttributeError:
-            sc_nr = "classic"
-
     temp_screen_size = scripts.game_structure.screen_settings.screen.get_size()
 
     default_fullscreen_bgs = {
@@ -564,10 +550,6 @@ def rebuild_bgs():
                 pygame.image.load("resources/images/urbg.png").convert(),
                 temp_screen_size,
             ),
-            "classic": pygame.transform.scale(
-                pygame.image.load(f"resources/images/camp_bg/sc/{sc_nr}_{theme}.png").convert(),
-                temp_screen_size,
-            )
         },
         "dark": {
             "default": pygame.transform.scale(bg_dark, temp_screen_size),
@@ -587,10 +569,6 @@ def rebuild_bgs():
                 pygame.image.load("resources/images/urbg.png").convert(),
                 temp_screen_size,
             ),
-            "classic": pygame.transform.scale(
-                pygame.image.load(f"resources/images/camp_bg/sc/{sc_nr}_{theme}.png").convert(),
-                temp_screen_size,
-            )
         },
     }
 
