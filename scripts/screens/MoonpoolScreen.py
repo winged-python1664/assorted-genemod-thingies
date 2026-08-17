@@ -770,7 +770,9 @@ class MoonpoolScreen(Screens):
         Cat.sort_cats(clan_cats)
         Cat.sort_cats(sc_cats)
 
-        if group == "sc":
+        if group == "clan":
+            self.prev_group == "clan"
+        elif group == "sc":
             all_instructors = [game.clan.instructor] + [clan.instructor for clan in game.clan.all_other_clans if clan.instructor]
             for ins in all_instructors[::-1]:
                 if (
@@ -780,19 +782,8 @@ class MoonpoolScreen(Screens):
                         sc_cats.remove(ins)
                         sc_cats.insert(0, ins)
 
-        if group == "clan":
-            clan_cat_chunks = self.chunks(clan_cats, 20)
-            self.cat_list_container = self.cat_list_container
-            self.prev_group == "clan"
-        elif group == "sc":
-            sc_cat_chunks = self.chunks(sc_cats, 20)
-            self.cat_list_container = self.cat_list_container
             self.prev_group == "sc"
         else:
-            print("somethings gone wrong! unnacounted for group selected, defaulted to clan cats")
-            print("group:", group)
-            clan_cat_chunks = self.chunks(clan_cats, 20)
-            self.cat_list_container = self.cat_list_container
             self.prev_group == "clan"
 
         # clamp current page to a valid page number
