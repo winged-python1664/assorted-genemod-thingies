@@ -1875,9 +1875,9 @@ class OtherClan:
             if grown_cats and get_config("clan_creation.ranks_needed.deputy"):
                 self.new_deputy(choice(grown_cats))
                 grown_cats.remove(self.deputy)
-            if grown_cats and get_config("clan_creation.ranks_needed.medicine_cat"):
-                self.new_medicine_cat(choice(grown_cats))
-                grown_cats.remove(self.medicine_cat)
+            if grown_cats and get_config("clan_creation.ranks_needed.prophet"):
+                self.new_prophet(choice(grown_cats))
+                grown_cats.remove(self.prophet)
 
             member_amount = get_config("clan_creation.neighbourclan_cats")
 
@@ -1889,13 +1889,13 @@ class OtherClan:
                     not in (
                         self.leader,
                         self.deputy,
-                        self.medicine_cat,
+                        self.prophet,
                     )
                 ],
                 k=member_amount,
             )
 
-            for cat_id in [cat.ID for cat in members + [self.leader, self.deputy, self.medicine_cat]]:
+            for cat_id in [cat.ID for cat in members + [self.leader, self.deputy, self.prophet]]:
                 if cat_id not in game.clan.clan_cats:
                     game.clan.clan_cats.append(cat_id)
                     the_cat = Cat.all_cats.get(cat_id)
