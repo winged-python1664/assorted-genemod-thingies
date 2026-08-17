@@ -253,10 +253,10 @@ class ChooseModeScreen(MakeClanScreenBase):
             self.clan_info.deputy = choice(grown_cats)
             grown_cats.remove(self.clan_info.deputy)
         if grown_cats and self.get_config_during_creation(
-            "clan_creation.ranks_needed.medicine_cat"
+            "clan_creation.ranks_needed.prophet"
         ):
-            self.clan_info.medicine_cat = choice(grown_cats)
-            grown_cats.remove(self.clan_info.medicine_cat)
+            self.clan_info.prophet = choice(grown_cats)
+            grown_cats.remove(self.clan_info.prophet)
 
         member_amount = [
             self.get_config_during_creation("clan_creation.minimum_membership"),
@@ -275,7 +275,7 @@ class ChooseModeScreen(MakeClanScreenBase):
                 not in (
                     self.clan_info.leader,
                     self.clan_info.deputy,
-                    self.clan_info.medicine_cat,
+                    self.clan_info.prophet,
                 )
             ],
             k=member_amount,
