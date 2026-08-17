@@ -17,7 +17,7 @@ import i18n
 import ujson
 
 from scripts.cat.cats import Cat, BACKSTORIES
-from scripts.cat.enums import CatRank, CatGroup, CatSocial, CatCompatibility, CatAge
+from scripts.cat.enums import CatRank, CatGroup, CatSocial, CatThought, CatCompatibility, CatAge
 from scripts.cat.factories.new_cat_factory import NewCatFactory
 from scripts.cat.factories.create_example_cat import create_example_cats
 from scripts.cat.factories.enums import CatType
