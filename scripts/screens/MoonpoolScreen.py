@@ -762,6 +762,11 @@ class MoonpoolScreen(Screens):
             if i.dead
             and i.status.group == CatGroup.STARCLAN
         ]
+
+        # separate them into chunks for the pages
+        clan_cat_chunks = self.get_list_chunks(clan_cats, 20)
+        sc_cat_chunks = self.get_list_chunks(sc_cats, 20)
+
         Cat.sort_cats(clan_cats)
         Cat.sort_cats(sc_cats)
 
