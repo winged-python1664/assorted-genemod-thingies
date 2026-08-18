@@ -1365,9 +1365,6 @@ class ProfileScreen(Screens):
         self.info_list += f"Personality Facets: Lawfulness ({self.the_cat.personality.lawfulness}), Sociability ({self.the_cat.personality.sociability}), Aggression ({self.the_cat.personality.aggression}), Stability ({self.the_cat.personality.stability})\n"
         self.info_list += f"StarClan affinity: {self.the_cat.starclan_affinity}, Dark Forest affinity: {self.the_cat.dark_forest_affinity}\n"
 
-        self.info_list += f"StarClan Affinity: {self.the_cat.starclan_affinity}\n"
-        self.info_list += f"Dark Forest Affinity: {self.the_cat.dark_forest_affinity}\n"
-
         if self.the_cat.pelt.scars:
             self.info_list += f"Scars: {self.the_cat.pelt.scars}\n"
 
