@@ -508,7 +508,8 @@ class Clan:
             self.instructor.generate_lead_ceremony()
         if self.clancount == "multiclan":
             for clan in self.all_other_clans:
-                clan.leader.generate_lead_ceremony()
+                if clan.leader:
+                    clan.leader.generate_lead_ceremony()
 
         self.save_clan()
         save_clanlist(self.save_id)
@@ -1858,9 +1859,12 @@ class OtherClan:
                 self.all_leader_predecessors.append(self.instructor.ID)
                 self.instructor.generate_lead_ceremony()
 
+            member_amount = get_config("clan_creation.neighbourclan_cats")
             possible_cats = create_example_cats(
                 majority_rank=get_config("clan_creation.majority_rank"),
                 rank_weights=get_config("clan_creation.rank_weights"),
+                max_cats=member_amount[1]+3,
+                clan=self.group_ID
             )
             grown_cats = [
                 c
@@ -1877,8 +1881,7 @@ class OtherClan:
             if grown_cats and get_config("clan_creation.ranks_needed.prophet"):
                 self.new_prophet(choice(grown_cats))
                 grown_cats.remove(self.prophet)
-
-            member_amount = get_config("clan_creation.neighbourclan_cats")
+            member_amount = randint(member_amount[0], member_amount[1])
 
             members = choices(
                 [
@@ -1894,18 +1897,13 @@ class OtherClan:
                 k=member_amount,
             )
 
-            for cat_id in [cat.ID for cat in members + [self.leader, self.deputy, self.prophet]]:
-                if cat_id not in game.clan.clan_cats:
-                    game.clan.clan_cats.append(cat_id)
-                    the_cat = Cat.all_cats.get(cat_id)
-
-                # give thoughts,actions and relationships to cats
-                    the_cat.init_all_relationships()
-                    if not the_cat.dead:
-                        the_cat.backstory = "clan_founder"
-                    if the_cat.status.rank == CatRank.APPRENTICE:
-                        the_cat.rank_change(CatRank.APPRENTICE, new_thought=False)
-                    the_cat.pelt.rebuild_sprite = True
+            for cat in possible_cats:
+                if cat not in members + [self.leader, self.deputy, self.prophet]:
+                    del Cat.all_cats[cat.ID]
+                    Cat.all_cats_list.remove(cat)
+                    if cat.ID in game.clan.clan_cats:
+                        game.clan.clan_cats.remove(cat.ID)
+                    continue
 
     @property
     def name(self):
