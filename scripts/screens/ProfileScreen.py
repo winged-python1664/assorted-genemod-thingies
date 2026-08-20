@@ -479,26 +479,6 @@ class ProfileScreen(Screens):
                         self.history_tab_checkbox.set_tooltip(
                             "screens.profile.show_moons_tooltip"
                         )
-                if self.open_sub_tab == "user notes":
-                    if self.history_tab_checkbox.checked:
-                        self.editing_notes = True
-                        self.history_tab_checkbox.uncheck()
-                        self.history_tab_checkbox.set_tooltip(
-                            "screens.profile.text_entry_save_tooltip"
-                        )
-                    else:
-                        self.user_notes = sub(
-                            r"[^A-Za-z0-9<->/.()*'&#!?,| _+=@~:;\[\]{}%$^`]+",
-                            "",
-                            self.notes_entry.get_text(),
-                        )
-                        self.save_user_notes()
-                        self.editing_notes = False
-                        self.history_tab_checkbox.check()
-                        self.history_tab_checkbox.set_tooltip(
-                            "screens.profile.text_entry_edit_tooltip"
-                        )
-                self.update_disabled_buttons_and_text()
 
         # Conditions Tab
         elif self.open_tab == "conditions":
@@ -795,7 +775,7 @@ class ProfileScreen(Screens):
                 manager=MANAGER,
                 starting_height=2,
             )
-        elif self.the_cat.status.group.is_starclan():
+        elif self.the_cat.dead and self.the_cat.status.group == CatGroup.STARCLAN:
             self.profile_elements["sc_camp"] = UISurfaceImageButton(
                 ui_scale(pygame.Rect((113, 380), (112, 28))),
                 "screens.core.sc_camp",
@@ -2701,7 +2681,6 @@ class ProfileScreen(Screens):
                     line_spacing=1,
                     manager=MANAGER,
                 )
-
             elif self.open_sub_tab == "user notes":
                 self.sub_tab_1.enable()
                 self.sub_tab_2.disable()
@@ -2709,6 +2688,8 @@ class ProfileScreen(Screens):
                 self.sub_tab_4.enable()
                 if self.history_text_box:
                     self.history_text_box.kill()
+                if self.save_text:
+                    self.save_text.kill()
                 if self.notes_entry:
                     self.notes_entry.kill()
                 if self.edit_text:
@@ -2725,8 +2706,7 @@ class ProfileScreen(Screens):
                     manager=MANAGER,
                     tool_tip_text="screens.profile.text_entry_help_tooltip",
                 )
-
-                if self.editing_notes:
+                if self.editing_notes is True:
                     self.notes_entry = pygame_gui.elements.UITextEntryBox(
                         ui_scale(pygame.Rect((100, 473), (600, 149))),
                         initial_text=self.user_notes,

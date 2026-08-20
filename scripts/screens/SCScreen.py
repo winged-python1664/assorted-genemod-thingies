@@ -13,9 +13,12 @@ from scripts.config import get_config
 from scripts.game_structure import image_cache, constants
 from scripts.game_structure.game.settings import game_setting_get
 from scripts.game_structure import game
+
+from ..game_structure.screen_settings import MANAGER
 from ..ui.elements.sprite_button import UISpriteButton
 from ..ui.elements.image_button import UIImageButton
 from ..ui.elements.surface_image_button import UISurfaceImageButton
+from ..ui.elements.checkbox import UICheckbox
 from ..ui.scale import ui_scale, ui_scale_dimensions, ui_scale_value
 from .Screens import Screens
 from .enums import GameScreen
@@ -254,24 +257,33 @@ class SCScreen(Screens):
         )
 
         # Draw the toggle and text
-        self.show_den_labels = pygame_gui.elements.UIImage(
+        self.show_den_labels = UISurfaceImageButton(
             ui_scale(pygame.Rect((25, 641), (167, 34))),
-            pygame.transform.scale(
-                image_cache.load_image("resources/images/show_den_labels.png"),
-                ui_scale_dimensions((167, 34)),
-            ),
+            "",
+            {"normal": get_button_dict(ButtonStyles.ROUNDED_RECT, (167, 34))["normal"]},
+            object_id="@buttonstyles_rounded_rect",
+            manager=MANAGER,
         )
+        self.label_toggle = UICheckbox(
+            position=(0, 0),
+            manager=MANAGER,
+            starting_height=3,
+            check=get_clan_setting("den labels"),
+            anchors={
+                "right": "right",
+                "right_target": self.show_den_labels,
+                "bottom": "bottom",
+                "bottom_target": self.show_den_labels,
+            },
+        )
+
         self.show_den_labels_text = pygame_gui.elements.UILabel(
             ui_scale(pygame.Rect((60, 641), (130, 34))),
             "screens.clan.show_dens",
             object_id="@buttonstyles_rounded_rect",
         )
+
         self.show_den_labels.disable()
-        self.label_toggle = UIImageButton(
-            ui_scale(pygame.Rect((25, 641), (32, 32))),
-            "",
-            object_id="@checked_checkbox",
-        )
 
         self.save_button = UISaveButton(
             position=(343, 643),

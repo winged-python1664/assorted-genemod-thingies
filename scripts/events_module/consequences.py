@@ -1278,9 +1278,10 @@ def create_new_cat(
             if new_cat.status.social is not CatSocial.CLANCAT:
                 new_cat.name.suffix = ""
         if not alive:
-            if dead_for >= 5:
-                new_cat.die(True, False)
-                print("new cat id", new_cat.ID)
+            if dead_for:
+                if dead_for >= 5:
+                    new_cat.die(True, False)
+                    print("new cat id", new_cat.ID)
             else:
                 new_cat.die()
             if dead_for is not None:

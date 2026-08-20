@@ -72,7 +72,7 @@ from scripts.events_module.text_adjust import (
     event_text_adjust,
     leader_ceremony_text_adjust,
 )
-from scripts.events_module.event_filters import get_personality_compatibility
+from scripts.events_module.event_filters import get_personality_compatibility, _check_cat_backstory
 from scripts.clan_package.get_clan_cats import find_alive_cats_with_rank
 
 import scripts.game_structure.screen_settings
@@ -632,8 +632,8 @@ class Cat:
 
             if clan.leader_lives <= 0:
                 self.dead = True
-                game.just_died.append(self.ID)
                 clan.leader_lives = 0
+                game.just_died.append(self.ID)
 
         else:
             self.dead = True
@@ -647,18 +647,21 @@ class Cat:
                 fetched_cat.update_mentor()
         self.update_mentor()
 
-        if group := self.status.get_last_living_group():
-            if self.moons > 1 and grief_allowed and not self.status.is_lost(group) and not self.status.is_exiled(group):
-                self.grief(body)
-            game.dead_cats_to_grieve.append(self)
+        # this is. probably a really bad way to do this, but I spent 3 hours trying to figure out how to make it
+        # stop adding my generated dead cats to 'cats_to_grieve' and I just want to be done with it for now lol
+        if game.clan.age == 0 and grief_allowed == False:
+            return
+        else:
+            if group := self.status.get_last_living_group():
+                if self.moons > 1 and grief_allowed and not self.status.is_lost(group) and not self.status.is_exiled(group):
+                    self.grief(body)
+                game.dead_cats_to_grieve.append(self)
 
         # mark the sprite as outdated
         self.pelt.rebuild_sprite = True
 
     def exile(self):
         """This is used to send a cat into exile."""
-        old_group = self.status.group
-
         self.status.exile_from_group()
         self.assign_thought(CatThought.ON_EXILE)
 
@@ -824,7 +827,6 @@ class Cat:
 
     def leave_clan(self, new_social_status: CatSocial):
         """Removes cat from the Clan willingly. Makes status changes and removes apprentices."""
-        old_group = self.status.group
         if not new_social_status:
             new_social_status = choice(
                 (CatSocial.KITTYPET, CatSocial.LONER, CatSocial.ROGUE)
@@ -844,8 +846,6 @@ class Cat:
 
     def become_lost(self, status=None):
         """Makes a Clan cat a lost cat. Makes status changes and removes apprentices."""
-        old_group = self.status.group
-
         if self.status.is_leader:
             self.status.fetch_clan_object().leader = None
         if self.status.rank == CatRank.DEPUTY:
@@ -1570,7 +1570,7 @@ class Cat:
     #                              moon skip functions                             #
     # ---------------------------------------------------------------------------- #
 
-    def one_moon(self):
+    def one_moon(self, other_clan_cats: list = None):
         """Handles a moon skip for an alive cat."""
         old_age = self.age
 

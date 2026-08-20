@@ -105,7 +105,6 @@ class ClanScreen(Screens):
         self.update_heading_text(game.clan.name)
         self.show_menu_buttons()
         Screens.menu_buttons["back_to_camp"].hide()
-        Screens.menu_buttons["sc_camp"].hide()
 
         # Creates and places the cat sprites.
         self.cat_buttons = []  # To contain all the buttons.
