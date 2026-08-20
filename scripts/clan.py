@@ -21,7 +21,7 @@ from scripts.cat.enums import CatRank, CatGroup, CatSocial, CatThought, CatCompa
 from scripts.cat.factories.new_cat_factory import NewCatFactory
 from scripts.cat.factories.create_example_cat import create_example_cats
 from scripts.cat.factories.typed_dicts import StatusDict
-from scripts.cat.names import names
+from scripts.cat.names import Name
 from scripts.cat.save_load import (
     save_cats,
     get_faded_ids,
@@ -370,7 +370,7 @@ class Clan:
             CatRank.QUEEN_APPRENTICE,
             CatRank.KITTEN,
         ]
-        rank_weights = [1, 1, 1, 2, 3, 1, 1, 2, 2, 2, 1, 1, 1]
+        rank_weights = [1, 1, 1, 2, 5, 1, 1, 3, 2, 1, 1, 1, 1]
 
         clan_options = []
         if self.clancount == "multiclan":
@@ -392,7 +392,7 @@ class Clan:
                 rank=choices(rank_options, rank_weights),
                 original_group=choice(clan_options) if self.clancount == "multiclan" else "1",
                 thought=choice([CatThought.WHILE_DEAD]),
-                dead_for=randint(20, 150),
+                dead_for=randint(10, 150),
                 alive=False,
                 group="2",
             )
@@ -401,9 +401,9 @@ class Clan:
         for i in range(number_ur):
             create_new_cat(
                 Cat,
-                original_social=choice([CatSocial.KITTYPET, CatSocial.LONER, CatSocial.LONER, CatSocial.ROGUE, CatSocial.ROGUE]),
+                original_social=choice([CatSocial.KITTYPET, CatSocial.LONER * 2, CatSocial.ROGUE * 2]),
                 thought=choice([CatThought.WHILE_DEAD]),
-                dead_for=randint(20, 150),
+                dead_for=randint(10, 150),
                 alive=False,
                 group="3",
             )
@@ -418,7 +418,7 @@ class Clan:
                 rank=choices(rank_options, rank_weights),
                 original_group=choice(clan_options) if self.clancount == "multiclan" else "1",
                 thought=choice([CatThought.WHILE_DEAD]),
-                dead_for=randint(50, 150),
+                dead_for=randint(10, 150),
                 alive=False,
                 group="4",
             )
@@ -454,7 +454,7 @@ class Clan:
                 )
                 # random chance for cat to generate as dead
                 if randint(1, 3) == 1:
-                    c.die()
+                    c.die(True, False)
                     c.status.change_current_moons_as(new_moons_as=randint(1, 10))
 
                 # renaming to fit outsider status
@@ -482,7 +482,7 @@ class Clan:
                     weights = get_config("cat_name_controls.rogue")
 
                 selected_category = choices(name_categories, weights, k=1)[0]
-                name = choice(names.names_dict[selected_category])
+                name = choice(Name.names_dict[selected_category])
                 c.change_name(new_prefix=name, new_suffix="")
 
                 # add back to all_cats, cus they get removed during `create_clan()`
@@ -998,6 +998,8 @@ class Clan:
             # update_sprite(game.clan.instructor)
             game.clan.add_cat(game.clan.instructor)
             game.clan.all_instructors.append(game.clan.instructor.ID)
+
+        game.clan.instructor.assign_thought(CatThought.IS_GUIDE)
 
         # check for symbol
         if "clan_symbol" in clan_data:

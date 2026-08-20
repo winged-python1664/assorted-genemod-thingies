@@ -43,6 +43,7 @@ from scripts.events_module.relationship.crossclan_event_generation import handle
 from scripts.events_module.pregnancy import pregnancy_events
 from scripts.events_module.short.condition_events import Condition_Events
 from scripts.events_module.short.short_event_generation import create_short_event
+from scripts.events_module.thoughts.generate_thoughts import get_new_thought
 from scripts.game_structure.game.switches import (
     Switch,
     switch_get_value,
@@ -167,11 +168,10 @@ def one_moon():
             trigger_future_events(clan=clan)
 
     # Calling of "one_moon" functions.
-    other_clan_cats = [c for c in Cat.all_cats_list if c.status.is_other_clancat]
     for cat in Cat.all_cats_list.copy():
         cat.thought = None
         if not cat.status.group_ID or (cat.status.is_other_clancat and game.clan.clancount == "singleclan"):
-            one_moon_outside_cat(cat, other_clan_cats)
+            one_moon_outside_cat(cat)
         elif cat.status.group.is_any_clan_group() or cat.status.group.is_afterlife():
             one_moon_cat(cat, cat.status.fetch_clan_object(game.clan))
         cat.pelt.rebuild_sprite = True
@@ -191,7 +191,6 @@ def one_moon():
                 game.clan.grief_strings.pop(ID)
 
         # Generate events
-
         for cat_id, details in game.clan.grief_strings.items():
             for _info in details:
                 text = _info[0]
@@ -199,8 +198,12 @@ def one_moon():
                 grief_type = _info[2]
 
                 if grief_type == "minor":
-                    Cat.fetch_cat(cat_id).get_new_thought(
-                        text, other_cat=Cat.fetch_cat(cats[0])
+                    # we get a new thought directly instead of using assign_thought
+                    # because we need to include a specific other cat
+                    get_new_thought(
+                        main_cat=Cat.fetch_cat(cat_id),
+                        thought_type=text,
+                        other_cat=Cat.fetch_cat(cats[0]),
                     )
 
                 else:
@@ -1141,7 +1144,7 @@ def handle_fading(cat, clan, forced=False):
             add_cat_to_fade_id(cat.ID)
             cat.set_faded()
 
-def one_moon_outside_cat(cat, other_clan_cats: list = None):
+def one_moon_outside_cat(cat):
     """
     exiled cat events
     """
@@ -1150,7 +1153,7 @@ def one_moon_outside_cat(cat, other_clan_cats: list = None):
     # this will also handle increasing dead_for!
     cat.status.increase_current_moons_as()
 
-    cat.one_moon(other_clan_cats)
+    cat.one_moon()
     if cat.dead:
         return
 

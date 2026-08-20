@@ -424,7 +424,9 @@ def event_for_required_cat_types(
     """
     Checks if the required_types dict is being fulfilled
     """
-    
+    if not required_types:
+        return True
+
     for c_type, amount_range in required_types.items():
         type_list = current_cat_types.get(c_type.replace("medicine cat", "healer"), [])
         if amount_range[1] == -1 and not type_list:
@@ -1514,7 +1516,6 @@ def _filter_relationship_type_updated(
     # if the cat meets the check AND it's an exclusionary tag: return False
     # if the cat doesn't meet the check AND it's an inclusionary tag: return False
     # otherwise, continue onwards
-    cats_to = [c for c in cats_to if c not in cats_from]
 
     if "can_romance" in filter_types:
         for cat in cats_from:
@@ -1523,6 +1524,7 @@ def _filter_relationship_type_updated(
                 [
                     cat.is_potential_mate(inter_cat) or cat.ID in inter_cat.mate
                     for inter_cat in cats_to
+                    if cat != inter_cat
                 ]
             ):
                 if "can_romance" in exclusionary_values:
@@ -1532,6 +1534,7 @@ def _filter_relationship_type_updated(
                 [
                     cat.is_potential_mate(inter_cat) or cat.ID in inter_cat.mate
                     for inter_cat in cats_to
+                    if cat != inter_cat
                 ]
             ):
                 return False
@@ -1543,12 +1546,22 @@ def _filter_relationship_type_updated(
     if "strangers" in filter_types:
         for cat in cats_from:
             # if the cats ARE strangers
-            if all([inter_cat.ID not in cat.relationships for inter_cat in cats_to]):
+            if all(
+                [
+                    inter_cat.ID not in cat.relationships
+                    for inter_cat in cats_to
+                    if cat != inter_cat
+                ]
+            ):
                 if "strangers" in exclusionary_values:
                     return False
             # if SOME but not ALL cats are strangers
             elif "strangers" in inclusionary_values and any(
-                [inter_cat.ID in cat.relationships for inter_cat in cats_to]
+                [
+                    inter_cat.ID in cat.relationships
+                    for inter_cat in cats_to
+                    if cat != inter_cat
+                ]
             ):
                 return False
             # if the cats AREN'T strangers
@@ -1559,12 +1572,14 @@ def _filter_relationship_type_updated(
     if "siblings" in filter_types:
         for cat in cats_from:
             # if the cats ARE siblings
-            if all([cat.is_sibling(inter_cat) for inter_cat in cats_to]):
+            if all(
+                [cat.is_sibling(inter_cat) for inter_cat in cats_to if cat != inter_cat]
+            ):
                 if "siblings" in exclusionary_values:
                     return False
             # if SOME but not ALL cats are siblings
             elif "siblings" in inclusionary_values and any(
-                [cat.is_sibling(inter_cat) for inter_cat in cats_to]
+                [cat.is_sibling(inter_cat) for inter_cat in cats_to if cat != inter_cat]
             ):
                 return False
             # if the cats AREN'T siblings
@@ -1575,12 +1590,22 @@ def _filter_relationship_type_updated(
     if "littermates" in filter_types:
         for cat in cats_from:
             # if the cats ARE littermates
-            if all([cat.is_littermate(inter_cat) for inter_cat in cats_to]):
+            if all(
+                [
+                    cat.is_littermate(inter_cat)
+                    for inter_cat in cats_to
+                    if cat != inter_cat
+                ]
+            ):
                 if "littermates" in exclusionary_values:
                     return False
             # if SOME but not ALL cats are littermates
             elif "littermates" in inclusionary_values and any(
-                [cat.is_littermate(inter_cat) for inter_cat in cats_to]
+                [
+                    cat.is_littermate(inter_cat)
+                    for inter_cat in cats_to
+                    if cat != inter_cat
+                ]
             ):
                 return False
             # if the cats AREN'T littermates
@@ -1600,12 +1625,14 @@ def _filter_relationship_type_updated(
         # Hopefully the cheaper tests mean this is only needed on events with a small number of cats
         for cat in cats_from:
             # if the cats ARE mates
-            if all([inter_cat.ID in cat.mate for inter_cat in cats_to]):
+            if all(
+                [inter_cat.ID in cat.mate for inter_cat in cats_to if cat != inter_cat]
+            ):
                 if "mates" in exclusionary_values:
                     return False
             # if SOME but not ALL cats are mates
             elif "mates" in inclusionary_values and any(
-                [inter_cat.ID in cat.mate for inter_cat in cats_to]
+                [inter_cat.ID in cat.mate for inter_cat in cats_to if cat != inter_cat]
             ):
                 return False
             # if the cats AREN'T mates
@@ -1618,12 +1645,14 @@ def _filter_relationship_type_updated(
     if "parent/child" in filter_types:
         for cat in cats_from:
             # if the cats ARE parent/child
-            if all([cat.is_parent(inter_cat) for inter_cat in cats_to]):
+            if all(
+                [cat.is_parent(inter_cat) for inter_cat in cats_to if cat != inter_cat]
+            ):
                 if "parent/child" in exclusionary_values:
                     return False
             # if SOME but not ALL cats are parent/child
             elif "parent/child" in inclusionary_values and any(
-                [cat.is_parent(inter_cat) for inter_cat in cats_to]
+                [cat.is_parent(inter_cat) for inter_cat in cats_to if cat != inter_cat]
             ):
                 return False
             # if the cats AREN'T parent/child
@@ -1634,12 +1663,14 @@ def _filter_relationship_type_updated(
     if "child/parent" in filter_types:
         for cat in cats_from:
             # if the cats ARE child/parent
-            if all([inter_cat.is_parent(cat) for inter_cat in cats_to]):
+            if all(
+                [inter_cat.is_parent(cat) for inter_cat in cats_to if cat != inter_cat]
+            ):
                 if "child/parent" in exclusionary_values:
                     return False
             # if SOME but not ALL cats are child/parent
             elif "child/parent" in inclusionary_values and any(
-                [inter_cat.is_parent(cat) for inter_cat in cats_to]
+                [inter_cat.is_parent(cat) for inter_cat in cats_to if cat != inter_cat]
             ):
                 return False
             # if the cats AREN'T child/parent

@@ -17,7 +17,7 @@ from scripts.cat.enums import (
 )
 from scripts.cat.factories.new_cat_factory import NewCatFactory
 from scripts.cat.factories.enums import CatType
-from scripts.cat.names import names
+from scripts.cat.names import Name
 from scripts.cat_relations.enums import RelType
 from scripts.cat_relations.inheritance2 import inheritance_db
 from scripts.clan_package.get_clan_cats import get_random_player_clan_cat
@@ -98,7 +98,7 @@ def create_bio_parents(Cat, flip=False, second_parent=True, age=None, clan=None)
 
     if thought:
         if blood_parent:
-            blood_parent.get_new_thought(thought)
+            blood_parent.assign_thought(thought)
 
             if blood_parent.status.rank in [CatRank.MEDICINE_CAT, CatRank.PROPHET]:
                 blood_parent.backstory = choice(["medicine_cat", "disgraced1"])
@@ -1114,7 +1114,7 @@ def create_new_cat(
                 new_cat.status = Status(**{"group_ID": new_cat.status.group_ID,
                     "rank": CatRank.NEWBORN, "age": CatAge.NEWBORN})
                 new_cat.dead = True
-                new_cat.get_new_thought(CatThought.ON_DEATH)
+                new_cat.assign_thought(CatThought.ON_DEATH)
                 new_cat.history.add_death(
                     str(new_cat.name) + " was stillborn.")
         # this simulates a "history" as whomever they used to be
@@ -1173,7 +1173,7 @@ def create_new_cat(
                 weights = name_controls_info["rogue"]
 
             selected_category = choices(name_categories, weights, k=1)[0]
-            name = choice(names.names_dict[selected_category])
+            name = choice(Name.names_dict[selected_category])
                 
             if selected_category == "normal prefixes" and get_clan_setting("modded names") and get_clan_setting('new prefixes') and random() < 0.9:
                 overwrite_prefix = True
@@ -1278,7 +1278,11 @@ def create_new_cat(
             if new_cat.status.social is not CatSocial.CLANCAT:
                 new_cat.name.suffix = ""
         if not alive:
-            new_cat.die()
+            if dead_for >= 5:
+                new_cat.die(True, False)
+                print("new cat id", new_cat.ID)
+            else:
+                new_cat.die()
             if dead_for is not None:
                 new_cat.status.add_to_group(
                     new_group_ID=group
@@ -1290,7 +1294,7 @@ def create_new_cat(
                         )
 
         # newbie thought
-        new_cat.get_new_thought(thought)
+        new_cat.assign_thought(thought)
 
         # and they exist now
         created_cats.append(new_cat)
