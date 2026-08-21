@@ -151,6 +151,34 @@ def get_possible_mates(cat) -> Tuple[List["Cat"], List["Cat"]]:
     return possible_mates, existing_romance_mates
 
 
+def get_possible_partners(cat) -> Tuple[List["Cat"], List["Cat"]]:
+    """
+    Returns a list of available cats which are possible partners for the given cat,
+    and a second list of cats that are possible partners with pre-existing romantic interest.
+    :param cat: The cat
+    :return: possible partners and possible partners with existing romantic interest
+    """
+    possible_partners = []
+    existing_romance_partners = []
+    for inter_cat in cat.all_cats.values():
+        if inter_cat.status.group_ID != cat.status.group_ID:
+            continue
+        if inter_cat.ID == cat.ID:
+            continue
+
+        if inter_cat.ID not in cat.relationships:
+            cat.create_one_relationship(inter_cat)
+            if cat.ID not in inter_cat.relationships:
+                inter_cat.create_one_relationship(cat)
+            continue
+
+        if inter_cat.is_potential_partner(cat, for_love_interest=True):
+            if cat.relationships[inter_cat.ID].romance > 0:
+                existing_romance_partners.append(inter_cat)
+            possible_partners.append(inter_cat)
+    return possible_partners, existing_romance_partners
+
+
 def search_cats(search_text, cat_list, search_genotype):
     search_text = search_text.strip()
     all_found = cat_list.copy()

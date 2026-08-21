@@ -165,15 +165,6 @@ class ChooseMateScreen(Screens):
                     print("invalid next cat", self.next_cat)
 
             # Checkboxes
-            elif event.ui_element == self.checkboxes.get("has_no_partners"):
-                if self.has_no_partners:
-                    self.has_no_partners = False
-                else:
-                    self.has_no_partners = True
-                if self.open_tab in ["partners", "potential_partners"] or self.open_tab == "offspring" and self.previous_tab in ["partners", "potential_partners"]:
-                    self.update_potential_partners_container()
-                else:
-                    self.update_potential_mates_container()
             elif event.ui_element == self.checkboxes.get("have_kits_only"):
                 if self.have_kits_only:
                     self.have_kits_only = False
