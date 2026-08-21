@@ -238,6 +238,8 @@ class Cat:
         """Stores of a list of faded offspring, for relation tracking purposes"""
         self.mate = inheritance["mate"]
         self.previous_mates = inheritance["previous_mates"]
+        self.partner = inheritance["partner"]
+        self.previous_partners = inheritance["previous_partners"]
         self.inheritance = None
 
         # afterlife affinity
@@ -247,6 +249,7 @@ class Cat:
         # toggles
         self.no_kits = toggles["no_kits"]
         self.no_mates = toggles["no_mates"]
+        self.no_partners = toggles["no_partners"]
         self.no_retire = toggles["no_retire"]
         self.prevent_fading = toggles["prevent_fading"]  # Prevents a cat from fading
         self.favourite = toggles["favourite"]
@@ -321,6 +324,7 @@ class Cat:
         self.affair_parents = inheritance["affair_parents"]
         self.faded_offspring = inheritance["faded_offspring"]
         self.mate = inheritance["mate"]
+        self.partner = inheritance["partner"]
         self.status = status
         self._pronouns = {}  # Needs to be set as a dict
         self.moons = moons
@@ -822,6 +826,8 @@ class Cat:
             return "sibling"
         elif dead_cat.ID in living_cat.mate:
             return "mate"
+        elif dead_cat.ID in living_cat.partner:
+            return "partner"
         else:
             return "general"
 
@@ -927,7 +933,7 @@ class Cat:
                 fetched_cat.update_mentor()
 
         # If they have any apprentices, make sure they are still valid:
-        if old_rank == CatRank.MEDICINE_CAT and clan:
+        if old_rank in [CatRank.MEDICINE_CAT, CatRank.PROPHET] and clan:
             clan.remove_med_cat(self)
 
         if old_rank in [CatRank.LEADER, CatRank.DEPUTY]:
@@ -939,10 +945,19 @@ class Cat:
             elif new_rank != CatRank.DEPUTY and clan.deputy and clan.deputy.ID == self.ID:
                 clan.deputy = None
                 clan.deputy_predecessors += 1
+        elif old_rank == CatRank.PROPHET:
+            if new_rank != CatRank.PROPHET and clan.prophet and clan.prophet.ID == self.ID or old_rank == CatRank.PROPHET and self.dead:
+                clan.prophet = None
+                clan.prophet_predecessors +=1
+                clan.all_prophet_predecessors + [self.ID]
+            if new_rank != CatRank.MEDICINE_CAT and clan is not None:
+                clan.remove_med_cat(self)
         elif new_rank not in [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE] and old_rank in [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE]:
             clan.remove_med_cat(self)
+        elif new_rank == CatRank.PROPHET and old_rank == CatRank.MEDICINE_CAT:
+            pass
 
-        elif self.status.rank == CatRank.MEDICINE_CAT:
+        elif self.status.rank == CatRank.MEDICINE_CAT or (self.status.rank == CatRank.PROPHET and old_rank != CatRank.MEDICINE_CAT):
             if clan is not None:
                 clan.new_medicine_cat(self)
 
@@ -1409,6 +1424,13 @@ class Cat:
                 elif (
                     "leader_former_mate" in tags
                     and giver_cat.ID not in self.previous_mates
+                ):
+                    continue
+                elif "leader_partner" in tags and giver_cat.ID not in self.partner:
+                    continue
+                elif (
+                    "leader_former_partner" in tags
+                    and giver_cat.ID not in self.previous_partners
                 ):
                     continue
                 if "leader_mentor" in tags and giver_cat.ID not in self.former_mentor:
@@ -2551,6 +2573,176 @@ class Cat:
             other_relationship.comfort += 20
             other_relationship.trust += 10
 
+    def is_potential_partner(
+        self,
+        other_cat: Cat,
+        for_love_interest: bool = False,
+        age_restriction: bool = True,
+        first_cousin_partners: bool = False,
+        ignore_no_partners: bool = False,
+        outsider=False,
+    ):
+        """
+        Checks if this cat is potential partner for the other cat.
+        """
+
+        try:
+            first_cousin_partners = get_clan_setting("first cousin partners")
+        except:
+            if "unittest" not in sys.modules:
+                raise
+
+        # just to be sure, check if it is not the same cat
+        if self.ID == other_cat.ID:
+            return False
+
+        # check exiled, outside, and dead cats
+        if (self.status.is_outsider and not outsider) or (other_cat.status.is_outsider and not outsider):
+            return False
+
+        # No Mates Check
+        if not ignore_no_partners and (self.no_partners or other_cat.no_partners):
+            return False
+
+        # Inheritance check
+        if self.is_related(other_cat, first_cousin_partners):
+            return False
+
+        # check dead cats
+        if self.dead != other_cat.dead:
+            return False
+
+        # check for age
+        if age_restriction:
+            if (self.moons < 14 or other_cat.moons < 14) and not for_love_interest:
+                return False
+
+            # the +1 is necessary because both might not already be aged up
+            # if only one is aged up at this point, later they are more moons apart than the setting defined
+            # game config boolean "override_same_age_group" disables the same-age group check.
+            mates_info = get_config("mates")
+            if (
+                mates_info.get("override_same_age_group", False) or self.age != other_cat.age
+            ) and (
+                abs(self.moons - other_cat.moons) > mates_info["age_range"] + 1
+            ):
+                return False
+            elif (
+                mates_info.get("override_same_age_group", False) or self.age != other_cat.age
+            ):
+                if (self.moons <= 40 or other_cat.moons <= 40) and not (self.moons > 40 and other_cat.moons > 40) and not (self.moons <= 40 and other_cat.moons <= 40):
+                    if (abs(self.moons - other_cat.moons) > mates_info["ya_age_range"] + 1):
+                        return False
+
+        if (
+            not self.age.can_have_mate() or not other_cat.age.can_have_mate()
+        ) and self.age != other_cat.age:
+            return False
+
+        # check for mentor
+
+        # Current mentor
+        if other_cat.ID in self.apprentice or self.ID in other_cat.apprentice:
+            return False
+
+        # Former mentor
+        is_former_mentor = (
+            other_cat.ID in self.former_apprentices
+            or self.ID in other_cat.former_apprentices
+        )
+        return bool(
+            not is_former_mentor or get_clan_setting("partners with former mentor")
+        )
+
+    def unset_partner(
+        self, other_cat: Cat, user_initiated_breakup: bool = False, fight: bool = False
+    ):
+        """Unset the partner from both self and other_cat"""
+        if not other_cat:
+            return
+
+        # Both cats must have partners for this to work
+        if len(self.partner) < 1 or len(other_cat.partner) < 1:
+            return
+
+        # AND they must be partners with each other.
+        if self.ID not in other_cat.partner or other_cat.ID not in self.partner:
+            print(
+                f"Unsetting partner: These {self.name} and {other_cat.name} are not partners!"
+            )
+            return
+
+        # If only deal with relationships if this is a breakup.
+        if user_initiated_breakup:
+            self_relationship = None
+            if not self.dead:
+                if other_cat.ID not in self.relationships:
+                    self.create_one_relationship(other_cat)
+                self_relationship = self.relationships[other_cat.ID]
+                self_relationship.like -= randint(20, 60)
+                self_relationship.comfort -= randint(10, 30)
+                self_relationship.trust -= randint(5, 15)
+                if fight:
+                    self_relationship.like -= randint(15, 45)
+
+            if not other_cat.dead:
+                if self.ID not in other_cat.relationships:
+                    other_cat.create_one_relationship(self)
+                other_relationship = other_cat.relationships[self.ID]
+                other_relationship.like -= 40
+                other_relationship.comfort -= 20
+                other_relationship.trust -= 10
+                if fight:
+                    other_relationship.like -= 30
+
+        self.partner.remove(other_cat.ID)
+        other_cat.partner.remove(self.ID)
+
+        # Handle previous partner:
+        if other_cat.ID not in self.previous_partners:
+            self.previous_partners.append(other_cat.ID)
+        if self.ID not in other_cat.previous_partners:
+            other_cat.previous_partners.append(self.ID)
+
+        inheritance_db.load_inheritances(Cat)
+
+    def set_partner(self, other_cat: Cat, recalculate_inheritance: bool = True):
+        """
+        Sets up a partner relationship between self and other_cat.
+        :param other_cat: The other cat
+        :param recalculate_inheritance: Set to False if this func should SKIP recalculating inheritance. Take care when using this.
+        """
+        if other_cat.ID not in self.partner:
+            self.partner.append(other_cat.ID)
+        if self.ID not in other_cat.partner:
+            other_cat.partner.append(self.ID)
+
+        # If the current partner was in the previous partners list, remove them.
+        if other_cat.ID in self.previous_partners:
+            self.previous_partners.remove(other_cat.ID)
+        if self.ID in other_cat.previous_partners:
+            other_cat.previous_partners.remove(self.ID)
+
+        if recalculate_inheritance:
+            inheritance_db.load_inheritances(Cat)
+
+        # Set starting relationship values
+        if not self.dead:
+            if other_cat.ID not in self.relationships:
+                self.create_one_relationship(other_cat)
+            self_relationship = self.relationships[other_cat.ID]
+            self_relationship.like += 20
+            self_relationship.comfort += 20
+            self_relationship.trust += 10
+
+        if not other_cat.dead:
+            if self.ID not in other_cat.relationships:
+                other_cat.create_one_relationship(self)
+            other_relationship = other_cat.relationships[self.ID]
+            other_relationship.like += 20
+            other_relationship.comfort += 20
+            other_relationship.trust += 10
+
     def unset_adoptive_parent(self, other_cat: Cat):
         """Unset the adoptive parent from self"""
         self.adoptive_parents.remove(other_cat.ID)
@@ -3090,6 +3282,8 @@ class Cat:
                 affair_parents=cat_info.get("affair_parents", []),
                 mate=[],
                 previous_mates=[],
+                partner=[],
+                previous_partners=[],
                 faded_offspring=cat_info["faded_offspring"],
             ),
             affinity={},
@@ -3398,10 +3592,13 @@ class Cat:
                 "patrol_with_mentor": (self.patrol_with_mentor or 0),
                 "mate": self.mate,
                 "previous_mates": self.previous_mates,
+                "partner": self.partner,
+                "previous_partners": self.previous_partners,
                 "paralyzed": self.pelt.paralyzed,
                 "no_kits": self.no_kits,
                 "no_retire": self.no_retire,
                 "no_mates": self.no_mates,
+                "no_partners": self.no_partners,
                 "genotype": self.phenotype.toJSON(),
                 "chimerageno": self.chimerapheno.toJSON() if self.chimerapheno else None,
                 "chimera_pattern": self.chimerapheno.chimerapattern if self.chimerapheno else None,

@@ -70,8 +70,16 @@ def check_if_can_have_kits(cat, for_surrogate=False):
                     f"WARNING: {cat.name}  has an invalid mate # {mate_id}. This has been unset."
                 )
                 cat.mate.remove(mate_id)
+    # check for partner
+    if cat.partner:
+        for partner_id in cat.partner:
+            if partner_id not in cat.all_cats:
+                print(
+                    f"WARNING: {cat.name}  has an invalid partner # {partner_id}. This has been unset."
+                )
+                cat.partner.remove(partner_id)
     else:
-        # if the cat has no mate, and we don't allow single parents, unmated parents, or affairs
+        # if the cat has no mate or partner, and we don't allow single parents, unmated/unpartnered parents, or affairs
         # then they can't have kits
         if (
             not get_clan_setting("single parentage")
@@ -90,7 +98,7 @@ def check_second_parent(cat: Cat, second_parent: Cat) -> tuple[bool, bool]:
     returns:
     parent can have kits, kits are adopted
     """
-
+    pot_par = (cat.mate, cat.partner)
     surrogates = get_clan_setting("surrogates")
     same_sex_birth = get_clan_setting("same sex birth")
     same_sex_adoption = get_clan_setting("same sex adoption")
@@ -109,7 +117,7 @@ def check_second_parent(cat: Cat, second_parent: Cat) -> tuple[bool, bool]:
         if not xor(cat_is_amab(cat), cat_is_amab(second_parent[0])) or ("sterile" in cat.permanent_condition or "sterile" in second_parent[0].permanent_condition):
             if same_sex_birth and not "sterile" in second_parent[0].permanent_condition and not "sterile" in cat.permanent_condition:
                 return True, False, second_parent
-            elif (surrogates and second_parent[0].ID in cat.mate and random() < get_config("pregnancy.surrogate_rate")) and not ("sterile" in second_parent[0].permanent_condition and "sterile" in cat.permanent_condition):
+            elif (surrogates and second_parent[0].ID in (pot_par) and random() < get_config("pregnancy.surrogate_rate")) and not ("sterile" in second_parent[0].permanent_condition and "sterile" in cat.permanent_condition):
                 return True, False, ["Surrogate"] + second_parent
             elif not same_sex_adoption:
                 return False, False, second_parent
@@ -134,14 +142,14 @@ def check_second_parent(cat: Cat, second_parent: Cat) -> tuple[bool, bool]:
                 second_parent_copy.append(x)
 
         if len(second_parent_copy) < 1:
-            if surrogates and second_parent[0].ID in cat.mate and random() < get_config("pregnancy.surrogate_rate"):
+            if surrogates and second_parent[0].ID in (pot_par) and random() < get_config("pregnancy.surrogate_rate"):
                 return True, False, ["Surrogate"] + second_parent
             elif same_sex_adoption:
                 return True, True, second_parent
             else:
                 return False, False, second_parent
         if "sterile" in cat.permanent_condition:
-            if surrogates and second_parent[0].ID in cat.mate and random() < get_config("pregnancy.surrogate_rate"):
+            if surrogates and second_parent[0].ID in (pot_par) and random() < get_config("pregnancy.surrogate_rate"):
                 return True, False, ["Surrogate"] + second_parent
             elif same_sex_adoption:
                 return True, True, second_parent
@@ -156,23 +164,26 @@ def get_second_parent(cat, clan):
     Return the second parent of a cat, which will have kits.
     Also returns a bool that is true if an affair was triggered.
     """
-    # randomly select a mate of given cat
+    # randomly select a mate/partner of given cat
     samesex = get_clan_setting("same sex birth")
 
+    pot_par = (cat.mate, cat.partner)
+
     mate = None
-    if len(cat.mate) > 0:
+    if len(pot_par) > 0:
         mate = []
         if get_clan_setting('multisire'):
-            mate_copy = cat.mate
+            mate_copy = (cat.mate, cat.partner)
             for x in mate_copy:
                 mate.append(cat.fetch_cat(x))
         else:
-            mate.append(cat.fetch_cat(choice(cat.mate)))
+            mate.append(cat.fetch_cat(choice(pot_par)))
 
     # if the sex does matter, choose the best solution to allow kits
     if not samesex and mate and not cat_is_amab(cat):
         opposite_mate = [cat.fetch_cat(mate_id) for mate_id in cat.mate if xor(cat_is_amab(cat.fetch_cat(
-            mate_id)), cat_is_amab(cat)) and "sterile" not in cat.fetch_cat(mate_id).permanent_condition]
+            mate_id)), cat_is_amab(cat)) and "sterile" not in cat.fetch_cat(mate_id).permanent_condition and cat.fetch_cat(partner_id) for partner_id in (cat.partner) if xor(cat_is_amab(cat.fetch_cat(
+                partner_id)), cat_is_amab(cat)) and "sterile" not in cat.fetch_cat(partner_id).permanent_condition]
         if len(opposite_mate) > 0:
             mate = opposite_mate
             if not get_clan_setting('multisire'):
@@ -183,7 +194,7 @@ def get_second_parent(cat, clan):
         if len(opposite_mate) > 0:
             mate = [choice(opposite_mate)]
 
-    if not cat.mate and not get_clan_setting('unmated parentage'):
+    if not cat.mate and not cat.partner and not get_clan_setting('unmated parentage'):
         return mate, False
 
     affair_allowed = get_clan_setting("affair")
@@ -218,7 +229,7 @@ def get_second_parent(cat, clan):
         return mate, True
 
     # RANDOM AFFAIR & COPARENTING
-    if not cat.mate:
+    if not cat.mate and not cat.partner:
         # is there's no mate to cheat on then this isn't an affair, rather it's coparenting
         coparenting = True
     else:
@@ -243,11 +254,11 @@ def get_second_parent(cat, clan):
         possible_partners = [
             i
             for i in Cat.all_cats_list
-            if i.is_potential_mate(cat, for_love_interest=True)
+            if i.is_potential_mate(cat, for_love_interest=True) or i.is_potential_partner(cat, for_love_interest=True)
             and i.status.group_ID in [cat.status.group_ID, None]
             and (samesex or xor(cat_is_amab(i), cat_is_amab(cat)))
             and "sterile" not in i.permanent_condition
-            and i.ID not in cat.mate
+            and i.ID not in (pot_par)
         ]
 
         # even it is a random affair, the cats should not hate each other or something like that
@@ -279,9 +290,11 @@ def handle_surrogate(cat, other_cats, clan):
     only_clanmate = get_clan_setting("only inclan surrogates")
     mate = []
 
+    pot_par = (cat.mate, cat.partner)
+
     # gather up mates to participate in the *selection* ig
-    if len(cat.mate) > 0:
-        mate_copy = cat.mate
+    if len(pot_par) > 0:
+        mate_copy = cat.mate, cat.partner
         for x in mate_copy:
             mate.append(cat.fetch_cat(x))
 
@@ -313,7 +326,7 @@ def handle_surrogate(cat, other_cats, clan):
                 continue
             possible = True
             for couple in all_cats:
-                if not couple.is_potential_mate(cand, ignore_no_mates=True):
+                if not couple.is_potential_mate(cand, ignore_no_mates=True) and not couple.is_potential_partner(couple, ignore_no_partners=True, outsider=True):
                     possible = False
                     break
                 if x := couple.relationships.get(cand.ID):
@@ -334,7 +347,7 @@ def handle_surrogate(cat, other_cats, clan):
                 continue
             possible = True
             for couple in all_cats:
-                if not cand.is_potential_mate(couple, ignore_no_mates=True, outsider=True):
+                if not cand.is_potential_mate(couple, ignore_no_mates=True, outsider=True) and not cand.is_potential_partner(couple, ignore_no_partners=True, outsider=True):
                     possible = False
                     break
             if possible:
@@ -352,7 +365,7 @@ def handle_surrogate(cat, other_cats, clan):
                 continue
             possible = True
             for couple in all_cats:
-                if not cand.is_potential_mate(couple, ignore_no_mates=True, outsider=True):
+                if not cand.is_potential_mate(couple, ignore_no_mates=True, outsider=True) and not cand.is_potential_partner(couple, ignore_no_partners=True, outsider=True):
                     possible = False
                     break
             if possible:
@@ -416,8 +429,12 @@ def handle_outside_parent(cat, clan, amount=0, background_category= "1"):
                                             is_parent=True)
         get_new_thought(outside_parent[0], CatThought.OUTSIDE_DAM if background_category == "2" else CatThought.OUTSIDE_SIRE, other_cat=cat)
         if random() < get_config("mates.crossclan_litter_mates_chance") and get_config("mates.allow_mating"):
-            outside_parent[0].set_mate(cat)
-            cat.set_mate(outside_parent[0])
+            if random() < 0.8:
+                outside_parent[0].set_mate(cat)
+                cat.set_mate(outside_parent[0])
+            else:
+                outside_parent[0].set_partner(cat)
+                cat.set_partner(outside_parent[0])
     else:
         if get_clan_setting("halfclan single"):
             print("No possible half-clan single parents found")
@@ -450,11 +467,15 @@ def handle_outside_parent(cat, clan, amount=0, background_category= "1"):
                                                     gender=('fem' if cat_is_amab(cat) else 'masc') if not get_clan_setting('same sex birth') else None,
                                                     outside=True,
                                                     is_parent=True)[0]
-                get_new_thought(outside_parent, CatThought.OUTSIDE_DAM if background_category == "2" else CatThought.OUTSIDE_SIRE, other_cat=cat)
+                outside_parent.get_new_thought(CatThought.OUTSIDE_DAM if background_category == "2" else CatThought.OUTSIDE_SIRE, other_cat=cat)
                 outside_parent.birth_cooldown = get_config("pregnancy.birth_cooldown")
                 if random() < get_config("mates.outsider_litter_mates_chance") and get_config("mates.allow_mating"):
-                    outside_parent.set_mate(cat)
-                    cat.set_mate(outside_parent)
+                    if random() < 0.8:
+                        outside_parent[0].set_mate(cat)
+                        cat.set_mate(outside_parent[0])
+                    else:
+                        outside_parent[0].set_partner(cat)
+                        cat.set_partner(outside_parent[0])
 
                 outside_parents.append(outside_parent)
 
@@ -476,7 +497,7 @@ def _determine_highest_romantic_relation(
 ) -> Optional[Cat]:
     """
     Function to handle everything around unmated affairs.
-    Will return a second parent if triggerd, and none otherwise.
+    Will return a second parent if triggered, and none otherwise.
     """
 
     highest_romantic_relation = get_highest_romantic_relation(

@@ -602,7 +602,7 @@ def json_load():
 
     # replace cat ids with cat objects and add other needed variables
     for cat in all_cats:
-        if cat.status.rank in (CatRank.LEADER, CatRank.DEPUTY, CatRank.MEDICINE_CAT):
+        if cat.status.rank in (CatRank.LEADER, CatRank.DEPUTY, CatRank.PROPHET, CatRank.MEDICINE_CAT):
             if cat.status.group == CatGroup.STARCLAN:
                 game.starclan.adjust_facets_by_cat(cat)
             elif cat.status.group == CatGroup.DARK_FOREST:

@@ -17,6 +17,7 @@ class CatToggleWindow(GameWindow):
         "prevent_kits",
         "prevent_retirement",
         "prevent_romance",
+        "prevent_partners",
     ]
 
     def __init__(self, cat):
@@ -81,6 +82,16 @@ class CatToggleWindow(GameWindow):
             check=self.the_cat.no_mates,
         )
 
+        self.checkboxes["prevent_partners"] = UICheckbox(
+            (22, 0),
+            container=self,
+            anchors={
+                "top_target": self.checkboxes["prevent_romance"],
+            },
+            tool_tip_text=f"windows.prevent_partners_tooltip",
+            check=self.the_cat.no_partners,
+        )
+
         if self.the_cat in [game.clan.instructor] + [clan.instructor for clan in game.clan.all_other_clans if clan.instructor]:
             self.checkboxes["prevent_fading"].set_tooltip(
                 "windows.prevent_fading_tooltip_guide"
@@ -104,5 +115,8 @@ class CatToggleWindow(GameWindow):
             elif event.ui_element == self.checkboxes["prevent_romance"]:
                 self.checkboxes["prevent_romance"].toggle()
                 self.the_cat.no_mates = self.checkboxes["prevent_romance"].checked
+            elif event.ui_element == self.checkboxes["prevent_partners"]:
+                self.checkboxes["prevent_partners"].toggle()
+                self.the_cat.no_partners = self.checkboxes["prevent_partners"].checked
 
         return super().process_event(event)

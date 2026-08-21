@@ -58,6 +58,8 @@
         "metric_toggle_tooltip": "Converts heights from inches to centimetres.",
         "adult_height_toggle": "Always show adult height",
         "adult_height_toggle_tooltip": "Young cats will always show their adult size and height.",
+        "showyears": "Display cat age in years",
+        "showyears_tooltip": "Cat ages will have year and moon counts instead of only a moon count",
         "showxp": "Show exact XP and nutrition status",
         "showxp_tooltip": "Will turn 'experience: proficient' into 'experience: proficient (151)'; and 'nutrition: full' into 'nutrition: full (70)'.",
         "random med cat": "Allow special ranks to be randomly selected on patrol",

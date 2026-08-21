@@ -69,6 +69,7 @@
         showheight = false
         metric_toggle = false
         adult_height_toggle = false
+        showyears = false
         showxp = false
         fading = true
         save_faded_copy = false

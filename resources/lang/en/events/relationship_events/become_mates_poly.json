@@ -1,11 +1,11 @@
 {
 	"high_romantic": {
 		"m_c_mates": [
-			"After a talk with [m_c_mates], m_c confessed {PRONOUN/m_c/poss} feelings to r_c, and they have become mates.",
+			"After a talk with [m_c_mates_partners], m_c confessed {PRONOUN/m_c/poss} feelings to r_c, and they have become mates.",
 			"After a talk with {PRONOUN/m_c/poss} (m_c_mate/mates), m_c confessed {PRONOUN/m_c/poss} feelings to r_c, and they have become mates."
 		],
 		"r_c_mates": [
-            "After talking with [r_c_mates], r_c asked m_c out. r_c and m_c have become mates.",
+            "After talking with [r_c_mates_partners], r_c asked m_c out. r_c and m_c have become mates.",
             "m_c asked r_c out, after r_c talked with {PRONOUN/r_c/poss} (r_c_mate/mates). m_c and r_c have become mates."
 		],
 		"both_mates": [
@@ -14,7 +14,7 @@
 	},
 	"low_romantic":{
 		"m_c_mates": [
-			"After m_c talked about {PRONOUN/m_c/poss} feelings for r_c with [m_c_mates], m_c and r_c have become mates.",
+			"After m_c talked about {PRONOUN/m_c/poss} feelings for r_c with [m_c_mates_partners], m_c and r_c have become mates.",
 			"After m_c talked about {PRONOUN/m_c/poss} feelings for r_c with {PRONOUN/m_c/poss} (m_c_mate/mates), m_c and r_c have become mates."
 		],
 		"r_c_mates": [
@@ -27,11 +27,11 @@
 	},
 	"like_to_romance":{
 		"m_c_mates": [
-			"m_c talked with [m_c_mates], that {PRONOUN/m_c/subject} {VERB/m_c/see/sees} r_c in a different light, and m_c and r_c have become mates.",
+			"m_c talked with [m_c_mates_partners], that {PRONOUN/m_c/subject} {VERB/m_c/see/sees} r_c in a different light, and m_c and r_c have become mates.",
 			"m_c talked with {PRONOUN/m_c/poss} (m_c_mate/mates), that {PRONOUN/m_c/subject} {VERB/m_c/see/sees} r_c in a different light, and m_c and r_c have become mates."
 		],
 		"r_c_mates": [
-			"m_c and r_c see each other in a different light; after r_c talked with [r_c_mates], m_c and r_c have become mates.",
+			"m_c and r_c see each other in a different light; after r_c talked with [r_c_mates_partners], m_c and r_c have become mates.",
             "m_c and r_c see each other in a different light; after r_c talked with {PRONOUN/r_c/poss} (r_c_mate/mates), they have become mates."
 		],
 		"both_mates": [
@@ -40,7 +40,7 @@
 	},
 	"rejected":{
 		"m_c_mates": [
-			"After a talk with [m_c_mates], m_c confessed {PRONOUN/m_c/poss} feelings to r_c, but was rejected.",
+			"After a talk with [m_c_mates_partners], m_c confessed {PRONOUN/m_c/poss} feelings to r_c, but was rejected.",
 			"After a talk with {PRONOUN/m_c/poss} (m_c_mate/mates), m_c confessed {PRONOUN/m_c/poss} feelings to r_c, but was rejected."
 		],
 		"r_c_mates": [
@@ -52,11 +52,11 @@
 	},
 	"high_romantic_makeup": {
 		"m_c_mates": [
-			"m_c loves [m_c_mates], but {PRONOUN/m_c/subject} still has feelings for r_c, even after their break up. After a talk with [m_c_mates], m_c confessed {PRONOUN/m_c/poss} feelings to r_c, and they have become mates again.",
+			"m_c loves [m_c_mates_partners], but {PRONOUN/m_c/subject} still has feelings for r_c, even after their break up. After a talk with [m_c_mates], m_c confessed {PRONOUN/m_c/poss} feelings to r_c, and they have become mates again.",
 			"After a talk with {PRONOUN/m_c/poss} (m_c_mate/mates), m_c asked r_c if they could become mates again, r_c accepted, and they have gotten back together."
 		],
 		"r_c_mates": [
-            "m_c wants to start things over with r_c. After r_c talked with [r_c_mates], m_c and r_c have gotten back together.",
+            "m_c wants to start things over with r_c. After r_c talked with [r_c_mates_partners], m_c and r_c have gotten back together.",
             "m_c told r_c that {PRONOUN/m_c/subject} {VERB/m_c/want/wants} to get back with {PRONOUN/r_c/object}. After r_c talked with {PRONOUN/r_c/poss} (r_c_mate/mates), m_c and r_c have become mates again."
 		],
 		"both_mates": [
@@ -65,11 +65,11 @@
 	},
 	"low_romantic_makeup":{
 		"m_c_mates": [
-			"After m_c talked about {PRONOUN/m_c/poss} lingering feelings for r_c with [m_c_mates], m_c and r_c have gotten back together.",
+			"After m_c talked about {PRONOUN/m_c/poss} lingering feelings for r_c with [m_c_mates_partners], m_c and r_c have gotten back together.",
 			"After m_c talked about {PRONOUN/m_c/poss} left over feelings for r_c with {PRONOUN/m_c/poss} (m_c_mate/mates), m_c and r_c have become mates again."
 		],
 		"r_c_mates": [
-            "After r_c talked with [r_c_mates] about {PRONOUN/r_c/poss} lingering feelings for m_c, m_c and r_c have become mates again.",
+            "After r_c talked with [r_c_mates_partners] about {PRONOUN/r_c/poss} lingering feelings for m_c, m_c and r_c have become mates again.",
             "After r_c talked with {PRONOUN/r_c/poss} (r_c_mate/mates) about {PRONOUN/r_c/poss} left over feelings for m_c, m_c and r_c have gotten back together."
 		],
 		"both_mates": [
@@ -78,7 +78,7 @@
 	},
 	"makeup_fail":{
 		"m_c_mates": [
-			"m_c loves [m_c_mates], but {PRONOUN/m_c/subject} still has feelings for r_c, even after their break up. After a talk with [m_c_mates], m_c confessed {PRONOUN/m_c/poss} feelings to r_c, but got rejected.",
+			"m_c loves [m_c_mates_partners], but {PRONOUN/m_c/subject} still has feelings for r_c, even after their break up. After a talk with [m_c_mates_partners], m_c confessed {PRONOUN/m_c/poss} feelings to r_c, but got rejected.",
 			"After a talk with {PRONOUN/m_c/poss} (m_c_mate/mates), m_c confessed {PRONOUN/m_c/poss} feelings to r_c, but was turned down."
 		],
 		"r_c_mates": [

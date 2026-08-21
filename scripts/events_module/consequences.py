@@ -108,7 +108,7 @@ def create_bio_parents(Cat, flip=False, second_parent=True, age=None, clan=None)
                         f"former_clancat_backstories", ["outsider1"])
                 )
         if blood_parent2:
-            blood_parent2.get_new_thought(thought)
+            blood_parent2.assign_thought(thought)
             if blood_parent2.status.rank in [CatRank.MEDICINE_CAT, CatRank.PROPHET]:
                 blood_parent2.backstory = choice(
                     ["medicine_cat", "disgraced1"])
@@ -190,6 +190,7 @@ def create_new_cat_block(
             if in_event_cats[index].ID not in adoptive_parents:
                 adoptive_parents.append(in_event_cats[index].ID)
                 adoptive_parents.extend(in_event_cats[index].mate)
+                adoptive_parents.extend(in_event_cats[index].partner)
 
     # gather mates
     give_mates = []
@@ -208,6 +209,24 @@ def create_new_cat_block(
                     continue
 
                 give_mates.append(in_event_cats[index])
+
+    # gather partners
+    give_partners = []
+    for tag in attribute_list:
+        match = re.match(r"partner:\s?([_,0-9a-zA-Z]+)", tag)
+        if not match:
+            continue
+
+        partner_indexes = match.group(1).split(",")
+
+        # TODO: make this less ugly
+        for index in partner_indexes:
+            if index in in_event_cats:
+                if in_event_cats[index].status.rank.is_any_apprentice_rank():
+                    print("Can't give apprentices partners")
+                    continue
+
+                give_partners.append(in_event_cats[index])
 
     # determine gender
     if "male" in attribute_list:
@@ -278,6 +297,12 @@ def create_new_cat_block(
         # Set same as first mate
         if match.group(1) == "mate" and give_mates:
             min_age, max_age = Cat.age_moons[give_mates[0].age]
+            age = randint(min_age, max_age)
+            break
+
+        # Set same as first partner
+        if match.group(1) == "partner" and give_partners:
+            min_age, max_age = Cat.age_moons[give_partners[0].age]
             age = randint(min_age, max_age)
             break
 
@@ -592,6 +617,7 @@ def create_new_cat_block(
         # add relations to bio parents, if needed
         # add relations to cats generated within the same block, as they are littermates
         # add mates
+        # add partners
         # THIS DOES NOT ADD RELATIONS TO CATS IN THE EVENT, those are added within the relationships block of the event
 
         fevercoat = False
@@ -612,6 +638,15 @@ def create_new_cat_block(
                 # this is some duplicate work, since this triggers inheritance re-calcs
                 # TODO: optimize
                 n_c.set_mate(inter_cat)
+
+            # SET PARTNERS
+            for inter_cat in give_partners:
+                if n_c == inter_cat or n_c.ID in inter_cat.partner:
+                    continue
+
+                # this is some duplicate work, since this triggers inheritance re-calcs
+                # TODO: optimize
+                n_c.set_partner(inter_cat)
 
             # LITTERMATES
             for inter_cat in new_cats:
@@ -683,6 +718,7 @@ def find_clan_cats(Cat, Relationship, event, in_event_cats: dict, i: int, attrib
     sibling = None
     parent_match = None
     give_mates = []
+    give_partners = []
     picked_cats = []
     chosen_backstory = None
 
@@ -721,6 +757,7 @@ def find_clan_cats(Cat, Relationship, event, in_event_cats: dict, i: int, attrib
                 if in_event_cats[index].ID not in adoptive_parents:
                     adoptive_parents.append(in_event_cats[index].ID)
                     adoptive_parents.extend(in_event_cats[index].mate)
+                    adoptive_parents.extend(in_event_cats[index].partner)
 
     # OPTION TO OVERRIDE DEFAULT BACKSTORY
     bs_override = False
@@ -775,6 +812,33 @@ def find_clan_cats(Cat, Relationship, event, in_event_cats: dict, i: int, attrib
 
             give_mates.extend(event.new_cats[index])
 
+    for tag in attribute_list:
+        match = re.match(r"partner:\s?([_,0-9a-zA-Z]+)", tag)
+        if not match:
+            continue
+
+        partner_indexes = match.group(1).split(",")
+
+        # TODO: make this less ugly
+        for index in partner_indexes:
+            if index in in_event_cats:
+                if in_event_cats[index].status.rank.is_any_apprentice_rank():
+                    print("Can't give apprentices partners")
+                    continue
+
+                give_partners.append(in_event_cats[index])
+
+            try:
+                index = int(index)
+            except ValueError:
+                print(f"partner-index not correct: {index}")
+                continue
+
+            if index >= i:
+                continue
+
+            give_partners.extend(event.new_cats[index])
+
     if "litter" in attribute_list:
         (parents, orphans) = get_alive_clan_queens(
             all_clan_cats, clan=other_clan.group_ID)
@@ -813,6 +877,13 @@ def find_clan_cats(Cat, Relationship, event, in_event_cats: dict, i: int, attrib
                 cat, for_love_interest=True, outsider=True)]
             if not all_clan_cats:
                 print("No possible mates found")
+                all_clan_cats = create_new_cat_block(
+                    Cat, Relationship, event, in_event_cats, i, attribute_list, clan=clan, other_clan=other_clan)
+        elif age == "partner":
+            all_clan_cats = [cat for cat in all_clan_cats if give_partners[0].is_potential_partner(
+                cat, for_love_interest=True, outsider=True)]
+            if not all_clan_cats:
+                print("No possible partners found")
                 all_clan_cats = create_new_cat_block(
                     Cat, Relationship, event, in_event_cats, i, attribute_list, clan=clan, other_clan=other_clan)
         elif age == "has_kits":
@@ -886,6 +957,24 @@ def find_clan_cats(Cat, Relationship, event, in_event_cats: dict, i: int, attrib
         if give_mates[0].status.rank == CatRank.PROPHET:
             give_mates[0].status._change_rank(CatRank.MEDICINE_CAT)
 
+        other_c = give_partners[0].status.fetch_clan_object()
+        give_partners[0].status.add_to_group(
+            other_clan.group_ID, standing_with_past_group=CatStanding.LEFT)
+        if give_partners[0].status.rank == CatRank.LEADER:
+            other_c.leader = None
+            other_c.leader_lives = 0
+        if give_partners[0].status.rank == CatRank.DEPUTY:
+            other_c.deputy = None
+        if give_partners[0].status.rank == CatRank.PROPHET:
+            other_c.prophet = None
+        if give_partners[0].rank == CatRank.MEDICINE_CAT:
+            other.remove_med_cat(cat)
+        if give_partners[0].status.rank in [CatRank.LEADER, CatRank.DEPUTY]:
+            give_partners[0].status._change_rank(CatRank.WARRIOR)
+        if give_partners[0].status.rank == CatRank.PROPHET:
+            give_partners[0].status._change_rank(CatRank.MEDICINE_CAT)
+        
+
     if "dead" in attribute_list:
         for cat in picked_cats:
             cat.die()
@@ -903,6 +992,15 @@ def find_clan_cats(Cat, Relationship, event, in_event_cats: dict, i: int, attrib
             # this is some duplicate work, since this triggers inheritance re-calcs
             # TODO: optimize
             cat.set_mate(inter_cat)
+
+        # SET PARTNERS
+        for inter_cat in give_partners:
+            if cat == inter_cat or cat.ID in inter_cat.partner:
+                continue
+
+            # this is some duplicate work, since this triggers inheritance re-calcs
+            # TODO: optimize
+            cat.set_partner(inter_cat)
 
         # ADOPTIVE PARENTS
         for par in adoptive_parents:
@@ -1278,12 +1376,7 @@ def create_new_cat(
             if new_cat.status.social is not CatSocial.CLANCAT:
                 new_cat.name.suffix = ""
         if not alive:
-            if dead_for:
-                if dead_for >= 5:
-                    new_cat.die(True, False)
-                    print("new cat id", new_cat.ID)
-            else:
-                new_cat.die()
+            new_cat.die()
             if dead_for is not None:
                 new_cat.status.add_to_group(
                     new_group_ID=group

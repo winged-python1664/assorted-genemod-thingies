@@ -38,6 +38,10 @@
             "one": "%{age} (1 moon)",
             "many": "%{age} (%{count} moons)"
         },
+        "years_label": {
+            "one": "%{age} ",
+            "many": "%{age} "
+        },
         "eyes_label": "eyes: %{eyes}",
         "pelt_label": "pelt: %{pelt}",
         "fur_label": "fur length: %{length}",

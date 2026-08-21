@@ -855,12 +855,49 @@ class ProfileScreen(Screens):
             age = i18n.t(f"general.{the_cat.age.value}", count=1)
         else:
             age = i18n.t(f"general.{the_cat.age.value}", count=1)
+
         # MOONS
-        output += i18n.t("screens.profile.age_label", age=age, count=the_cat.moons)
+        years = the_cat.moons // 12
+        spare_moons = the_cat.moons - (years * 12)
+
+        if spare_moons == 0:
+            moons = ""
+        elif spare_moons == 1:
+            moons = (" and 1 moon")
+        else:
+            moons = (f" and {spare_moons} moons")
+
+        if years == 1:
+            year = "year"
+        else:
+            year = "years"
+
+        dead_years = the_cat.dead_for // 12
+        spare_dead_moons = the_cat.moons - (dead_years * 12)
+
+        if spare_dead_moons == 0:
+            dead_moons = ""
+        elif spare_dead_moons == 1:
+            dead_moons = (" and 1 moon")
+        else:
+            dead_moons = (f" and {spare_moons} moons")
+
+        if years == 1:
+            dead_year = "year"
+        else:
+            dead_year = "years"
+
+        if get_clan_setting("showyears"):
+            output += the_cat.age + f" ({years} {year}{moons})"
+        else:
+            output += i18n.t("screens.profile.age_label", age=age, count=the_cat.moons)
 
         if the_cat.dead:
             output += "\n"
-            output += i18n.t("general.moons_age_in_death", count=the_cat.dead_for)
+            if get_clan_setting("showyears"):
+                output += the_cat.age + f" (dead for {dead_years} {dead_year}{dead_moons})"
+            else:
+                i18n.t("general.moons_age_in_death", count=the_cat.dead_for)
 
         # EYE COLOR
         if the_cat.age != CatAge.NEWBORN:
@@ -978,6 +1015,44 @@ class ProfileScreen(Screens):
 
             output += i18n.t(
                 "general.mate_label", count=len(mate_names), mates=mate_block
+            )
+
+        # PARTNER
+        if len(the_cat.partner) > 0:
+            output += "\n"
+
+            partner_names = []
+            # Grab the names of only the first two, since that's all we will display
+            for _m in the_cat.partner[:2]:
+                partner_ob = Cat.fetch_cat(_m)
+                if not isinstance(partner_ob, Cat):
+                    continue
+                if partner_ob.dead != self.the_cat.dead:
+                    if the_cat.dead:
+                        former_indicate = "general.partner_living"
+                    else:
+                        former_indicate = "general.partner_dead"
+
+                    partner_names.append(f"{str(partner_ob.name)} {i18n.t(former_indicate)}")
+                elif partner_ob.status.group_ID != self.the_cat.status.group_ID:
+                    partner_names.append(
+                        f"{str(partner_ob.name)} {i18n.t('general.partner_away')}"
+                    )
+                else:
+                    partner_names.append(f"{str(partner_ob.name)}")
+
+            partner_block = ", ".join(partner_names)
+
+            if len(the_cat.partner) > 2:
+                partner_block = i18n.t(
+                    "utility.items",
+                    count=2,
+                    item1=partner_block,
+                    item2=i18n.t("general.partner_extra", count=len(the_cat.partner) - 2),
+                )
+
+            output += i18n.t(
+                "general.partner_label", count=len(partner_names), partners=partner_block
             )
 
         return output
@@ -1552,6 +1627,19 @@ class ProfileScreen(Screens):
         else:
             text = i18n.t("cat.backstories.unknown", name=self.the_cat.name)
 
+        years = self.the_cat.moons // 12
+        spare_moons = self.the_cat.moons - years
+
+        if spare_moons == 0:
+            moons = ""
+        else:
+            moons = (f" and {spare_moons} moons")
+
+        if years == 1:
+            year = "year"
+        else:
+            year = "years"
+
         if ((self.the_cat.status.fetch_clan_object() and game.clan.clancount == "multiclan") or 
             self.the_cat.status.get_last_living_group() == CatGroup.PLAYER_CLAN_ID):
             beginning = self.the_cat.history.beginning
@@ -1566,11 +1654,18 @@ class ProfileScreen(Screens):
                         ).capitalize(),
                     )
                 else:
-                    text += i18n.t(
-                        "cat.backstories.beginning_cotc",
-                        moon=beginning["moon"],
-                        join_age=i18n.t("general.moons_age", count=beginning["age"]),
-                    )
+                    if get_clan_setting("showyears"):
+                        text += i18n.t(
+                            "cat.backstories.beginning_cotc",
+                            moon=beginning["moon"],
+                            join_age=self.the_cat.age + f" ({years} {year}{moons})",
+                        )
+                    else:
+                        text += i18n.t(
+                            "cat.backstories.beginning_cotc",
+                            moon=beginning["moon"],
+                            join_age=i18n.t("general.moons_age", count=beginning["age"]),
+                        )  
 
         if self.the_cat.status.is_lost():
             text += (
@@ -2203,6 +2298,19 @@ class ProfileScreen(Screens):
                     )
                 )
 
+        years = self.the_cat.moons // 12
+        spare_moons = self.the_cat.moons - years
+
+        if spare_moons == 0:
+            moons = ""
+        else:
+            moons = (f" and {spare_moons} moons")
+
+        if years == 1:
+            year = "year"
+        else:
+            year = "years"
+
         # collect details for injuries
         if name in self.the_cat.injuries:
             # moons with condition
@@ -2215,9 +2323,14 @@ class ProfileScreen(Screens):
             elif name == "pregnant":
                 insert = "general.pregnant_for"
 
-            text_list.append(
-                i18n.t(insert, moons=i18n.t("general.moons_age", count=moons_with))
-            )
+            if get_clan_setting("showyears"):
+                text_list.append(
+                    join_age=self.the_cat.age + f" ({years} {year}{moons})"
+                )
+            else:
+                text_list.append(
+                    join_age=i18n.t(insert, moons=i18n.t("general.moons_age", count=moons_with))
+                )
 
             # infected or festering
             if "complication" in keys:

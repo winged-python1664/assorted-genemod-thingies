@@ -11,6 +11,7 @@ class AfterlifeAffinityDict(TypedDict):
 class CatTogglesDict(TypedDict):
     no_kits: bool
     no_mates: bool
+    no_partners: bool
     no_retire: bool
     prevent_fading: bool
     favourite: bool
@@ -32,6 +33,8 @@ class InheritanceDict(TypedDict):
     faded_offspring: List[str]
     mate: List[str]
     previous_mates: List[str]
+    partner: List[str]
+    previous_partners: List[str]
 
 
 class MentorshipDict(TypedDict):

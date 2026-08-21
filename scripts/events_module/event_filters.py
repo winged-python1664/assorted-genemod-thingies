@@ -188,6 +188,8 @@ def event_for_tags(tags: list, cat, clan=CatGroup.PLAYER_CLAN_ID, other_cat=None
                 return False
             if any(cat.fetch_cat(i).no_kits for i in cat.mate):
                 return False
+            if any(cat.fetch_cat(i).no_kits for i in cat.partner):
+                return False
 
         if (
             other_cat
@@ -523,6 +525,10 @@ def event_for_cat(
             elif status == "mates" and not cat.mate:
                 return False
             elif status == "mates_with_pl" and p_l.ID not in cat.mate:
+                return False
+            elif status == "partners" and not cat.partner:
+                return False
+            elif status == "partners_with_pl" and p_l.ID not in cat.partner:
                 return False
             elif status == "parent/child" and not cat.get_children():
                 return False
@@ -1163,6 +1169,12 @@ def _get_cats_with_rel_status(
         else:
             cat_list = [c for c in cat_list if c.ID in cat.mate]
         rel_status_list.remove("mates")
+    if "partners" in rel_status_list:
+        if is_exclusionary:
+            cat_list = [c for c in cat_list if c.ID not in cat.partner]
+        else:
+            cat_list = [c for c in cat_list if c.ID in cat.partner]
+        rel_status_list.remove("partners")
     if "parent/child" in rel_status_list:
         if is_exclusionary:
             cat_list = [c for c in cat_list if c.ID not in cat.get_children()]
@@ -1516,6 +1528,7 @@ def _filter_relationship_type_updated(
     # if the cat meets the check AND it's an exclusionary tag: return False
     # if the cat doesn't meet the check AND it's an inclusionary tag: return False
     # otherwise, continue onwards
+    cats_to = [c for c in cats_to if c not in cats_from]
 
     if "can_romance" in filter_types:
         for cat in cats_from:
@@ -1640,6 +1653,34 @@ def _filter_relationship_type_updated(
                 return False
 
         filter_types.remove("mates")
+
+    if "partners" in filter_types:
+        for cat in cats_from:
+            # if the cat doesn't have enough partners to conceivably be partnered with all the required cats, and we aren't trying to exclude partnered cats
+            if len(cat.partner) < len(cats_to):
+                if "partners" in inclusionary_values:
+                    # then we know these cats don't qualify
+                    return False
+
+        # Now the expensive test.  We have to see if everyone is partners with each other
+        # Hopefully the cheaper tests mean this is only needed on events with a small number of cats
+        for cat in cats_from:
+            # if the cats ARE partners
+            if all(
+                [inter_cat.ID in cat.partner for inter_cat in cats_to if cat != inter_cat]
+            ):
+                if "partners" in exclusionary_values:
+                    return False
+            # if SOME but not ALL cats are partners
+            elif "partners" in inclusionary_values and any(
+                [inter_cat.ID in cat.partner for inter_cat in cats_to if cat != inter_cat]
+            ):
+                return False
+            # if the cats AREN'T partners
+            elif "partners" in inclusionary_values:
+                return False
+
+        filter_types.remove("partners")
 
     # Check if the cats are in a parent/child relationship
     if "parent/child" in filter_types:
@@ -1879,6 +1920,71 @@ def filter_relationship_type(group: list, filter_types: List[str], patrol_leader
 
         filter_types.remove("mates")
 
+    if "partners" in filter_types:
+        # first test if more than one cat
+        if len(group) == 1:
+            return False
+
+        # then if cats don't have the needed number of partners
+        qualifies = False
+        if not all(len(i.partner) >= (len(group) - 1) for i in group):
+            if "partners" in exclusionary_values:
+                qualifies = True
+            else:
+                return False
+        else:
+            # Now the expensive test.  We have to see if everyone is partners with each other
+            # Hopefully the cheaper tests mean this is only needed on events with a small number of cats
+            for x in combinations(group, 2):
+                if x[0].ID not in x[1].partner:
+                    if "partners" in exclusionary_values:
+                        qualifies = True
+                    else:
+                        return False
+                if "partners" in exclusionary_values and not qualifies:
+                    return False
+
+        filter_types.remove("partners")
+
+    # check if all cats are mates with p_l (they do not have to be mates with each other)
+    if "mates_with_pl" in filter_types:
+        # First test if there is more than one cat
+        if len(group) == 1:
+            return False
+
+        # Check each cat to see if it is mates with the patrol leader
+        qualifies = False
+        for cat in group:
+            if cat.ID == patrol_leader.ID:
+                continue
+            if cat.ID not in patrol_leader.mate:
+                if "mates_with_pl" in exclusionary_values:
+                    qualifies = True
+                else:
+                    return False
+            if "mates_with_pl" in exclusionary_values and not qualifies:
+                return False
+        filter_types.remove("mates_with_pl")
+
+    if "partners_with_pl" in filter_types:
+        # First test if there is more than one cat
+        if len(group) == 1:
+            return False
+
+        # Check each cat to see if they're partners with the patrol leader
+        qualifies = False
+        for cat in group:
+            if cat.ID == patrol_leader.ID:
+                continue
+            if cat.ID not in patrol_leader.partner:
+                if "partners_with_pl" in exclusionary_values:
+                    qualifies = True
+                else:
+                    return False
+            if "partners_with_pl" in exclusionary_values and not qualifies:
+                return False
+        filter_types.remove("partners_with_pl")
+
     # Check if the cats are in a parent/child relationship
     if "parent/child" in filter_types:
         # It should be exactly two cats for a "parent/child" event
@@ -2033,6 +2139,27 @@ def get_highest_romantic_relation(
         if rel.romance > max_love_value:
             current_max_relationship = rel
             max_love_value = rel.romance
+
+    return current_max_relationship
+
+def get_highest_like_relation(
+    relationships, exclude_partner=False, potential_partner=False
+) -> Relationship:
+    """Returns the relationship with the highest like value."""
+    max_love_value = 0
+    current_max_relationship = None
+    for rel in relationships:
+        if rel.like < 0:
+            continue
+        if exclude_partner and rel.cat_from.ID in rel.cat_to.partner:
+            continue
+        if potential_partner and not rel.cat_to.is_potential_partner(
+            rel.cat_from, for_love_interest=True
+        ):
+            continue
+        if rel.like > max_love_value:
+            current_max_relationship = rel
+            max_love_value = rel.like
 
     return current_max_relationship
 

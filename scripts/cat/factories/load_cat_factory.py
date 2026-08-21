@@ -47,6 +47,7 @@ class LoadCatFactory(BaseCatFactory):
         cls.cat_id = kwargs["ID"]
 
         mate = kwargs.get("mate", [])
+        partner = kwargs.get("partner", [])
         inheritance = InheritanceDict(
             parent1=kwargs["parent1"],
             parent2=kwargs["parent2"],
@@ -57,6 +58,8 @@ class LoadCatFactory(BaseCatFactory):
             faded_offspring=kwargs.get("faded_offspring", []),
             mate=mate if isinstance(mate, list) else [mate],
             previous_mates=kwargs.get("previous_mates", []),
+            partner=partner if isinstance(partner, list) else [partner],
+            previous_partners=kwargs.get("previous_parnters", []),
         )
 
         mentorship = MentorshipDict(
@@ -70,6 +73,7 @@ class LoadCatFactory(BaseCatFactory):
         toggles = CatTogglesDict(
             no_kits=kwargs.get("no_kits", False),
             no_mates=kwargs.get("no_mates", False),
+            no_partners=kwargs.get("no_partners", False),
             no_retire=kwargs.get("no_retire", False),
             prevent_fading=kwargs.get("prevent_fading", False),
             favourite=kwargs.get("favourite", False),

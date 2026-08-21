@@ -4,9 +4,17 @@
             "one": "1 moon",
             "many": "%{count} moons"
         },
+        "years_age": {
+            "one": "",
+            "many": ""
+        },
         "moons_age_in_death": {
             "one": "dead for 1 moon",
             "many": "dead for %{count} moons"
+        },
+        "years_age_in_death": {
+            "one": "dead for ",
+            "many": "dead for "
         },
         "moon_date": "moon %{moon}",
         "guide": "guiding ghost",
@@ -118,6 +126,12 @@
         },
         "are_mates": "mates",
 		"ex_mate": "ex-mate",
+        "partner": {
+            "one": "partner",
+            "many": "partners"
+        },
+        "are_partners": "partners",
+        "ex_partner": "ex_partner",
         "she-cat": "molly",
 		"cat": "sam",
 		"molly": "molly",
@@ -197,11 +211,22 @@
         "mate_living": "(living)",
         "mate_dead": "(dead)",
         "mate_away": "(away)",
+        "partner_living": "(living)",
+        "partner_dead": "(dead)",
+        "partner_away": "(away)",
         "mate_label": {
             "one": "mate: %{mates}",
             "many": "mates: %{mates}"
         },
+        "partner_label": {
+            "one": "partner: %{partners}",
+            "many": "partners: %{partners}"
+        },
         "mate_extra": {
+            "one": "1 other",
+            "many": "%{count} others"
+        },
+        "partner_extra": {
             "one": "1 other",
             "many": "%{count} others"
         },

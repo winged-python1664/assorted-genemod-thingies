@@ -26,6 +26,7 @@ class FamilyRelations:
     parents: List[FamilyRelationLink] = field(default_factory=lambda: [])
     children: List[FamilyRelationLink] = field(default_factory=lambda: [])
     mates: List[FamilyRelationLink] = field(default_factory=lambda: [])
+    partners: List[FamilyRelationLink] = field(default_factory=lambda: [])
 
 
 class InheritanceDb:
@@ -84,6 +85,16 @@ class InheritanceDb:
                     {"relation_type": RelationType.NOT_BLOOD, "cat_id": m}
                 )
 
+        try:
+            previous_partners = cat.previous_partners
+        except AttributeError:
+            previous_partners = []
+        for partners_list in (cat.partner, previous_partners):
+            for p in partners_list:
+                self._cat_to_rels[cat.ID].partners.append(
+                    {"relation_type": RelationType.NOT_BLOOD, "cat_id": p}
+                )
+
         if save:
             self._saved_family_rels[cat.ID] = self._cat_to_rels[cat.ID]
 
@@ -127,6 +138,9 @@ class InheritanceDb:
     def get_mates(self, cat_id: str) -> Set[str]:
         return {m["cat_id"] for m in self._cat_to_rels[cat_id].mates}
 
+    def get_partners(self, cat_id: str) -> Set[str]:
+        return {p["cat_id"] for p in self._cat_to_rels[cat_id].partners}
+
     def get_children(self, cat_id: str, only_living: bool=False) -> Set[str]:
         from scripts.cat.cats import Cat
         return {k["cat_id"] for k in self._cat_to_rels[cat_id].children if not only_living or Cat.fetch_cat(k["cat_id"]) and not Cat.fetch_cat(k["cat_id"]).dead}
@@ -157,11 +171,23 @@ class InheritanceDb:
             siblings_mates.update(self.get_mates(s))
         return siblings_mates
 
+    def get_siblings_partners(self, cat_id: str) -> Set[str]:
+        siblings_partners = set()
+        for s in self.get_siblings(cat_id):
+            siblings_partners.update(self.get_mates(s))
+        return siblings_partners
+
     def get_childrens_mates(self, cat_id: str) -> Set[str]:
         childrens_mates = set()
         for c in self.get_children(cat_id):
             childrens_mates.update(self.get_mates(c))
         return childrens_mates
+
+    def get_childrens_partners(self, cat_id: str) -> Set[str]:
+        childrens_partners = set()
+        for c in self.get_children(cat_id):
+            childrens_partners.update(self.get_partners(c))
+        return childrens_partners
 
     def get_siblings_children(self, cat_id: str) -> Set[str]:
         siblings_children = set()
@@ -277,6 +303,7 @@ class InheritanceDb:
             (inheritance.get_grand_kits, self.get_grandchildren),
             (inheritance.get_siblings_kits, self.get_siblings_children),
             (inheritance.get_mates, self.get_mates),
+            (inheritance.get_partners, self.get_partners),
         ]
 
         for t in inheritance_db_to_inheritance_functions:

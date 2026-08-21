@@ -92,6 +92,8 @@ def handle_two_moon_pregnant(cat: Cat, clan):
     if cat.ID not in game.clan.pregnancy_data.keys():
         return
 
+    pot_par = [cat.mate, cat.partner]
+
     # if the pregnant cat is killed meanwhile, delete it from the dictionary
     if cat.dead:
         del game.clan.pregnancy_data[cat.ID]
@@ -128,7 +130,7 @@ def handle_two_moon_pregnant(cat: Cat, clan):
     mate_claimed_kits = False
     secret_affair_birth = False
     affair_known = _get_affair_visibility_from_pregnancy(cat)
-    if affair_partner_id and cat.mate:
+    if affair_partner_id and (pot_par):
         cheated_mates = _get_cheated_mate(cat)
         for cheated_mate in cheated_mates:
             # if the mate at first didn't know they were cheated on,
@@ -169,7 +171,7 @@ def handle_two_moon_pregnant(cat: Cat, clan):
             other_cat = []
         for id in affair_partner_id:
             other_cat.append(Cat.all_cats.get(id))
-            if id not in pregnant_cat.mate:
+            if id not in (pregnant_cat.mate, pregnant_cat.partner):
                 affair_partners.append(Cat.all_cats.get(id))
         if affair_partners:
             random_affair = choice(affair_partners)
@@ -194,7 +196,7 @@ def handle_two_moon_pregnant(cat: Cat, clan):
             kit.phenotype.fevercoat = True
             if kit.chimerapheno:
                 kit.chimerapheno.fevercoat = True
-        if affair_partners and pregnant_cat.mate:
+        if affair_partners and (pregnant_cat.mate, pregnant_cat.partner):
             for x in affair_partners:
                 kit.affair_parents.append(x.ID)
         if surrogate:
@@ -320,7 +322,7 @@ def handle_two_moon_pregnant(cat: Cat, clan):
         meds = find_alive_cats_with_rank(
             Cat, [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE, CatRank.PROPHET], sort=True, clan=clan.group_ID
         )
-        mate_is_med = [mate_id for mate_id in cat.mate if mate_id in meds]
+        mate_is_med = [mate_id for mate_id in (cat.mate) if mate_id in meds and partner_id for partner_id in (cat.partner) if partner_id in meds]
         if not meds or cat in meds or len(mate_is_med) > 0:
             for event in possible_events:
                 if (CatRank.MEDICINE_CAT, CatRank.PROPHET) in event:
@@ -353,7 +355,7 @@ def handle_two_moon_pregnant(cat: Cat, clan):
             possible_events = events["birth"]["difficult_birth"]
             # just makin sure meds aren't mentioned if they aren't around or if they are a parent
             meds = find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE, CatRank.PROPHET], clan=clan.group_ID)
-            mate_is_med = [mate_id for mate_id in cat.mate if mate_id in meds]
+            mate_is_med = [mate_id for mate_id in (cat.mate) if mate_id in meds and partner_id for partner_id in (cat.partner) if partner_id in meds]
             if not meds or cat in meds or len(mate_is_med) > 0:
                 for event in possible_events:
                     if (CatRank.MEDICINE_CAT, CatRank.PROPHET) in event:
@@ -396,6 +398,16 @@ def handle_two_moon_pregnant(cat: Cat, clan):
             str(cat_dict["rc_mate"].name),
             choice(cat_dict["rc_mate"].pronouns),
         )
+    if "mc_partner" in cat_dict:
+        extra_cat_dict["mc_partner"] = (
+            str(cat_dict["mc_partner"].name),
+            choice(cat_dict["mc_partner"].pronouns),
+        )
+    if "rc_partner" in cat_dict:
+        extra_cat_dict["rc_partner"] = (
+            str(cat_dict["rc_partner"].name),
+            choice(cat_dict["rc_partner"].pronouns),
+        )
     if extra_cat_dict:
         print_event = process_text(print_event, extra_cat_dict)
 
@@ -425,9 +437,9 @@ def handle_two_moon_pregnant(cat: Cat, clan):
             if cheated_mate not in adoptive_parents:
                 _handle_affair_discovery_breakup(cat, cheated_mate)
 
-        if who_cheater and who_cheater.mate:
+        if who_cheater and (who_cheater.mate, who_cheater.partner):
             other_cat_mate = None
-            for mate_id in who_cheater.mate:
+            for mate_id in (who_cheater.mate, who_cheater.partner):
                 if mate_id != cat.ID:
                     other_cat_mate = Cat.fetch_cat(mate_id)
                     if other_cat_mate and not other_cat_mate.dead:
@@ -454,7 +466,7 @@ def _get_affair_visibility_from_pregnancy(
 def _get_cheated_mate(subject_cat: Cat, include_dead: bool = False):
     """Gets cheating cat's mate for the events"""
     mates = []
-    for mate_id in choices(subject_cat.mate):
+    for mate_id in choices(subject_cat.mate, subject_cat.partner):
         mate = Cat.fetch_cat(mate_id)
         if not mate:
             continue
@@ -509,6 +521,8 @@ def _handle_main_birth_event(
     random_choice = None
     surrogate_birth = False
 
+    pot_par = [cat.mate, cat.partner]
+
     if other_cat:
         random_choice = choice(other_cat)
         while random_choice.ID == cat.ID:
@@ -522,8 +536,8 @@ def _handle_main_birth_event(
                 who_outside = x
             if x.status.group_ID == cat.status.group_ID or not (x.status.is_lost() or x.status.is_exiled()):
                 all_mates_outside = False
-            if len(x.mate) > 0:
-                if not surrogate and cat.ID not in x.mate and not x.dead:
+            if len(x.mate, x.partner) > 0:
+                if not surrogate and cat.ID not in (x.mate, x.partner) and not x.dead:
                     who_cheater = x
                 both_unmated = False
 
@@ -564,7 +578,7 @@ def _handle_main_birth_event(
             involved_cats.append(who_outside.ID)
             random_choice = who_outside
         event_list.append(choice(events["birth"]["outside_mate"]))
-    elif len(cat.mate) < 1 and both_unmated and not dead_mate:
+    elif len(pot_par) < 1 and both_unmated and not dead_mate:
         involved_cats.append(random_choice.ID)
         cat_dict["r_c"] = random_choice
         if randint(0, 1):
@@ -575,7 +589,7 @@ def _handle_main_birth_event(
             event_list.append(choice(events["birth"]["both_unmated_neg"]))
 
     # affair birth strings (the main cat cheated on their mate)
-    elif len(cat.mate) > 0 and affair_partners and not random_affair.dead:
+    elif len(pot_par) > 0 and affair_partners and not random_affair.dead:
         random_choice = random_affair
         living_mate = _get_cheated_mate(cat)
         if living_mate:
@@ -641,7 +655,7 @@ def _remove_unmentioned_mate_ids(
     involved_cats: List[str], event_text: str, cat_dict: Dict
 ) -> List[str]:
     """Removes the cheated mate's ID if mc/rc_mate isn't present in the affair birth event text."""
-    for placeholder in ("mc_mate", "rc_mate"):
+    for placeholder in ("mc_mate", "rc_mate", "mc_partner", "rc_partner"):
         cat = cat_dict.get(placeholder)
         if cat and placeholder not in event_text and cat.ID in involved_cats:
             involved_cats.remove(cat.ID)
@@ -685,6 +699,25 @@ def _handle_on_birth_relationship_changes(
             change_relationship_values(
                 cats_to=[cat], cats_from=[mate], log=log_text, **breakup_reaction
             )
+        for partner_id in cat.partner:
+            partner = Cat.fetch_cat(partner_id)
+            if not partner:
+                continue
+
+            breakup_reaction = get_config(
+                "mates.breakup.reactions.affair_discovery_partner_reaction"
+            )
+            log_text = process_text(
+                i18n.t("conditions.pregnancy.affair_rel_log"),
+                {
+                    "m_c": (str(partner.name), choice(partner.pronouns)),
+                    "r_c": (str(cat.name), choice(cat.pronouns)),
+                },
+            )
+            log_text = i18n.t("relationships.negative_postscript", text=log_text)
+            change_relationship_values(
+                cats_to=[cat], cats_from=[mate], log=log_text, **breakup_reaction
+            )
 
     # if the other cat had a mate, their mate also lose relationship with them
     if who_cheater and other_cat_affair_known:
@@ -710,11 +743,33 @@ def _handle_on_birth_relationship_changes(
                 log=log_text,
                 **breakup_reaction,
             )
+        for partner_id in who_cheater.partner:
+            partner = Cat.fetch_cat(partner_id)
+            if not partner:
+                continue
+
+            breakup_reaction = get_config(
+                "mates.breakup.reactions.affair_discovery_other_partner_reaction"
+            )
+            log_text = process_text(
+                i18n.t("conditions.pregnancy.affair_rel_log"),
+                {
+                    "m_c": (str(mate.name), choice(mate.pronouns)),
+                    "r_c": (str(other_cat.name), choice(other_cat.pronouns)),
+                },
+            )
+            log_text = i18n.t("relationships.negative_postscript", text=log_text)
+            change_relationship_values(
+                cats_to=[other_cat],
+                cats_from=[mate],
+                log=log_text,
+                **breakup_reaction,
+            )
     # relationship changes for unmated co-parenting births
     if (
         other_cat
-        and not cat.mate
-        and not random_choice.mate
+        and not cat.mate, cat.partner
+        and not random_choice.mate, random_choice.partner
         and not random_choice.dead
         and coparenting_outcome
     ):
@@ -779,7 +834,7 @@ def _handle_affair_discovery_breakup(cheating_cat: Cat, mate_cat: Cat):
     """Handles a chance for a breakup event after an affair is discovered."""
     if not cheating_cat or not mate_cat:
         return
-    if cheating_cat.ID not in mate_cat.mate:
+    if cheating_cat.ID not in (mate_cat.mate, mate_cat.partner):
         return
 
     breakup_chance = get_config("mates.breakup.affair_breakup_chance")

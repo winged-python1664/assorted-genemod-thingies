@@ -76,7 +76,7 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
         if surrogate:
             surrogates.append(other_cat[0].ID)
         for x in other_cat:
-            if cat.mate and x.ID not in cat.mate:
+            if (cat.mate, cat.partner) and x.ID not in (cat.mate, cat.partner):
                 affair_partner.append(x.ID)
             else:
                 ids.append(x.ID)
@@ -90,11 +90,11 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
     if get_clan_setting("same sex birth"):
         mate = [
             Cat.fetch_cat(mate_id)
-            for mate_id in cat.mate
+            for mate_id in (cat.mate, cat.partner)
             if Cat.fetch_cat(mate_id)
         ]
     else:
-        for mate_id in cat.mate:
+        for mate_id in (cat.mate, cat.partner):
             mate_cat = Cat.fetch_cat(mate_id)
             mate.append(mate_cat)
 
@@ -214,9 +214,9 @@ def _retrieve_secret_kittens(cat, other_cat, surrogate, clan):
     for kit in kits:
         if surrogate:
             kit.surrogate_parents.append(pregnant_cat.ID)
-        if cat.mate and other_cat:
+        if (cat.mate, cat.partner) and other_cat:
             for x in other_cat:
-                if x.ID not in cat.mate and x.ID not in kit.surrogate_parents:
+                if x.ID not in (cat.mate, cat.partner) and x.ID not in kit.surrogate_parents:
                     kit.affair_parents.append(x.ID)
         if random() < stillborn_chance or kit.phenotype.sexgene[0] == "Y" or kit.phenotype.manx[1] == "Ab" or kit.phenotype.manx[1] == "M" or kit.phenotype.munch[1] == "Mk" or ('NoDBE' not in kit.phenotype.pax3 and 'DBEalt' not in kit.phenotype.pax3):
             if not kit.dead:
@@ -241,7 +241,7 @@ def _retrieve_secret_kittens(cat, other_cat, surrogate, clan):
                 name=cat.name,
                 insert=i18n.t("conditions.pregnancy.kit_amount", count=len(kits)),
             )
-            for p in cat.mate:
+            for p in (cat.mate, cat.partner):
                 par = Cat.fetch_cat(p)
                 par.birth_cooldown = birth_cooldown
         else:

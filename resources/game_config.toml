@@ -61,6 +61,9 @@ dev_tools = false
   # base 1/chance of a romance interaction with another cat, when a cat has a mate
   chance_romance_not_mate = 15
 
+  # base 1/chance of a qpr interaction with another cat, when a cat has a partner
+  chance_qpr_not_partner = 15
+
   # set to True if deputies should be more likely to have negative rel events with the leader
   deputy_to_leader_neg_buff = false
   # the higher the number, the more likely the deputy will have a negative respect event with the leader
@@ -116,9 +119,12 @@ dev_tools = false
 [mates]
   # permit player to change cat mates
   allow_manual = true
-  
+
   # allow mates to happen
   allow_mating = true
+
+  # allow partners to happen
+  allow_partners = true
 
   # chance that second parent will be set as mate when single cats have litters with them
   crossclan_litter_mates_chance = 0.2
@@ -135,6 +141,12 @@ dev_tools = false
 
   # 1/chance of becoming mates, triggers with friends_to_lover (has to be a high number because many relationships are checked each moon)
   chance_friends_to_lovers = 130
+
+  # 1/chance of becoming partners when the conditions are fulfilled
+  chance_fulfilled_condition_partners = 6
+
+  # 1/chance of becoming partners, triggers with romance_to_like (high number so not tooooo many budding romances get cut short)
+  chance_romance_to_like = 180
 
   # chance to approach grieving cat
   [mates.approach_grief]
@@ -173,6 +185,20 @@ dev_tools = false
     respect = 0
     comfort = 10
     trust = 0
+
+    [mates.confession.make_confession_partners]
+    romance = 0
+    like = 65
+    respect = 20
+    comfort = 40
+    trust = 25
+
+    [mates.confession.accept_confession_partners]
+    romance = 0
+    like = 55
+    respect = 15
+    comfort = 30
+    trust = 15
 
     # confession reactions
     [mates.confession.reactions]
@@ -213,6 +239,41 @@ dev_tools = false
         comfort = 5
         trust = 5
 
+    # partner confession reactions
+    [mates.confession.reactions_partners]
+      [mates.confession.reactions_partners.makeup_fail.cat_from]
+        like = -20
+        comfort = -20
+        trust = -5
+      [mates.confession.reactions_partners.makeup_fail.cat_to]
+        like = -5
+        comfort = -5
+        trust = -5
+        respect = -5
+      [mates.confession.reactions_partners.rejected.cat_from]
+        like = -5
+        comfort = -10
+        respect = -5
+      [mates.confession.reactions_partners.rejected.cat_to]
+        like = -10
+        comfort = -10
+
+      [mates.confession.reactions_partners.makeup.cat_from]
+        like = 5
+        trust = 5
+      [mates.confession.reactions_partners.makeup.cat_to]
+        like = 10
+        comfort = 5
+        trust = 10
+        respect = 5
+      [mates.confession.reactions_partners.accepted.cat_from]
+        like = 5
+        comfort = 5
+      [mates.confession.reactions_partners.accepted.cat_to]
+        like = 5
+        comfort = 5
+        trust = 5
+
   # both relationships have to fulfill this condition to become mates
   [mates.mate_condition]
     romance = 20
@@ -229,6 +290,20 @@ dev_tools = false
     comfort = 20
     trust = 0
 
+  [mates.partner_condition]
+    romance = 0
+    like = 65
+    respect = 15
+    comfort = 40
+    trust = 15
+
+  [mates.romance_to_like]
+    romance = 20
+    like = 50
+    respect = 10
+    comfort = 20
+    trust = 20
+
   [mates.poly]
     # which conditions all current mate relationships has to have towards the main cat + vice versa
     [mates.poly.current_mate_condition]
@@ -242,6 +317,20 @@ dev_tools = false
     [mates.poly.mates_to_each_other]
       romance = 0
       like = 15
+      respect = 0
+      comfort = 15
+      trust = 20
+
+    [mates.poly.current_partner_condition]
+      romance = 0
+      like = 50
+      respect = 0
+      comfort = 25
+      trust = 25
+
+    [mates.poly.partners_to_each_other]
+      romance = 0
+      like = 35
       respect = 0
       comfort = 15
       trust = 20
@@ -266,6 +355,20 @@ dev_tools = false
       bad_breakup = 5
       chill_breakup = 5
 
+    [mates.breakup_partners.initial_chance]
+      threshold = 120
+      default_chance = 35
+      positive_compatibility = 8
+      negative_compatibility = -10
+
+    [mates.breakup_partners.default_weights]
+      had_fight = 3
+      decided_to_be_friends = 3
+      decided_to_be_mates = 3
+      grew_apart = 3
+      bad_breakup = 5
+      chill_breakup = 5
+
     # these denote how relationships change upon a breakup
     [mates.breakup.reactions]
       variability = [-10, 10]
@@ -279,6 +382,12 @@ dev_tools = false
         like = 30
         trust = 20
         comfort = 10
+        respect = 10
+      [mates.breakup.reactions.decided_to_be_partners]
+        romance = -50
+        like = 40
+        trust = 20
+        comfort = 20
         respect = 10
       [mates.breakup.reactions.lost_feelings]
         romance = -30
@@ -294,6 +403,32 @@ dev_tools = false
         romance = -20
         comfort = -10
         respect = 10
+
+    [mates.breakup.reactions_partners]
+      variability = [-10, 10]
+      [mates.breakup.reactions_partners.had_fight]
+        like = -20
+        comfort = -10
+        trust = -15
+      [mates.breakup.reactions_partners.decided_to_be_mates]
+        romance = 20
+        like = 10
+        trust = 20
+        comfort = 10
+        respect = 10
+      [mates.breakup.reactions_partners.grew_apart]
+        like = -10
+        comfort = -10
+      [mates.breakup.reactions_partners.bad_breakup]
+        like = -10
+        trust = -30
+        comfort = -20
+        respect = -10
+      [mates.breakup.reactions_partners.chill_breakup]
+        like = -10
+        comfort = -10
+        respect = 10
+
     [mates.breakup.reactions.affair_discovery_mate_reaction]
       romance = -50
       trust = -30
@@ -302,7 +437,16 @@ dev_tools = false
       romance = -50
       trust = -30
       like = -40
-    
+
+    [mates.breakup.reactions_partners.affair_discovery_partner_reaction]
+      like = -50
+      trust = -30
+      comfort = -40
+    [mates.breakup.reactions_partners.affair_discovery_other_partner_reaction]
+      like = -50
+      trust = -30
+      comfort = -40
+
 
 [new_cat]
   # number of welcoming events to add when a new cat joins
@@ -737,6 +881,9 @@ dev_tools = false
 
   # base 1/chance for a romance patrol. gets modified further in code
   chance_of_romance_patrol = 16
+
+  # base 1/chance for a qpr patrol. gets modified further in code
+  chance_of_qpr_patrol = 18
 
   # forces patrol with this id to occur, assuming it's possible by constraints
   debug_ensure_patrol_id = ""

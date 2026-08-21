@@ -13,7 +13,15 @@
 		"m_c realizes that {PRONOUN/m_c/subject} {VERB/m_c/don't/doesn't} have the mentality to keep a romantic relationship right now. After a little talk with r_c, they have decided that they should just be friends, for now at least.",
 		"m_c feels like {PRONOUN/m_c/subject} {VERB/m_c/aren't/isn't} a good fit for r_c anymore. After a talk with {PRONOUN/r_c/object}, they've decided to just be friends.",
 		"m_c isn't so sure about continuing a romantic relationship with r_c anymore. After a little talk, they have decided that they should just be friends.",
-		"m_c and r_c announce their break-up. Before their friends can offer sympathy, m_c and r_c reassure them that they left off on good terms and will still be good friends!"
+		"m_c and r_c announce their break-up. Before their friends can offer sympathy, m_c and r_c reassure them that they left off on good terms and will still be good friends!",
+		"m_c and r_c will always love each other, but it seems being partners didn't really work out. They call off the relationship, promising to still be there for each other whenever they need a friend."
+	],
+	"decided_to_be_partners": [
+		"m_c loves r_c, {PRONOUN/m_c/subject} really {VERB/m_c/do/does}, but lately that love has been different. {PRONOUN/m_c/subject/CAP} has a talk with r_c, and the two announce they've become partners.",
+		"Their love has been a constant in m_c's life ever since {PRONOUN/m_c/subject} became mates with r_c, but now {PRONOUN/m_c/subject} {VERB/m_c/realize/realizes} that love is different than {PRONOUN/m_c/subject} first thought. After talking with r_c, the two realize they'd be better off as partners.",
+		"m_c and r_c are like a boulder in each other's lives, an ever-present anchor. That will always be true, they agree, as the two decide they're more suited to being partners than mates.",
+		"Out of the blue, r_c announces {PRONOUN/r_c/subject} {VERB/r_c/don't/doesn't} love m_c romantically anymore. {PRONOUN/r_c/subject/CAP} quickly adds that {PRONOUN/r_c/subject} still {VERB/r_c/want/wants} to spend {PRONOUN/r_c/poss} life with m_c. m_c quickly reassures {PRONOUN/r_c/object}, explaining that {PRONOUN/m_c/subject} feels the same. The two happily decide to be partners.",
+		"m_c confessed to r_c that {PRONOUN/m_c/subject} {VERB/m_c/don't/doesn't} love r_c romantically, and {PRONOUN/m_c/subject} {VERB/m_c/don't/doesn't} want to lead {PRONOUN/m_c/poss} mate on. To {PRONOUN/m_c/poss} surprise, r_c has felt the same way, and the two happily become partners."
 	],
 	"lost_feelings": [
 		"m_c and r_c lost feelings for each other over time. They broke up this moon.",
@@ -39,6 +47,8 @@
 		"m_c decides to break up with r_c after discovering that {PRONOUN/r_c/subject} had kits with another cat.",
 		"Outraged at the fact {PRONOUN/m_c/subject} {VERB/m_c/had/has} been cheated on, m_c breaks up with r_c.",
 		"m_c feels like {PRONOUN/m_c/subject} {VERB/m_c/die/dies} a little every time {PRONOUN/m_c/subject} {VERB/m_c/see/sees} r_c with the litter that isn't m_c's. Unable to bear this burden anymore, m_c breaks up with r_c for good.",
-		"m_c feels betrayed that {PRONOUN/m_c/poss} mate, r_c, had a litter with another cat. m_c breaks up with r_c, leaving {PRONOUN/r_c/object} to raise the litter on {PRONOUN/r_c/poss} own."
+		"m_c feels betrayed that {PRONOUN/m_c/poss} mate, r_c, had a litter with another cat. m_c breaks up with r_c, leaving {PRONOUN/r_c/object} to raise the litter on {PRONOUN/r_c/poss} own.",
+		"m_c avoids the nursery, not wanting to look at r_c's new litter. {PRONOUN/m_c/subject/CAP} <i>wants</i> to love the kits, {PRONOUN/m_c/subject} really {VERB/m_c/do/does}, but knowing {PRONOUN/m_c/poss} mate cheated on {PRONOUN/m_c/object} instead of talking with m_c... {PRONOUN/m_c/subject/CAP} can't do this anymore. {PRONOUN/m_c/subject/CAP} is breaking up with r_c.",
+		"m_c pointedly avoids r_c, hissing that their relationship is over when anyone asks. That night, the whole clan can hear {PRONOUN/m_c/object} crying out in {PRONOUN/m_c/poss} sleep, asking why, why didn't r_c talk to {PRONOUN/m_c/object} if {PRONOUN/r_c/subject} wanted kits, {VERB/m_c/were/was} {PRONOUN/m_c/subject} not enough, what did {PRONOUN/m_c/subject} do wrong?"
 	]
 }

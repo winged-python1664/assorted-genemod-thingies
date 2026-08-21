@@ -905,6 +905,50 @@ def relationship_text_adjust(mate_string: str, cat_from, cat_to) -> str:
         ]
         mate_string = mate_string.replace("[r_c_mates]", adjust_list_text(mate_names))
 
+    if "[m_c_partners]" in mate_string:
+        partner_names = [
+            str(cat_from.fetch_cat(partner_id).name)
+            for partner_id in cat_from.partner
+            if cat_from.fetch_cat(partner_id) is not None
+            and cat_from.fetch_cat(partner_id).status.alive_in_player_clan
+        ]
+        mate_string = mate_string.replace("[m_c_partners]", adjust_list_text(partner_names))
+
+    if "[r_c_partners]" in mate_string:
+        partner_names = [
+            str(cat_to.fetch_cat(partner_id).name)
+            for partner_id in cat_to.partner
+            if cat_to.fetch_cat(partner_id) is not None
+            and cat_to.fetch_cat(partner_id).status.alive_in_player_clan
+        ]
+        mate_string = mate_string.replace("[r_c_partners]", adjust_list_text(partner_names))
+
+    if "[m_c_mates_partners]" in mate_string:
+        mate_partner_names = [
+            str(cat_from.fetch_cat(mate_id).name)
+            for mate_id in cat_from.mate
+            if cat_from.fetch_cat(mate_id) is not None
+            and cat_from.fetch_cat(mate_id).status.alive_in_player_clan
+            + str(cat_from.fetch_cat(partner_id).name)
+            for partner_id in cat_from.partner
+            if cat_from.fetch_cat(partner_id) is not None
+            and cat_from.fetch_cat(partner_id).status.alive_in_player_clan
+        ]
+        mate_string = mate_string.replace("[m_c_mates_partners]", adjust_list_text(mate_partner_names))
+
+    if "[r_c_mates_partners]" in mate_string:
+        mate_partner_names = [
+            str(cat_to.fetch_cat(mate_id).name)
+            for mate_id in cat_to.mate
+            if cat_to.fetch_cat(mate_id) is not None
+            and cat_to.fetch_cat(mate_id).status.alive_in_player_clan
+            + str(cat_to.fetch_cat(partner_id).name)
+            for partner_id in cat_to.partner
+            if cat_to.fetch_cat(partner_id) is not None
+            and cat_to.fetch_cat(partner_id).status.alive_in_player_clan
+        ]
+        mate_string = mate_string.replace("[m_c_mates_partners]", adjust_list_text(mate_partner_names))
+
     if "(m_c_mate/mates)" in mate_string:
         insert = i18n.t("general.mate", count=len(cat_from.mate))
         mate_string = mate_string.replace("(m_c_mate/mates)", insert)

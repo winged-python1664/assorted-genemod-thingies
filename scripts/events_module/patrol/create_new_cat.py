@@ -47,7 +47,7 @@ def updated_create_new_cat(
                     r
                     for r in [*CatRank]
                     if r.is_any_clancat_rank()
-                    and r not in (CatRank.LEADER, CatRank.DEPUTY)
+                    and r not in (CatRank.LEADER, CatRank.DEPUTY, CatRank.PROPHET)
                 ]
             )
         else:
@@ -192,9 +192,12 @@ def updated_create_new_cat(
                 created_cat.get_permanent_condition("sterile", False)
                 created_cat.pelt.scars = (*created_cat.pelt.scars, "TNR")
                 created_cat.pelt.rebuild_sprite = True
-        
+
         # MATES
         _assign_mates(created_cat, involved_cats, option_dict)
+
+        # PARTNERS
+        _assign_partners(created_cat, involved_cats, option_dict)
 
         # PAST STATUS
         _assign_past_status_and_standing(
@@ -264,13 +267,13 @@ def updated_create_new_cat(
         )
 
         pass
-
     # UPDATE INHERITANCE if we had any assignments that would change them
     if (
         blood_parents
         or adoptive_parents
         or is_litter
         or option_dict["can_create_new_cat"].get("assign_mate")
+        or option_dict["can_create_new_cat"].get("assing_partner")
     ):
         inheritance_db.load_inheritances(Cat)
 
@@ -285,6 +288,16 @@ def _assign_mates(
             if m in involved_cats:
                 # we delay inheritance recalc because we'll handle it later on, and we don't want to do it twice
                 created_cat.set_mate(involved_cats[m], recalculate_inheritance=False)
+
+
+def _assign_partners(
+    created_cat: Cat, involved_cats: dict[str, Cat], option_dict: InvolvedCatDict
+):
+    if option_dict["can_create_new_cat"].get("assign_partner"):
+        for m in option_dict["can_create_new_cat"].get("assign_partner", []):
+            if m in involved_cats:
+                # we delay inheritance recalc because we'll handle it later on, and we don't want to do it twice
+                created_cat.set_partner(involved_cats[m], recalculate_inheritance=False)
 
 
 def _assign_name(created_cat: Cat):
@@ -583,7 +596,6 @@ def _get_id_for_group(
     group = choice(possible_groups)
     return group
 
-
 def updated_find_clan_cats(option_dict: InvolvedCatDict, involved_cats: dict[str, Cat], clan, other_clan: OtherClan):
     status = []
     age = []
@@ -611,6 +623,14 @@ def updated_find_clan_cats(option_dict: InvolvedCatDict, involved_cats: dict[str
                 give_mates.extend(involved_cats[index])
             else:
                 give_mates.append(involved_cats[index])
+
+    give_partners = []
+    if p := option_dict.get("can_create_new_cat", {}).get("assign_partner", []):
+        for index in m:
+            if isinstance(involved_cats[index], list):
+                give_partners.extend(involved_cats[index])
+            else:
+                give_partners.append(involved_cats[index])
 
     option_dict = option_dict.copy()
     if option_dict.get("status"):
@@ -675,6 +695,13 @@ def updated_find_clan_cats(option_dict: InvolvedCatDict, involved_cats: dict[str
                 cat, for_love_interest=True, outsider=True)]
             if not all_clan_cats:
                 print("No possible mates found")
+                all_clan_cats = updated_create_new_cat(
+                    option_dict, involved_cats, clan, other_clan)
+        elif age[0] == "partner":
+            all_clan_cats = [cat for cat in all_clan_cats if give_partners[0].is_potential_partner(
+                cat, for_love_interest=True, outsider=True)]
+            if not all_clan_cats:
+                print("No possible partners found")
                 all_clan_cats = updated_create_new_cat(
                     option_dict, involved_cats, clan, other_clan)
         elif age[0] == "has_kits":

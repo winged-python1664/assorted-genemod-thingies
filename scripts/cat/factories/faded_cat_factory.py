@@ -49,6 +49,8 @@ class FadedCatFactory(BaseCatFactory):
                 affair_parents=kwargs["affair_parents"],
                 mate=[],
                 previous_mates=[],
+                partner=[],
+                previous_partners=[],
                 faded_offspring=kwargs["faded_offspring"],
             ),
             affinity={},

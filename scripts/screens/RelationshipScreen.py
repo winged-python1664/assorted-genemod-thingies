@@ -526,6 +526,36 @@ class RelationshipScreen(Screens):
                     i18n.t("general.ex_mate", count=1)
                 )
 
+            elif relationship.cat_to.ID in self.main_cat.partner:
+                self.relation_elements[f"rel_indicator{i}"] = UIModifiedImage(
+                    ui_scale(pygame.Rect((-115, 35), (10, 10))),
+                    self.mate_indicator,
+                    container=container,
+                    anchors={
+                        "left_target": self.relation_elements[f"rel{i}_nameplate"]
+                    },
+                    manager=MANAGER,
+                    object_id="#rel_indicator",
+                )
+                self.relation_elements[f"rel_indicator{i}"].set_tooltip(
+                    i18n.t("general.partner", count=1)
+                )
+
+            elif relationship.cat_to.ID in self.main_cat.previous_partners:
+                self.relation_elements[f"rel_indicator{i}"] = UIModifiedImage(
+                    ui_scale(pygame.Rect((-115, 35), (10, 10))),
+                    self.ex_mate_indicator,
+                    container=container,
+                    anchors={
+                        "left_target": self.relation_elements[f"rel{i}_nameplate"]
+                    },
+                    manager=MANAGER,
+                    object_id="#rel_indicator",
+                )
+                self.relation_elements[f"rel_indicator{i}"].set_tooltip(
+                    i18n.t("general.ex_partner", count=1)
+                )
+
             elif self.main_cat.is_related(relationship.cat_to, exclude_cousins=False):
                 self.relation_elements[f"rel_indicator{i}"] = UIModifiedImage(
                     ui_scale(pygame.Rect((-25, 35), (10, 10))),

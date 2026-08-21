@@ -90,6 +90,10 @@ class NewCatFactory(BaseCatFactory, ABC):
         if isinstance(mate, str):
             mate = [mate]
 
+        partner = overrides.get("partner", [])
+        if isinstance(partner, str):
+            partner = [partner]
+
         cat_params = {
             "ID": cls.get_free_id(),
             "gender_dict": gender_dict,
@@ -122,11 +126,14 @@ class NewCatFactory(BaseCatFactory, ABC):
                 faded_offspring=[],
                 mate=mate,
                 previous_mates=[],
+                partner=partner,
+                previous_partners=[],
             ),
             "affinity": AfterlifeAffinityDict(starclan=0, dark_forest=0),
             "toggles": CatTogglesDict(
                 no_kits=False,
                 no_mates=False,
+                no_partners=False,
                 no_retire=False,
                 prevent_fading=False,
                 favourite=False,

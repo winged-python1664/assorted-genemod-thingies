@@ -85,9 +85,9 @@ def get_kits(
     birth_parents = [i.ID for i in all_pars if i and (
         not surrogate or i not in surrogate)]
     for _par in all_pars:
-        if not _par or _par.ID not in cat.mate:
+        if not _par or _par.ID not in (cat.mate, cat.partner):
             continue
-        for _m in _par.mate:
+        for _m in (_par.mate, _par.partner):
             if _m not in birth_parents and _m not in all_adoptive_parents:
                 all_adoptive_parents.append(_m)
 
@@ -548,13 +548,13 @@ def handle_adoption(cat: Cat, other_cat: Optional[Cat] = None, clan=game.clan):
         for x in other_cat:
             adoptive_parents.append(x.ID)
     
-    for _m in cat.mate:
+    for _m in (cat.mate, cat.partner):
         if _m not in adoptive_parents:
             adoptive_parents.append(_m)
 
     if other_cat:
         for x in other_cat:
-            for _m in x.mate:
+            for _m in (x.mate, x.partner):
                 if _m not in adoptive_parents:
                     adoptive_parents.append(_m)
     

@@ -645,7 +645,7 @@ class Pelt:
                     white_pattern.append(choice(['break/right no', 'break/left no'] + [None] * 14))
                     white_pattern.append(choice(['break/pants'] + [None] * 9))
 
-                    white_pattern.append(choice(['blossomfall'] + [None] * 15))
+                    white_pattern.append(choice(['blossomfall'] + [None] * 11))
                     #paws
                     nropaws = 4
                     order = ['right front', 'left front', 'right back', 'left back']
