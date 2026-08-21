@@ -345,6 +345,63 @@ class Patrol:
         print("final romance chance:", chance_of_romance_patrol)
         return not int(random.random() * chance_of_romance_patrol)
 
+    def _decide_if_qpr(self, qpr_event: Optional[PatrolEvent]) -> bool:
+        """
+        Finds the chance of this patrol being qpr based on the cats involved and their current relationship with each other
+        :return: True if patrol should be qpr, False otherwise
+        """
+
+        if not qpr_event:
+            print("No qpr event")
+            return False
+
+        chance_of_qpr_patrol = get_config(
+            "patrol_generation.chance_of_qpr_patrol"
+        )
+
+        for block in qpr_event.relationship_constraint:
+            if "can_qpr" in block["constraints"]:
+                # gather the kitty cats
+                cats_from = gather_cat_objects(
+                    Cat,
+                    block["cats_from"],
+                    event=self,
+                    involved_cats=self.involved_cats,
+                    clan=self.clan
+                )
+                cats_to = gather_cat_objects(
+                    Cat, block["cats_to"], event=self, involved_cats=self.involved_cats, clan=self.clan
+                )
+                # now affect the chance depending on the compatibility
+                for c in cats_from:
+                    compatibility = [
+                        get_personality_compatibility(c, love_cat)
+                        for love_cat in cats_to
+                        if love_cat != c
+                    ]
+                    for compat in compatibility:
+                        if compat == CatCompatibility.POSITIVE:
+                            chance_of_qpr_patrol -= 5
+                        elif compat == CatCompatibility.NEGATIVE:
+                            chance_of_qpr_patrol += 5
+
+                    rel_values = [
+                        check_relationship_value(c, love_cat, val)
+                        for val in [*RelType]
+                        for love_cat in cats_to
+                        if love_cat != c
+                    ]
+                    for v in rel_values:
+                        if v > 0:
+                            chance_of_qpr_patrol -= 1
+                        else:
+                            chance_of_qpr_patrol += 1
+
+        if chance_of_qpr_patrol <= 0:
+            chance_of_qpr_patrol = 1
+        print("final qpr chance:", chance_of_qpr_patrol)
+        return not int(random.random() * chance_of_qpr_patrol)
+
     def _filter_patrols(
         self,
         possible_patrols: List[PatrolEvent],
@@ -366,14 +423,17 @@ class Patrol:
         # separate into the two lists
         normal_patrols: list[PatrolEvent] = []
         romantic_patrols: list[PatrolEvent] = []
+        qpr_patrols: list[PatrolEvent] = []
         for p in possible_patrols:
             if "romance" in p.tags:
                 romantic_patrols.append(p)
+            elif "qpr" in p.tags:
+                qpr_patrols.append(p)
             else:
                 normal_patrols.append(p)
 
         print(
-            f"Total Number of Possible Patrols | normal: {len(normal_patrols)}, romantic: {len(romantic_patrols)} "
+            f"Total Number of Possible Patrols | normal: {len(normal_patrols)}, romantic: {len(romantic_patrols)}, qpr: {len(qpr_patrols)} "
         )
 
         # GET FREQUENCY
@@ -404,6 +464,14 @@ class Patrol:
             )
 
         if chosen_patrol and not self._decide_if_romantic(chosen_patrol):
+            chosen_patrol = None
+
+        if qpr_patrols and not patrol_override:
+            chosen_patrol = self._get_valid_patrol(
+                qpr_patrols.copy(), chosen_frequency, patrol_override
+            )
+
+        if chosen_patrol and not self._decide_if_qpr(chosen_patrol):
             chosen_patrol = None
 
         # if no romantic patrol possible, we get a normal one!
