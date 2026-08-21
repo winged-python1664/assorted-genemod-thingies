@@ -2627,12 +2627,6 @@ class Cat:
                 abs(self.moons - other_cat.moons) > mates_info["age_range"] + 1
             ):
                 return False
-            elif (
-                mates_info.get("override_same_age_group", False) or self.age != other_cat.age
-            ):
-                if (self.moons <= 40 or other_cat.moons <= 40) and not (self.moons > 40 and other_cat.moons > 40) and not (self.moons <= 40 and other_cat.moons <= 40):
-                    if (abs(self.moons - other_cat.moons) > mates_info["ya_age_range"] + 1):
-                        return False
 
         if (
             not self.age.can_have_mate() or not other_cat.age.can_have_mate()
