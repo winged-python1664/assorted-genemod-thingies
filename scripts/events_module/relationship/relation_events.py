@@ -8,12 +8,14 @@ from scripts.events_module.relationship import (
     generate_group_event,
     generate_pair_event,
     romantic_events,
+    qpr_events,
 )
 from scripts.cat.cats import Cat
 from scripts.cat.enums import CatRank, CatAge
 from scripts.clan_package.get_clan_cats import (
     get_cats_same_age,
     get_possible_mates,
+    get_possible_partners,
 )
 
 events_triggered_per_cat: dict[str, int] = {}
@@ -40,6 +42,11 @@ def handle_relationships(cat: Cat):
         _trigger_romantic_event(cat)
 
         romantic_events.handle_mates_and_breakup(cat)
+
+    if not random.getrandbits(4):
+        _trigger_qpr_event(cat)
+
+        qpr_events.handle_partner_and_breakup(cat)
 
 
 # ---------------------------------------------------------------------------- #
@@ -148,6 +155,75 @@ def _trigger_romantic_event(cat: Cat):
 
     other_cat = choice(cat_to_choose_from)
     _trigger_pair_event(cat, other_cat, RelType.ROMANCE)
+
+
+def _trigger_qpr_event(cat: Cat):
+    """
+    ONLY for cats OLDER than 12 moons
+    """
+    if cat.moons < 12:
+        return
+
+    if not can_trigger_events(cat):
+        return
+
+    # get the cats which are relevant for qpr interactions
+    free_possible_partners, other_love_interest = get_possible_partners(cat)
+    possible_cats = free_possible_partners
+    if 0 < len(other_love_interest) < 3:
+        possible_cats.extend(other_love_interest)
+        possible_cats.extend(other_love_interest)
+    elif len(other_love_interest) >= 3:
+        possible_cats = other_love_interest
+
+    # only adding cats which already have SOME relationship with each other
+    cat_to_choose_from = []
+    for inter_cat in possible_cats:
+        # toss out cats who are outside
+        if inter_cat.status.is_outsider:
+            continue
+
+        if inter_cat.ID not in cat.relationships:
+            cat.create_one_relationship(inter_cat)
+        if cat.ID not in inter_cat.relationships:
+            inter_cat.create_one_relationship(cat)
+
+        cat_to_inter = (
+            cat.relationships[inter_cat.ID].like > 10
+            or cat.relationships[inter_cat.ID].comfort > 10
+        )
+        inter_to_cat = (
+            inter_cat.relationships[cat.ID].like > 10
+            or inter_cat.relationships[cat.ID].comfort > 10
+        )
+        if cat_to_inter and inter_to_cat:
+            cat_to_choose_from.append(inter_cat)
+
+    # if the cat has one or more partner, check how high the chance is,
+    # that the cat interacts qpr with ANOTHER cat than their partner
+    use_partner = False
+    if cat.partner:
+        chance_number = get_config("relationship.chance_qpr_not_partner")
+
+        # the more partners the cat has, the less likely it will be that they have a qpr interaction with another cat
+        for partner_id in cat.partner:
+            chance_number -= int(cat.relationships[partner_id].like / 20)
+        use_partner = int(random.random() * chance_number)
+
+    # If use_partner is falsey, or if the cat has been marked as "no_partners", only allow qpr
+    # relations with current partners
+    if use_partner or cat.no_partners:
+        cat_to_choose_from = [
+            cat.all_cats[partner_id]
+            for partner_id in cat.partner
+            if cat.all_cats[partner_id].status.group_ID == cat.status.group_ID
+        ]
+
+    if not cat_to_choose_from:
+        return
+
+    other_cat = choice(cat_to_choose_from)
+    _trigger_pair_event(cat, other_cat, RelType.LIKE)
 
 
 def _trigger_same_age_event(

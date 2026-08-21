@@ -2801,8 +2801,6 @@ class ProfileScreen(Screens):
                 self.sub_tab_4.enable()
                 if self.history_text_box:
                     self.history_text_box.kill()
-                if self.save_text:
-                    self.save_text.kill()
                 if self.notes_entry:
                     self.notes_entry.kill()
                 if self.edit_text:
