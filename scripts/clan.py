@@ -234,14 +234,11 @@ class Clan:
             self.deputy.rank_change(CatRank.DEPUTY, new_thought=False)
             self.clan_cats.append(self.deputy.ID)
 
-        print("deputy-", self.deputy, "deputy id-", self.deputy.ID)
-
         if self.leader and self.leader.status.alive_in_player_clan:
             self.leader.rank_change(CatRank.LEADER, new_thought=False)
             self.clan_cats.append(self.leader.ID)
 
         prophet = self.prophet
-
         if self.prophet and self.prophet.status.alive_in_player_clan:
             self.prophet.rank_change(CatRank.PROPHET, new_thought=False)
             self.clan_cats.append(prophet.ID)
