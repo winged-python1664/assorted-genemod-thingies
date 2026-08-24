@@ -11,6 +11,7 @@ from scripts.cat.pelts import Pelt
 from scripts.cat_relations.relationship import Relationship
 from scripts.clan_package.settings import get_clan_setting
 from scripts.event_class import Single_Event
+from scripts.cat.microservices.conditions import get_injured
 from scripts.events_module.future.prep_and_trigger import prep_future_event
 from scripts.events_module.short.short_event import ShortEvent
 from scripts.game_structure import localization, game
@@ -238,22 +239,22 @@ class CrossClanEvent(ShortEvent):
                 # MAIN CAT
                 if abbr == "m_c":
                     injury = choice(possible_injuries)
-                    self.main_cat.get_injured(injury, potential_scars=potential_scars)
+                    get_injured(self.main_cat, injury, potential_scars=potential_scars)
                     self.handle_injury_history(self.main_cat, "m_c", injury)
 
                 # RANDOM CAT
                 elif abbr == "r_c":
                     injury = choice(possible_injuries)
                     for random_cat in self.random_cats:
-                        random_cat.get_injured(injury, potential_scars=potential_scars)
+                        get_injured(random_cat, injury, potential_scars=potential_scars)
                         self.handle_injury_history(random_cat, "r_c", injury)
 
                 # NEW CATS
                 elif "r_c" in abbr:
                     injury = choice(possible_injuries)
                     random_cat = self.random_cats[int(abbr.strip("r_c"))-1]
-                    random_cat.get_injured(
-                        injury, potential_scars=potential_scars
+                    get_injured(
+                        random_cat, injury, potential_scars=potential_scars
                     )
                     self.handle_injury_history(random_cat, abbr, injury)
 

@@ -2,14 +2,15 @@ from random import choice, random, randint
 from typing import Optional
 from operator import xor
 
-from scripts.cat.cats import Cat, BACKSTORIES
+from scripts.cat.cats import Cat
+from scripts.cat.constants import BACKSTORIES
 from scripts.cat.enums import (
     CatAge,
     CatRank,
     CatSocial,
     CatThought,
 )
-from scripts.cat_relations.relationship import Relationship
+from scripts.cat_relations.relationship import Relationship, create_one_relationship
 from scripts.clan_package.settings import get_clan_setting
 from scripts.game_structure import game
 from scripts.events_module.consequences import (
@@ -270,7 +271,7 @@ def get_second_parent(cat, clan):
                     if not p_rel.opposite_relationship:
                         p_rel.link_relationship()
                     p_rel_opp = p_rel.opposite_relationship
-                    if p_rel_opp.like > -20 and p_rel.like > -20:
+                    if p_rel_opp.like > -15 and p_rel.like > -15:
                         p_affairs.append(p_affair)
         possible_partners = p_affairs
 

@@ -7,6 +7,7 @@ import pygame_gui.elements
 from scripts.cat.cats import Cat
 from scripts.cat_relations.inheritance2 import inheritance_db
 from scripts.game_structure import image_cache
+from ..cat_relations.relationship import create_one_relationship
 from ..config import get_config
 from ..ui.elements.sprite_button import UISpriteButton
 from ..ui.elements.image_button import UIImageButton
@@ -1667,11 +1668,8 @@ class ChooseMateScreen(Screens):
             if self.the_cat.dead:
                 romantic_love = 0
             else:
-                if self.selected_cat.ID in self.the_cat.relationships:
-                    relation = self.the_cat.relationships[self.selected_cat.ID]
-                else:
-                    relation = self.the_cat.create_one_relationship(self.selected_cat)
-                romantic_love = relation.romance
+                relation = create_one_relationship(self.the_cat, self.selected_cat)
+            romantic_love = relation.romance
 
             if 10 <= romantic_love <= 30:
                 heart_number = 1
@@ -1680,7 +1678,8 @@ class ChooseMateScreen(Screens):
             elif 81 <= romantic_love:
                 heart_number = 3
             else:
-                heart_number = 0
+                relation = create_one_relationship(self.selected_cat, self.the_cat)
+            romantic_love = relation.romance
 
             x_pos = 210
             for i in range(0, heart_number):

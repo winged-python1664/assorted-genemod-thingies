@@ -7,6 +7,7 @@ import i18n
 from scripts.config import get_config
 from scripts.cat.cats import Cat
 from scripts.clan_package.settings import get_clan_setting
+from scripts.cat.microservices.conditions import get_injured
 from scripts.event_class import Single_Event
 from scripts.events_module.pregnancy.build_strings import (
     get_pregnancy_strings,
@@ -72,16 +73,17 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
     ids = []
     affair_partner = []
     surrogates = []
+    other_cat_has_mate = []
     if other_cat:
         if surrogate:
             surrogates.append(other_cat[0].ID)
         for x in other_cat:
-            if (cat.mate, cat.partner) and x.ID not in (cat.mate, cat.partner):
+            if cat.mate and x.ID not in cat.mate and x.ID not in surrogates or cat.partner and x.ID not in cat.partner and x.ID not in surrogates:
                 affair_partner.append(x.ID)
+            if (x.mate, x.partner) and x.ID not in surrogates:
+                other_cat_has_mate.append(x)
             else:
                 ids.append(x.ID)
-    if surrogate:
-        affair_partner = []
 
     mate = []
     afab_mate = []
@@ -105,7 +107,7 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
     if cat.status.group_ID != clan.group_ID:
         clan = cat.status.fetch_clan_object(game.clan)
 
-    _create_pregnancy_data(cat, ids, affair_partner, surrogates, hidden)
+    _create_pregnancy_data(cat, ids, affair_partner, surrogates, hidden, other_cat_has_mate)
 
     if not hidden:
         # if both cats are faithful to each other and aren't cheaters,
@@ -139,11 +141,11 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
         # sometimes they won't...
         elif (
             affair_partner
-            and amab_mate
+            and (amab_mate or mate)
         ):
             announcement_key = choice(["announcement_affair", "announcement"])
             _set_affair_visibility(cat, announcement_key == "announcement_affair")
-            random_cat = choice(amab_mate) if amab_mate else None
+            random_cat = choice(amab_mate) if amab_mate else choice(mate)
             text, involved_cats = _create_pregnancy_announcement(cat, announcement_key, clan, random_cat=random_cat)
         # if all else fails, just a regular announcement happens
         else:
@@ -154,10 +156,10 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
             )
         )
     else:
-        cat.get_injured("pregnant", severity="minor")
+        get_injured(cat, "pregnant", severity="minor")
 
 
-def _create_pregnancy_data(pregnant_cat: Cat, second_parent: Optional[Cat], affair_partner: Optional[list[Cat]], surrogate: Optional[list[Cat]], hidden=False):
+def _create_pregnancy_data(pregnant_cat: Cat, second_parent: Optional[Cat], affair_partner: Optional[list[Cat]], surrogate: Optional[list[Cat]], hidden=False, other_cat_has_mate=None):
     """Creates the pregnancy data entry for a new pregnancy."""
     fever = False
     if len(pregnant_cat.illnesses) > 0:
@@ -170,6 +172,7 @@ def _create_pregnancy_data(pregnant_cat: Cat, second_parent: Optional[Cat], affa
     game.clan.pregnancy_data[pregnant_cat.ID] = {
         "second_parent": second_parent if second_parent else None,
         "affair_partner": affair_partner if affair_partner else None,
+        "other_cat_affair": other_cat_has_mate if other_cat_has_mate else None,
         "surrogate": surrogate if surrogate else None,
         "moons": 0,
         "amount": 0,
@@ -234,7 +237,7 @@ def _retrieve_secret_kittens(cat, other_cat, surrogate, clan):
         if surrogate:
             cats_involved.append(pregnant_cat.ID)
             
-            pregnant_cat.get_injured("recovering from birth", event_triggered=True)
+            get_injured(pregnant_cat, "recovering from birth", event_triggered=True)
             pregnant_cat.injuries["recovering from birth"]["risks"] = []
             print_event = i18n.t(
                 "conditions.pregnancy.outside_surrogate_dam",
@@ -255,7 +258,7 @@ def _retrieve_secret_kittens(cat, other_cat, surrogate, clan):
                     if par:
                         cats_involved.append(par.ID)
                         par.birth_cooldown = birth_cooldown
-                        par.get_injured("recovering from birth", event_triggered=True)
+                        get_injured(par, "recovering from birth", event_triggered=True)
                         par.injuries["recovering from birth"]["risks"] = []
                         if par.status.group_ID != cat.status.group_ID and not par.status.is_outsider:
                             events = get_pregnancy_strings()
@@ -279,7 +282,7 @@ def _create_pregnancy_announcement(
     text = choice(get_pregnancy_strings()[announcement_key])
     event_text = text
     severity = choices(["minor", "major"], [3, 1], k=1)[0] if not force_minor else "minor"
-    pregnant_cat.get_injured("pregnant", severity=severity)
+    get_injured(pregnant_cat, "pregnant", severity=severity)
     text += choice(get_pregnancy_strings()[f"{severity}_severity"])
     text = event_text_adjust(
         Cat,

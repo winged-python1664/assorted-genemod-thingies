@@ -9,6 +9,7 @@ from scripts.cat.names import Name
 from scripts.cat_relations.relationship import Relationship
 from scripts.clan_package.get_clan_cats import find_alive_cats_with_rank
 from scripts.clan_package.settings import get_clan_setting
+from scripts.cat.microservices.conditions import get_injured
 from scripts.config import get_config
 from scripts.event_class import Single_Event
 from scripts.events_module.consequences import (
@@ -112,13 +113,19 @@ def handle_two_moon_pregnant(cat: Cat, clan):
     stillborn_chance = get_stillborn_chance(kits_amount)
 
     other_cat_id = game.clan.pregnancy_data[cat.ID]["second_parent"]
+    other_cat_had_affair = []
     affair_partners = []
     surrogate = []
     random_affair = None
+    who_cheater = None
     try:
         affair_partner_id = game.clan.pregnancy_data[cat.ID]["affair_partner"]
     except:
         affair_partner_id = []
+    try:
+        other_cat_had_affair_id = game.clan.pregnancy_data[cat.ID]["other_cat_affair"]
+    except:
+        other_cat_had_affair_id = []
     try:
         surrogate_id = game.clan.pregnancy_data[cat.ID]["surrogate"]
     except:
@@ -176,12 +183,22 @@ def handle_two_moon_pregnant(cat: Cat, clan):
         if affair_partners:
             random_affair = choice(affair_partners)
 
-    if (other_cat and None in other_cat) or (surrogate and None in surrogate) or (affair_partners and None in affair_partners):
+    if other_cat_had_affair_id:
+        if not isinstance(other_cat_had_affair_id, list):
+            other_cat_had_affair_id = [other_cat_had_affair_id]
+        for id in other_cat_had_affair_id:
+            affair_cat = Cat.fetch_cat(id)
+            if affair_cat.mate:
+                other_cat_had_affair.append(affair_cat)
+        if other_cat_had_affair:
+            who_cheater = choice(other_cat_had_affair)
+
+    if (other_cat and None in other_cat) or (surrogate and None in surrogate) or (affair_partners and None in affair_partners) or (other_cat_had_affair and None in other_cat_had_affair):
         print(
             "PARENT NOT FOUND! If you edited the pregnancy in, double check the IDs, please")
         other_cat = [c for c in other_cat if c] if other_cat else None
-        affair_partners = [
-            c for c in affair_partners if c] if affair_partners else None
+        affair_partners = [c for c in affair_partners if c] if affair_partners else None
+        other_cat_had_affair = [c for c in other_cat_had_affair if c] if other_cat_had_affair else None
         surrogate = [c for c in surrogate if c] if surrogate else None
 
     backkit = None
@@ -189,16 +206,15 @@ def handle_two_moon_pregnant(cat: Cat, clan):
     if not other_cat:
         other_cat, backkit = handle_outside_parent(cat, clan, "1")
 
-    kits = get_kits(kits_amount, pregnant_cat, other_cat if not surrogate or pregnant_cat in surrogate else surrogate, clan, backkit=backkit, surrogate=surrogate, adoptive_parents=adoptive_parents)
+    kits = get_kits(kits_amount, pregnant_cat, other_cat if not surrogate or pregnant_cat in surrogate else surrogate, clan, backkit=backkit, affair_parents=(affair_partners+[pregnant_cat] if affair_partners else [])+other_cat_had_affair, surrogate=surrogate, adoptive_parents=adoptive_parents)
     kits_amount = len(kits)
     for kit in kits:
         if fever_coat:
             kit.phenotype.fevercoat = True
             if kit.chimerapheno:
                 kit.chimerapheno.fevercoat = True
-        if affair_partners and (pregnant_cat.mate, pregnant_cat.partner):
-            for x in affair_partners:
-                kit.affair_parents.append(x.ID)
+        for x in affair_partners:
+            kit.affair_parents.append(x.ID)
         if surrogate:
             for x in surrogate:
                 kit.surrogate_parents.append(x.ID)
@@ -237,10 +253,9 @@ def handle_two_moon_pregnant(cat: Cat, clan):
         involved_cats,
         cat_dict,
         random_choice,
-        who_cheater,
         event_list,
     ) = _handle_main_birth_event(
-        cat, other_cat, surrogate, affair_partners, random_affair, backkit is not None, events, secret_affair_birth, hidden, clan
+        cat, other_cat, surrogate, affair_partners, random_affair, who_cheater, backkit is not None, events, secret_affair_birth, hidden, clan
     )
 
     # the birthing cat's mate can choose to either help their cheating mate raise the new litter or
@@ -345,7 +360,7 @@ def handle_two_moon_pregnant(cat: Cat, clan):
             death_event = i18n.t("conditions.pregnancy.kitting_death", name=cat.name)
         cat.history.add_death(death_text=death_event)
     else:  # if cat doesn't die, give recovering from birth
-        cat.get_injured("recovering from birth", event_triggered=True)
+        get_injured(cat, "recovering from birth", event_triggered=True)
         if "blood loss" in cat.injuries:
             if cat.status.is_leader:
                 death_event = i18n.t("conditions.pregnancy.leader_kitting_death_severe")
@@ -468,7 +483,7 @@ def _get_cheated_mate(subject_cat: Cat, include_dead: bool = False):
     mates = []
     for mate_id in choices(subject_cat.mate, subject_cat.partner):
         mate = Cat.fetch_cat(mate_id)
-        if not mate:
+        if not mate or mate.status.is_outsider:
             continue
         if include_dead and mate.dead:
             mates.append(mate)
@@ -503,7 +518,7 @@ def _check_should_claim_affair_kits(mate: Cat, pregnant_cat: Cat) -> bool:
 
 
 def _handle_main_birth_event(
-    cat, other_cat, surrogate, affair_partners, random_affair, single_parent, events, secret_affair_birth, hidden, clan=game.clan
+    cat, other_cat, surrogate, affair_partners, random_affair, who_cheater, single_parent, events, secret_affair_birth, hidden, clan=game.clan
 ) -> tuple[str, bool, bool, list, dict, Cat, Cat, list]:
     other_cat_affair_known = False
     coparenting_outcome = None
@@ -515,7 +530,6 @@ def _handle_main_birth_event(
     outside_mate = False
     who_died = 0
     who_outside = 0
-    who_cheater = None
     all_mates_outside = True
     both_unmated = True
     random_choice = None
@@ -537,8 +551,6 @@ def _handle_main_birth_event(
             if x.status.group_ID == cat.status.group_ID or not (x.status.is_lost() or x.status.is_exiled()):
                 all_mates_outside = False
             if len(x.mate, x.partner) > 0:
-                if not surrogate and cat.ID not in (x.mate, x.partner) and not x.dead:
-                    who_cheater = x
                 both_unmated = False
 
     if surrogate and cat in surrogate:
@@ -646,7 +658,6 @@ def _handle_main_birth_event(
         involved_cats,
         cat_dict,
         random_choice,
-        who_cheater,
         event_list,
     )
 
