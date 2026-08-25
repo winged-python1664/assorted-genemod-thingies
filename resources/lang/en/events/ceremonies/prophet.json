@@ -49,7 +49,7 @@
             }
         },
         "strings": [
-            "The Clan is without a leader, but a new prophet must still be named. m_c is chosen as the new prophet. r_c0 nods {PRONOUN/prophet_name/poss} approval"
+            "The Clan is without a leader, but a new prophet must still be named. m_c is chosen as the new prophet. r_c0 nods {PRONOUN/r_c0/poss} approval"
         ]
     },
     {
@@ -57,7 +57,7 @@
         "tags": ["-clan:medicine cat"],
         "involved_cats": {
             "m_c": {
-                "status": ["medicine apprentice"]
+                "status": ["medicine cat apprentice"]
             }
         },
         "strings": [
@@ -66,7 +66,7 @@
     },
     {
         "event_id": "prophet_clan_unsure1",
-        "tags": ["-clan:medicine cat", "-clan:medicine apprentice"],
+        "tags": ["-clan:medicine cat", "-clan:medicine cat apprentice"],
         "involved_cats": {
             "m_c": {}
         },

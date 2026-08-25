@@ -537,9 +537,9 @@ class Status:
     ):
         """
         Adds the cat to the specified group. If the cat has previously been part of this group, they will take on their
-        last held rank within that group (unless it was leader or deputy). Groups are currently assumed to be Clans
+        last held rank within that group (unless it was leader, deputy or prophet). Groups are currently assumed to be Clans
         only, so if the cat has held a Clan rank within any Clan in the past, they will attempt to take on that same
-        rank in the new group (unless it was leader or deputy). If no past valid past rank is found, they will gain a
+        rank in the new group (unless it was leader, deputy or prophet). If no past valid past rank is found, they will gain a
         rank based off their age.
         :param new_group_ID: The group_ID for the group the cat will be joining
         :param age: The current age stage of the cat, required if cat is going into a group that will require a rank

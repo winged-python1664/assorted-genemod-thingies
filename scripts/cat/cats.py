@@ -752,7 +752,6 @@ class Cat:
             if new_rank != CatRank.PROPHET and clan.prophet and clan.prophet.ID == self.ID or old_rank == CatRank.PROPHET and self.dead:
                 clan.prophet = None
                 clan.prophet_predecessors +=1
-                clan.all_prophet_predecessors + [self.ID]
             if new_rank != CatRank.MEDICINE_CAT and clan is not None:
                 clan.remove_med_cat(self)
         elif new_rank not in [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE] and old_rank in [CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE]:

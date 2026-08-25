@@ -369,7 +369,7 @@ def event_for_other_clan(Cat, ranks: list, other_clan) -> bool:
             if "any_fighter" in rank:
                 final_ranks = ["leader", "deputy", "warrior", "apprentice"]
             if "any_healer" in rank:
-                final_ranks = ["healer", "healer apprentice"]
+                final_ranks = ["healer", "healer apprentice", "prophet"]
             if "any_mediator" in rank:
                 final_ranks = ["mediator", "mediator apprentice"]
             if "any_queen" in rank:
