@@ -715,7 +715,7 @@ def handle_moonpool_event():
         age=clan_cat.moons,
     )
     game.cur_events_list.insert(
-        4, EventInformation(event_text, "misc", [clan_cat.ID], clan=game.clan.group_ID)
+        4, EventInformation(event_text, ["misc"], [clan_cat.ID], clan=game.clan.group_ID)
     )
 
     set_clan_setting("moonpool_event", False)

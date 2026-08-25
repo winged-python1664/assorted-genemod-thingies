@@ -63,16 +63,14 @@ def check_if_can_have_kits(cat, for_surrogate=False):
     if not_correct_age or no_kits_allowed(cat) or cat.dead:
         return False
 
-    # check for mate
-    if cat.mate:
+    # check for mate or partner
+    if cat.mate or cat.partner:
         for mate_id in cat.mate:
             if mate_id not in cat.all_cats:
                 print(
                     f"WARNING: {cat.name}  has an invalid mate # {mate_id}. This has been unset."
                 )
                 cat.mate.remove(mate_id)
-    # check for partner
-    if cat.partner:
         for partner_id in cat.partner:
             if partner_id not in cat.all_cats:
                 print(

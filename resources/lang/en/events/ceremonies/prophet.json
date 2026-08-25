@@ -1,0 +1,77 @@
+[
+    {
+        "event_id": "prophet_default0",
+        "tags": ["clan:leader", "clan:prophet"],
+        "involved_cats": {
+            "m_c": {}
+        },
+        "strings": [
+            "m_c has taken {PRONOUN/m_c/poss} place as prophet.",
+            "m_c has been chosen as the new prophet. Some of the older Clan members question the wisdom of this choice.",
+            "m_c has been chosen as the new prophet. {PRONOUN/m_c/subject/CAP} {VERB/m_c/hold/holds} {PRONOUN/m_c/poss} head up high and {VERB/m_c/promise/promises} to do {PRONOUN/m_c/poss} best for the Clan.",
+            "m_c has been chosen as the new prophet. {PRONOUN/m_c/subject/CAP} {VERB/m_c/pray/prays} to StarClan that {PRONOUN/m_c/subject}{VERB/m_c/'re/'s} ready.",
+            "m_c has been chosen as the new prophet. Although {PRONOUN/m_c/subject} {VERB/m_c/are/is} nervous, {PRONOUN/m_c/subject} {VERB/m_c/put/puts} on a brave face and {VERB/m_c/look/looks} forward to serving the Clan."
+        ]
+    },
+    {
+        "event_id": "prophet_past_prophet0",
+        "involved_cats": {
+            "m_c": {},
+            "r_c0": {
+                "status": ["leader"]
+            },
+            "past_prophet": {}
+        },
+        "strings": [
+            "r_c0 chooses m_c to take over as prophet. \"{PRONOUN/r_c0/subject/CAP} {VERB/r_c0/know/knows} past_prophet would approve.",
+            "r_c0 chooses m_c to take over as prophet. \"{PRONOUN/r_c0/subject/CAP} {VERB/r_c0/hope/hopes} past_propeht would approve.",
+            "r_c0 chooses m_c to take over as prophet. \"{PRONOUN/r_c0/subject/CAP} {VERB/r_c0/don't/doesn't} know if past_prophet would approve, but life must go on."
+        ]
+    },
+    {
+        "event_id": "prophet_clan_chosen0",
+        "tags": ["-clan:leader", "-clan:prophet"],
+        "involved_cats": {
+            "m_c": {}
+        },
+        "strings": [
+            "Without a leader or prophet, the Clan has had no way to contact StarClan. They all turn to m_c with hope for the future."
+        ]
+    },
+    {
+        "event_id": "prophet_clan_chosen1",
+        "tags": ["-clan:leader"],
+        "involved_cats": {
+            "m_c": {},
+            "r_c0": {
+                "group": ["player_clan"],
+                "past_status": ["prophet"]
+            }
+        },
+        "strings": [
+            "The Clan is without a leader, but a new prophet must still be named. m_c is chosen as the new prophet. r_c0 nods {PRONOUN/prophet_name/poss} approval"
+        ]
+    },
+    {
+        "event_id": "prophet_clan_unsure0",
+        "tags": ["-clan:medicine cat"],
+        "involved_cats": {
+            "m_c": {
+                "status": ["medicine apprentice"]
+            }
+        },
+        "strings": [
+            "The Clan has no healers who've finished their training, but a new prophet must be chosen. m_c is appointed to the position, with hope that the Clan's ancestors will teach {PRONOUN/m_c/object} all {PRONOUN/m_c/subject} {VERB/m_c/need/needs} to know."
+        ]
+    },
+    {
+        "event_id": "prophet_clan_unsure1",
+        "tags": ["-clan:medicine cat", "-clan:medicine apprentice"],
+        "involved_cats": {
+            "m_c": {}
+        },
+        "strings": [
+            "The Clan has no healers, but a new prophet must be chosen. m_c is appointed to the position, with hope that the Clan's ancestors will teach {PRONOUN/m_c/object} all {PRONOUN/m_c/subject} {VERB/m_c/need/needs} to know."
+        ]
+    }
+]

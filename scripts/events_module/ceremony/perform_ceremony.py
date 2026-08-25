@@ -56,7 +56,7 @@ def trigger_ceremony(
         main_cat.name.change_prefix(main_cat.moons, clan.biome, cer_type)
 
     random_honor = None
-    if new_rank in (CatRank.WARRIOR, CatRank.MEDIATOR, CatRank.MEDICINE_CAT, CatRank.QUEEN) and main_cat.status.rank.is_any_apprentice_rank():
+    if new_rank in (CatRank.WARRIOR, CatRank.MEDIATOR, CatRank.MEDICINE_CAT, CatRank.QUEEN, CatRank.PROPHET) and main_cat.status.rank.is_any_apprentice_rank():
         traits = load_lang_resource("events/ceremonies/ceremony_traits.json")
         try:
             random_honor = random.choice(traits[main_cat.personality.trait])
@@ -287,136 +287,76 @@ def check_and_promote_deputy(clan):
     trigger_ceremony(main_cat, CatRank.DEPUTY, {"past_deputy": game.clan.deputy})
 
 
-def check_and_promote_prophet(clan=None):
+def check_and_promote_prophet(clan):
     """Checks if a new prophet needs to be appointed, and appointed them if needed."""
     if (
-        not clan.prophet
-        or clan.prophet.status.group_ID != clan.group_ID
-        or clan.prophet.status.rank == CatRank.ELDER
+        clan.prophet
+        and clan.prophet.status.group_ID == clan.group_ID
+        and clan.prophet.status.rank != CatRank.ELDER
     ):
-        if not get_clan_setting("prophet") and clan == game.clan:
-            game.cur_events_list.insert(0, Single_Event(
-                event_text_adjust(Cat, "defaults.warn_no_prophet", clan=clan), clan=clan.group_ID))
-            return
-        # This determines all the cats who are eligible to be prophet.
-        possible_prophets = list(
-            filter(
-                lambda x: x.status.group_ID == clan.group_ID
-                and x.status.rank == CatRank.MEDICINE_CAT,
-                Cat.all_cats_list,
-            )
-        )
+        # don't need a new prophet
+        return
 
+    if not get_clan_setting("prophet") and clan == game.clan:
+        # player doesn't want us to pick a prophet for them
+        game.cur_events_list.insert(0, EventInformation(event_text_adjust(Cat, "defaults.warn_no_prophet", clan=clan), clan=clan.group_ID))
+        return
+
+    # This determines all the cats who are eligible to be prophet.
+    possible_prophets = list(
+        filter(
+            lambda x: x.status.group_ID == clan.group_ID
+            and x.status.rank == CatRank.MEDICINE_CAT,
+            Cat.all_cats_list,
+        )
+    )
+
+    # If there are possible prophets, choose from that list.
+    if possible_prophets:
+        possible_prophets.sort(reverse=True, key=lambda x: x.experience)
+        main_cat = possible_prophets[0]
+
+    else:
+        # If theres no possible prophets, choose someone else, with special text.
         prophet_skills = [
             SkillPath.OMEN,
             SkillPath.PROPHET,
-            SkillPath.HEALER,
             SkillPath.STAR,
             SkillPath.DREAM,
             SkillPath.CLAIRVOYANT,
             SkillPath.GHOST,
-            SkillPath.CAMP,
         ]
 
-        possible_prophets.sort(reverse=True, key=lambda x: x.experience)
-        possible_prophets.sort(reverse=True, key=lambda x: x.moons)
-
-        # If there are possible prophets, choose from that list.
-        if possible_prophets:
-            possible_prophets.sort(reverse=True, key=lambda x: x.moons)
-            chosen_cat = possible_prophets[0]
-            involved_cats = [chosen_cat.ID]
-
-            # Gather prophet and leader status, for determination of the text.
-            if clan.leader:
-                if not clan.leader.status.group_ID == clan.group_ID:
-                    leader_status = "not_here"
-                else:
-                    leader_status = "here"
-            else:
-                leader_status = "not_here"
-
-            if clan.prophet:
-                if not clan.prophet.status.group_ID == clan.group_ID:
-                    prophet_status = "not_here"
-                else:
-                    prophet_status = "here"
-            else:
-                prophet_status = "not_here"
-
-            if leader_status == "here" and prophet_status == "not_here":
-                    if clan.prophet:
-                        previous_prophet_mention = i18n.t(
-                            f"hardcoded.ceremony_prophet_prev{random.choice(range(0, 3))}"
-                        )
-                        involved_cats.append(clan.prophet.ID)
-
-                    else:
-                        previous_prophet_mention = ""
-
-                    text = i18n.t(
-                        "hardcoded.ceremony_prophet",
-                        previous=previous_prophet_mention,
-                    )
-
-                    involved_cats.append(clan.leader.ID)
-            elif leader_status == "not_here" and prophet_status == "here":
-                text = i18n.t("hardcoded.ceremony_prophet_nolead_retiredprophet")
-            elif leader_status == "not_here" and prophet_status == "not_here":
-                text = i18n.t("hardcoded.ceremony_prophet_nolead_noprophet")
-            elif leader_status == "here" and prophet_status == "here":
-                # No additional involved cats
-                text = i18n.t(
-                    f"hardcoded.ceremony_prophet_lead_retiredprophet{random.choice(range(0, 5))}"
-                )
-            else:
-                # This should never happen. Failsafe.
-                text = i18n.t("defaults.prophet_event")
+        med_apps = list(
+            filter(
+                lambda x: x.status.group_ID == clan.group_ID
+                and x.status.rank == CatRank.MEDICINE_APPRENTICE,
+                Cat.all_cats_list,
+            )
+        )
+        prophet_cats = list(
+            filter(
+                lambda x: x.status.group_ID == clan.group_ID
+                and x.status.rank in [CatRank.WARRIOR, CatRank.MEDIATOR, CatRank.QUEEN]
+                and x.skills in prophet_skills,
+                Cat.all_cats_list,
+            )
+        )
+        if med_apps:
+            med_apps.sort(reverse=True, key=lambda x: x.experience)
+            main_cat = med_apps[0]
+        elif prophet_cats:
+            prophet_cats.sort(reverse=True, key=lambda x: x.experience)
+            main_cat = prophet_cats[0]
         else:
-            # If there are no possible prophets, choose someone else, with special text.
-            chosen_cat = []
-            involved_cats = []
-            med_apps = list(
-                filter(
-                    lambda x: x.status.group_ID == clan.group_ID
-                    and x.status.rank == CatRank.MEDICINE_APPRENTICE,
-                    Cat.all_cats_list,
-                )
+            # If theres no one who can become prophet at all, no one is named prophet.
+            game.cur_events_list.append(
+                EventInformation(i18n.t("hardcoded.ceremony_prophet_none"), "ceremony", clan=clan.group_ID)
             )
-            prophet_cats = list(
-                filter(
-                    lambda x: x.status.group_ID == clan.group_ID
-                    and x.status.rank in [CatRank.WARRIOR, CatRank.MEDIATOR, CatRank.QUEEN]
-                    and x.skills in prophet_skills,
-                    Cat.all_cats_list,
-                )
-            )
-            if med_apps:
-                chosen_cat = med_apps.sort(reverse=True, key=lambda x: x.experience)
-                involved_cats = [chosen_cat.ID]
-                text = i18n.t("hardcoded.ceremony_prophet_unsuitable")
+            return
 
-            elif prophet_cats:
-                chosen_cat = prophet_cats.sort(reverse=True, key=lambda x: x.experience)
-                involved_cats = [chosen_cat.ID]
-                text = i18n.t("hardcoded.ceremony_prophet_nomed")
-
-            else:
-                # If there are no healers/cats with a prophet skill at all, no one is named prophet.
-                game.cur_events_list.append(
-                    Single_Event(
-                        i18n.t("hardcoded.ceremony_prophet_none"), "ceremony", 
-                        clan=clan.group_ID
-                    )
-                )
-                return
-
-        text = event_text_adjust(Cat, text, main_cat=chosen_cat, clan=clan)
-        chosen_cat.rank_change(CatRank.PROPHET)
-        clan.prophet = chosen_cat
-
-        game.cur_events_list.append(Single_Event(text, "ceremony", involved_cats,
-                                                    clan=clan.group_ID))
+    clan.prophet = main_cat
+    trigger_ceremony(main_cat, CatRank.PROPHET, {"past_prophet": game.clan.prophet})
 
 
 def _adult_becomes_mediator(cat) -> bool:

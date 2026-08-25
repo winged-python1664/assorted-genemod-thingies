@@ -237,10 +237,10 @@ class ChooseMateScreen(Screens):
                 self.pot_par_page -= 1
                 self.update_pot_par_container_page()
             elif event.ui_element == self.partners_next_page:
-                self.partner_page += 1
+                self.partners_page += 1
                 self.update_partners_container_page()
             elif event.ui_element == self.partners_next_page:
-                self.partner_page -= 1
+                self.partners_page -= 1
                 self.update_partners_container_page()
 
             elif event.ui_element == self.tab_buttons.get("mates"):
@@ -690,14 +690,14 @@ class ChooseMateScreen(Screens):
         self.partners_cat_buttons = {}
 
         # Different layout for a single partner, they're just big in the center
-        if len(self.all_partners) == 1 and len(self.all_parnters[0]) == 1:
+        if len(self.all_partners) == 1 and len(self.all_partners[0]) == 1:
             self.partners_page = 0
             self.partners_last_page.disable()
-            self.partners_next_page.enable()
+            self.partners_next_page.disable()
             _partner = self.all_partners[0][0]
             self.partners_cat_buttons["cat"] = UISpriteButton(
                 ui_scale(pygame.Rect((240, 13), (150, 150))),
-                pygame.transform.scale(_partner.sprite, ui_scale_dimensions(150, 150)),
+                pygame.transform.scale(_partner.sprite, ui_scale_dimensions((150, 150))),
                 cat_object=_partner,
                 manager=MANAGER,
                 container=self.partners_container,
