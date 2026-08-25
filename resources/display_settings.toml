@@ -86,6 +86,7 @@
     [clan.role]
         deputy = false
         rel_deputy = true
+        prophet = false
         12_moon_graduation = false
         retirement = false
         leader_retirement = false
@@ -102,6 +103,7 @@
         block_litters_by_rank = false
         block_litters_leader = false
         block_litters_deputy = false
+        block_litters_prophet = false
         block_litters_healer = false
         block_litters_mediator = false
         block_litters_queen = false

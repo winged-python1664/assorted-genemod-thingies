@@ -57,7 +57,6 @@ class ChooseMateScreen(Screens):
         self.page_number = None
 
         self.mate_frame = None
-        self.partner_frame = None
         self.the_cat_frame = None
         self.info = None
         self.checkboxes = {}
@@ -69,60 +68,57 @@ class ChooseMateScreen(Screens):
         self.partners_tab_button = None
         self.offspring_tab_button = None
         self.potential_mates_button = None
-        self.potential_partners_button = None
+        self.pot_par_tab_button = None
 
         # Keep track of all the cats we want to display
         self.all_mates = []
         self.all_partners = []
         self.all_offspring = []
         self.all_potential_mates = []
-        self.all_potential_partners = []
+        self.all_pot_par = []
 
         # Keep track of the current page on all three tabs
         self.mates_page = 0
         self.partners_page = 0
         self.offspring_page = 0
         self.potential_mates_page = 0
-        self.potential_partners_page = 0
+        self.pot_par_page = 0
 
         self.mates_cat_buttons = {}
         self.partners_cat_buttons = {}
         self.offspring_cat_buttons = {}
         self.potential_mates_buttons = {}
-        self.potential_partners_buttons = {}
+        self.pot_par_cat_buttons = {}
 
         # Tab containers.
         self.mates_container = None
         self.partners_container = None
         self.offspring_container = None
         self.potential_container = None
-        self.potential_partners_container = None
+        self.pot_par_container = None
 
         # Filter toggles
         self.kits_selected_pair = True
-        self.ab = False
-        self.cd = False
+        self.single_only = False
         self.have_kits_only = False
 
-        self.no_mates_text = None
-        self.no_partners_text = None
+        self.single_only_text = None
         self.have_kits_text = None
-        self.no_mates_text_p = None
-        self.no_partners_text_p = None
-        self.have_kits_text_p = None
         self.with_selected_cat_text = None
         self.show_all_text = None
 
         self.potential_page_display = None
         self.offspring_page_display = None
         self.mate_page_display = None
-        self.partners_page_display = None
-        self.potential_partners_page_display = None
+        self.partner_page_display = None
+        self.pot_par_page_display = None
 
         # Keep track of the open tab
         # Can be "potential" for the potential mates tab, "offspring"
-        # for the offspring tab, and "mates" for the mate tab.
+        # for the offspring tab, and "mates" for the mate tab
+        # "partners" for partners and "pot_par" for pot_par
         self.open_tab = "potential"
+        self.previous_tab = None
         self.tab_buttons = {}
 
         self.no_kits_message = None
@@ -146,11 +142,11 @@ class ChooseMateScreen(Screens):
                     return
                 if self.work_thread is not None and self.work_thread.is_alive():
                     return
-                self.work_thread = self.loading_screen_start_work(self.change_mate)
+                self.work_thread = self.loading_screen_start_work(self.change_mate(mate=True))
             elif event.ui_element == self.toggle_partner:
                 if self.work_thread is not None and self.work_thread.is_alive():
                     return
-                self.work_thread = self.loading_screen_start_work(self.change_partner)
+                self.work_thread = self.loading_screen_start_work(self.change_mate(mate=False))
 
             elif event.ui_element == self.previous_cat_button:
                 if isinstance(Cat.fetch_cat(self.previous_cat), Cat):
@@ -166,36 +162,24 @@ class ChooseMateScreen(Screens):
                     print("invalid next cat", self.next_cat)
 
             # Checkboxes
+            elif event.ui_element == self.checkboxes.get("single_only"):
+                if self.single_only:
+                    self.single_only = False
+                else:
+                    self.single_only = True
+                if self.open_tab not in ["partners", "pot_par"] or self.open_tab == "offspring" and self.previous_tab not in ["partners", "pot_par"]:
+                    self.update_potential_mates_container()
+                else:
+                    self.update_pot_par_container()
             elif event.ui_element == self.checkboxes.get("have_kits_only"):
                 if self.have_kits_only:
                     self.have_kits_only = False
                 else:
                     self.have_kits_only = True
-                if self.open_tab in ["partners", "potential_partners"] or self.open_tab == "offspring" and self.previous_tab in ["partners", "potential_partners"]:
-                    self.update_potential_partners_container()
-                else:
+                if self.open_tab not in ["partners", "pot_par"] or self.open_tab == "offspring" and self.previous_tab not in ["partners", "pot_par"]:
                     self.update_potential_mates_container()
-
-            elif event.ui_element == self.checkboxes.get("ab"):
-                if self.ab:
-                    self.ab = False
                 else:
-                    self.ab = True
-                if self.open_tab in ["partners", "potential_partners"] or self.open_tab == "offspring" and self.previous_tab in ["partners", "potential_partners"]:
-                    self.update_potential_partners_container()
-                else:
-                    self.update_potential_mates_container()
-
-            elif event.ui_element == self.checkboxes.get("cd"):
-                if self.cd:
-                    self.cd = False
-                else:
-                    self.cd = True
-                if self.open_tab in ["partners", "potential_partners"] or self.open_tab == "offspring" and self.previous_tab in ["partners", "potential_partners"]:
-                    self.update_potential_partners_container()
-                else:
-                    self.update_potential_mates_container()
-
+                    self.update_pot_par_container()
             elif event.ui_element == self.checkboxes.get("kits_selected_pair"):
                 if self.kits_selected_pair:
                     self.kits_selected_pair = False
@@ -214,13 +198,18 @@ class ChooseMateScreen(Screens):
                 event.ui_element.toggle()
                 self.search_bar.placeholder_text = "general.genotype_search" if self.search_genotype else "general.name_search"
                 self.search_bar.set_text("")
-                self.update_potential_mates_container()
+                if self.open_tab == "potential":
+                    self.update_potential_mates_container()
+                if self.open_tab == "pot_par":
+                    self.update_pot_par_container()
 
             elif event.ui_element == self.show_all_checkbox:
                 event.ui_element.toggle()
                 self.show_all = event.ui_element.checked
-                self.update_potential_mates_container()
-                self.update_potential_partners_container()
+                if self.open_tab == "potential":
+                    self.update_potential_mates_container()
+                if self.open_tab == "pot_par":
+                    self.update_pot_par_container()
 
             # Next and last page buttons
             elif event.ui_element == self.offspring_next_page:
@@ -241,10 +230,26 @@ class ChooseMateScreen(Screens):
             elif event.ui_element == self.mates_last_page:
                 self.mates_page -= 1
                 self.update_mates_container_page()
+            elif event.ui_element == self.pot_par_next_page:
+                self.pot_par_page += 1
+                self.update_pot_par_container_page()
+            elif event.ui_element == self.pot_par_last_page:
+                self.pot_par_page -= 1
+                self.update_pot_par_container_page()
+            elif event.ui_element == self.partners_next_page:
+                self.partner_page += 1
+                self.update_partners_container_page()
+            elif event.ui_element == self.partners_next_page:
+                self.partner_page -= 1
+                self.update_partners_container_page()
 
             elif event.ui_element == self.tab_buttons.get("mates"):
                 self.previous_tab = self.open_tab
                 self.open_tab = "mates"
+                self.switch_tab()
+            elif event.ui_element == self.tab_buttons.get("partners"):
+                self.previous_tab = self.open_tab
+                self.open_tab = "partners"
                 self.switch_tab()
             elif event.ui_element == self.tab_buttons.get("offspring"):
                 self.previous_tab = self.open_tab
@@ -254,19 +259,15 @@ class ChooseMateScreen(Screens):
                 self.previous_tab = self.open_tab
                 self.open_tab = "potential"
                 self.switch_tab()
-            elif event.ui_element == self.tab_buttons.get("partners"):
+            elif event.ui_element == self.tab_buttons.get("pot_par"):
                 self.previous_tab = self.open_tab
-                self.open_tab = "partners"
-                self.switch_tab()
-            elif event.ui_element == self.tab_buttons.get("potential_partners"):
-                self.previous_tab = self.open_tab
-                self.open_tab = "potential_partners"
+                self.open_tab = "pot_par"
                 self.switch_tab()
             elif (
                 event.ui_element in self.mates_cat_buttons.values()
                 or event.ui_element in self.potential_mates_buttons.values()
                 or event.ui_element in self.partners_cat_buttons.values()
-                or event.ui_element in self.potential_partners_buttons.values()
+                or event.ui_element in self.pot_par_cat_buttons.values()
             ):
                 self.selected_cat = event.ui_element.cat_object
                 self.update_selected_cat()
@@ -306,15 +307,6 @@ class ChooseMateScreen(Screens):
             ),
         )
         self.mate_frame = pygame_gui.elements.UIImage(
-            ui_scale(pygame.Rect((494, 113), (266, 197))),
-            pygame.transform.scale(
-                image_cache.load_image(
-                    "resources/images/choosing_cat2_frame_mate.png"
-                ).convert_alpha(),
-                ui_scale_dimensions((266, 197)),
-            ),
-        )
-        self.partner_frame = pygame_gui.elements.UIImage(
             ui_scale(pygame.Rect((494, 113), (266, 197))),
             pygame.transform.scale(
                 image_cache.load_image(
@@ -408,7 +400,7 @@ class ChooseMateScreen(Screens):
 
         self.partners_container = pygame_gui.core.UIContainer(contain_rect, MANAGER)
 
-        # All the perm elements the exist inside self.mates_container
+        # All the perm elements the exist inside self.partners_container
         self.partners_next_page = UISurfaceImageButton(
             ui_scale(pygame.Rect((366, 179), (34, 34))),
             Icon.ARROW_RIGHT,
@@ -458,7 +450,6 @@ class ChooseMateScreen(Screens):
         )
 
         self.potential_container = pygame_gui.core.UIContainer(contain_rect, MANAGER)
-        self.potential_partners_container = pygame_gui.core.UIContainer(contain_rect, MANAGER)
 
         # All the perm elements the exist inside self.potential_container
         self.potential_next_page = UISurfaceImageButton(
@@ -484,71 +475,45 @@ class ChooseMateScreen(Screens):
             container=self.potential_container,
         )
 
-        # Checkboxes and text
-        self.no_mates_text = pygame_gui.elements.UITextBox(
-            "screens.choose_mate.no_mates",
-            ui_scale(pygame.Rect((517, 11), (104, -1))),
-            object_id="#text_box_26_horizcenter",
-            container=self.potential_container,
-        )
-        self.no_partners_text = pygame_gui.elements.UITextBox(
-            "screens.choose_mate.no_partners",
-            ui_scale(pygame.Rect((517, 61), (104, -1))),
-            object_id="#text_box_26_horizcenter",
-            container=self.potential_container,
-        )
-        self.have_kits_text = pygame_gui.elements.UITextBox(
-            "screens.choose_mate.can_have_kits",
-            ui_scale(pygame.Rect((517, 105), (104, -1))),
-            object_id="#text_box_26_horizcenter",
-            container=self.potential_container,
-        )
+        self.pot_par_container = pygame_gui.core.UIContainer(contain_rect, MANAGER)
 
-        self.potential_partners_container = pygame_gui.core.UIContainer(contain_rect, MANAGER)
-        self.potential_partners_container.hide()
-
-        # Checkboxes and text
-        self.no_mates_text_p = pygame_gui.elements.UITextBox(
-            "screens.choose_mate.no_mates",
-            ui_scale(pygame.Rect((517, 11), (104, -1))),
-            object_id="#text_box_26_horizcenter",
-            container=self.potential_partners_container,
-        )
-        self.no_partners_text_p = pygame_gui.elements.UITextBox(
-            "screens.choose_mate.no_partners",
-            ui_scale(pygame.Rect((517, 61), (104, -1))),
-            object_id="#text_box_26_horizcenter",
-            container=self.potential_partners_container,
-        )
-        self.have_kits_text_p = pygame_gui.elements.UITextBox(
-            "screens.choose_mate.can_have_kits",
-            ui_scale(pygame.Rect((517, 105), (104, -1))),
-            object_id="#text_box_26_horizcenter",
-            container=self.potential_partners_container,
-        )
-
-        # All the perm elements the exist inside self.potential_partners_container
-        self.potential_partners_next_page = UISurfaceImageButton(
+        # All the perm elements the exist inside self.pot_par_container
+        self.pot_par_next_page = UISurfaceImageButton(
             ui_scale(pygame.Rect((366, 179), (34, 34))),
             Icon.ARROW_RIGHT,
             get_button_dict(ButtonStyles.ICON, (34, 34)),
             object_id="@buttonstyles_icon",
-            container=self.potential_partners_container,
+            container=self.pot_par_container,
         )
-        self.potential_partners_last_page = UISurfaceImageButton(
+        self.pot_par_last_page = UISurfaceImageButton(
             ui_scale(pygame.Rect((230, 179), (34, 34))),
             Icon.ARROW_LEFT,
             get_button_dict(ButtonStyles.ICON, (34, 34)),
             object_id="@buttonstyles_icon",
-            container=self.potential_partners_container,
+            container=self.pot_par_container,
         )
-        self.potential_partners_seperator = pygame_gui.elements.UIImage(
+        self.pot_par_seperator = pygame_gui.elements.UIImage(
             ui_scale(pygame.Rect((497, 0), (10, 176))),
             pygame.transform.scale(
                 image_cache.load_image("resources/images/vertical_bar.png"),
                 ui_scale_dimensions((10, 176)),
             ),
-            container=self.potential_partners_container,
+            container=self.pot_par_container,
+        )
+
+        # Checkboxes and text
+        self.single_only_text = pygame_gui.elements.UITextBox(
+            "screens.choose_mate.no_mates",
+            ui_scale(pygame.Rect((517, 11), (104, -1))),
+            object_id="#text_box_26_horizcenter",
+            container=self.potential_container,
+        )
+
+        self.have_kits_text = pygame_gui.elements.UITextBox(
+            "screens.choose_mate.can_have_kits",
+            ui_scale(pygame.Rect((517, 75), (104, -1))),
+            object_id="#text_box_26_horizcenter",
+            container=self.potential_container,
         )
 
         # Page numbers
@@ -556,7 +521,7 @@ class ChooseMateScreen(Screens):
         self.partners_page = 0
         self.offspring_page = 0
         self.potential_mates_page = 0
-        self.potential_partners_page = 0
+        self.pot_par_page = 0
 
         # This exists solely to stop the code freaking out
         self.toggle_mate = UIImageButton(
@@ -564,12 +529,8 @@ class ChooseMateScreen(Screens):
             "",
         )
 
-        self.toggle_partner = UIImageButton(
-            ui_scale(pygame.Rect((323, 310), (153, 30))),
-            "",
-        )
-
         self.open_tab = "potential"
+        self.previous_tab = None
 
         # This will set up everything else on the page. Basically everything that changed with selected or
         # current cat
@@ -582,10 +543,10 @@ class ChooseMateScreen(Screens):
         variable_dict["selected_cat"] = self.selected_cat
         variable_dict["the_cat"] = self.the_cat
         variable_dict["kits_selected_pair"] = self.kits_selected_pair
+        variable_dict["single_only"] = self.single_only
         variable_dict["have_kits_only"] = self.have_kits_only
-        variable_dict["ab"] = self.ab
-        variable_dict["cd"] = self.cd
         variable_dict["open_tab"] = self.open_tab
+        variable_dict["previous_tab"] = self.previous_tab
 
         return variable_dict
 
@@ -601,25 +562,20 @@ class ChooseMateScreen(Screens):
         self.update_both()
         self.switch_tab()
 
-    def change_mate(self):
+    def change_mate(self, mate=True):
         if not self.selected_cat:
             return
 
-        if self.selected_cat.ID not in self.the_cat.mate:
-            self.the_cat.set_mate(self.selected_cat)
-
+        if mate == True:
+            if self.selected_cat.ID not in self.the_cat.mate:
+                self.the_cat.set_mate(self.selected_cat)
+            else:
+                self.the_cat.unset_mate(self.selected_cat, user_initiated_breakup=True)
         else:
-            self.the_cat.unset_mate(self.selected_cat, user_initiated_breakup=True)
-
-    def change_partner(self):
-        if not self.selected_cat:
-            return
-
-        if self.selected_cat.ID not in self.the_cat.partner:
-            self.the_cat.set_partner(self.selected_cat)
-
-        else:
-            self.the_cat.unset_partner(self.selected_cat, user_initiated_breakup=True)
+            if self.selected_cat.ID not in self.the_cat.partner:
+                self.the_cat.set_partner(self.selected_cat)
+            else:
+                self.the_cat.unset_partner(self.selected_cat, user_intitiated_breakup = True)
 
     def update_both(self):
         """Updates both the current cat and selected cat info."""
@@ -637,15 +593,6 @@ class ChooseMateScreen(Screens):
             [Cat.fetch_cat(i) for i in self.the_cat.mate], 30
         )
         self.update_mates_container_page()
-
-    def update_partners_container(self):
-        """Updates everything in the partners container, including the list of current partners,
-        and the page"""
-
-        self.all_partners = self.get_list_chunks(
-            [Cat.fetch_cat(i) for i in self.the_cat.partner], 30
-        )
-        self.update_partners_container_page()
 
     def update_mates_container_page(self):
         """Updates just the current page for the mates container, does
@@ -725,6 +672,15 @@ class ChooseMateScreen(Screens):
                 pos_y += 60
             i += 1
 
+    def update_partners_container(self):
+        """Updates everything in the partners container, including the list of current partners,
+        and the page"""
+
+        self.all_partners = self.get_list_chunks(
+            [Cat.fetch_cat(i) for i in self.the_cat.partner], 30
+        )
+        self.update_partners_container_page()
+
     def update_partners_container_page(self):
         """Updates just the current page for the partners container, does
         not refresh the list. It will also update the disable status of the
@@ -733,16 +689,15 @@ class ChooseMateScreen(Screens):
             self.partners_cat_buttons[ele].kill()
         self.partners_cat_buttons = {}
 
-        # Different layout for a single partner - they are just big in the center
-        if len(self.all_partners) == 1 and len(self.all_partners[0]) == 1:
-            # TODO disable both next and previous page buttons
+        # Different layout for a single partner, they're just big in the center
+        if len(self.all_partners) == 1 and len(self.all_parnters[0]) == 1:
             self.partners_page = 0
             self.partners_last_page.disable()
-            self.partners_next_page.disable()
+            self.partners_next_page.enable()
             _partner = self.all_partners[0][0]
             self.partners_cat_buttons["cat"] = UISpriteButton(
                 ui_scale(pygame.Rect((240, 13), (150, 150))),
-                pygame.transform.scale(_partner.sprite, ui_scale_dimensions((150, 150))),
+                pygame.transform.scale(_partner.sprite, ui_scale_dimensions(150, 150)),
                 cat_object=_partner,
                 manager=MANAGER,
                 container=self.partners_container,
@@ -752,7 +707,7 @@ class ChooseMateScreen(Screens):
         total_pages = len(self.all_partners)
         if max(1, total_pages) - 1 < self.partners_page:
             self.partners_page = total_pages - 1
-        elif self.partners_page < 0:
+        elif self.partners_page == 0:
             self.partners_page = 0
 
         if total_pages <= 1:
@@ -764,13 +719,10 @@ class ChooseMateScreen(Screens):
         elif self.partners_page <= 0:
             self.partners_last_page.disable()
             self.partners_next_page.enable()
-        else:
-            self.partners_last_page.enable()
-            self.partners_last_page.enable()
 
         text = f"{self.partners_page + 1} / {max(1, total_pages)}"
-        if not self.partners_page_display:
-            self.partners_page_display = pygame_gui.elements.UILabel(
+        if not self.partner_page_display:
+            self.partner_page_display = pygame_gui.elements.UILabel(
                 ui_scale(pygame.Rect((264, 185), (102, 24))),
                 text,
                 container=self.partners_container,
@@ -779,7 +731,7 @@ class ChooseMateScreen(Screens):
                 ),
             )
         else:
-            self.partners_page_display.set_text(text)
+            self.partner_page_display.set_text(text)
 
         if self.all_partners:
             display_cats = self.all_partners[self.partners_page]
@@ -822,11 +774,6 @@ class ChooseMateScreen(Screens):
 
         if "kits_selected_pair" in self.checkboxes:
             self.checkboxes["kits_selected_pair"].kill()
-
-        if self.kits_selected_pair:
-            theme = "@checked_checkbox"
-        else:
-            theme = "@unchecked_checkbox"
 
         self.checkboxes["kits_selected_pair"] = UICheckbox(
             position=(553, 62),
@@ -950,23 +897,20 @@ class ChooseMateScreen(Screens):
         and the page"""
 
         # Update checkboxes
-        self.checkboxes["ab"] = UICheckbox(
-            position=(553, 4),
-            check=self.ab,
+        if "single_only" in self.checkboxes:
+            self.checkboxes["single_only"].kill()
+
+        self.checkboxes["single_only"] = UICheckbox(
+            position=(553, 42),
+            check=self.single_only,
             container=self.potential_container,
         )
 
-        self.checkboxes["cd"] = UICheckbox(
-            position=(553, 56),
-            check=self.cd,
-            container=self.potential_container,
-        )
-
-        # if "have_kits_only" in self.checkboxes:
-            # self.checkboxes["have_kits_only"].kill()
+        if "have_kits_only" in self.checkboxes:
+            self.checkboxes["have_kits_only"].kill()
 
         self.checkboxes["have_kits_only"] = UICheckbox(
-            position=(553, 98),
+            position=(553, 127),
             check=self.have_kits_only,
             container=self.potential_container,
         )
@@ -1038,98 +982,94 @@ class ChooseMateScreen(Screens):
                 pos_y += 60
             i += 1
 
-    def update_potential_partners_container(self):
-        """Updates everything in the potential partners container, including the list of current partners, checkboxes
-        and the page"""
+    def update_pot_par_container(self):
+        """Updates everything in the potential partners container, including the list of current partners,
+        checkboxes and the page"""
 
         # Update checkboxes
-        self.checkboxes["ab"] = UICheckbox(
-            position=(553, 4),
-            check=self.ab,
-            container=self.potential_partners_container,
-        )
+        if "single_only" in self.checkboxes:
+            self.checkboxes["single_only"].kill()
 
-        self.checkboxes["cd"] = UICheckbox(
-            position=(553, 56),
-            check=self.cd,
-            container=self.potential_partners_container,
+        self.checkboxes["single_only"] = UICheckbox(
+            position=(553, 42),
+            check=self.single_only,
+            container=self.pot_par_container,
         )
 
         if "have_kits_only" in self.checkboxes:
             self.checkboxes["have_kits_only"].kill()
 
         self.checkboxes["have_kits_only"] = UICheckbox(
-            position=(553, 98),
+            position=(553, 127),
             check=self.have_kits_only,
-            container=self.potential_partners_container,
+            container=self.pot_par_container,
         )
 
-        self.all_potential_partners = self.get_list_chunks(self.get_valid_partners(self.search_bar.get_text().strip()), 24)
+        self.all_pot_par = self.get_list_chunks(self.get_valid_partners(self.search_bar.get_text().strip()), 24)
 
-        self.update_potential_partners_container_page()
+        self.update_pot_par_container_page()
 
-    def update_potential_partners_container_page(self):
+    def update_pot_par_container_page(self):
         """Updates just the current page for the partners container, does
         not refresh the list. It will also update the disable status of the
         next and last page buttons"""
 
-        for ele in self.potential_partners_buttons:
-            self.potential_partners_buttons[ele].kill()
-        self.potential_partners_buttons = {}
+        for ele in self.partners_cat_buttons:
+            self.pot_par_cat_buttons[ele].kill()
+        self.pot_par_cat_buttons = {}
 
-        total_pages = len(self.all_potential_partners)
-        if max(1, total_pages) - 1 < self.potential_partners_page:
-            self.potential_partners_page = total_pages - 1
-        elif self.potential_partners_page < 0:
-            self.potential_partners_page = 0
+        total_pages = len(self.all_pot_par)
+        if max(1, total_pages) - 1 < self.pot_par_page:
+            self.pot_par_page = total_pages - 1
+        elif self.pot_par_page < 0:
+            self.pot_par_page = 0
 
         if total_pages <= 1:
-            self.potential_partners_last_page.disable()
-            self.potential_partners_next_page.disable()
-        elif self.potential_partners_page >= total_pages - 1:
-            self.potential_partners_last_page.enable()
-            self.potential_partners_next_page.disable()
-        elif self.potential_partners_page <= 0:
-            self.potential_partners_last_page.disable()
-            self.potential_partners_next_page.enable()
+            self.pot_par_last_page.disable()
+            self.pot_par_next_page.disable()
+        elif self.pot_par_page >= total_pages - 1:
+            self.pot_par_last_page.enable()
+            self.pot_par_next_page.disable()
+        elif self.pot_par_page <= 0:
+            self.pot_par_last_page.disable()
+            self.pot_par_next_page.enable()
         else:
-            self.potential_partners_last_page.enable()
-            self.potential_partners_next_page.enable()
+            self.pot_par_last_page.enable()
+            self.pot_par_next_page.enable()
 
-        text = f"{self.potential_partners_page + 1} / {max(1, total_pages)}"
-        if not self.potential_partners_page_display:
-            self.potential_partners_page_display = pygame_gui.elements.UILabel(
+        text = f"{self.pot_par_page + 1} / {max(1, total_pages)}"
+        if not self.pot_par_page_display:
+            self.pot_par_page_display = pygame_gui.elements.UILabel(
                 ui_scale(pygame.Rect((264, 185), (102, 24))),
                 text,
-                container=self.potential_partners_container,
+                container=self.pot_par_container,
                 object_id=get_text_box_theme(
                     "#text_box_26_horizcenter_vertcenter_spacing_95"
                 ),
             )
         else:
-            self.potential_partners_page_display.set_text(text)
+            self.pot_par_page_display.set_text(text)
 
-        if self.all_potential_partners:
-            display_cats = self.all_potential_partners[self.potential_partners_page]
+        if self.all_pot_par:
+            display_cats = self.all_pot_par[self.pot_par_page]
         else:
             display_cats = []
 
         pos_x = 15
         pos_y = 0
         i = 0
-
-        for _off in display_cats:
-            self.potential_partners_buttons["cat" + str(i)] = UISpriteButton(
+        for _pop in display_cats:
+            self.pot_par_cat_buttons["cat" + str(i)] = UISpriteButton(
                 ui_scale(pygame.Rect((pos_x, pos_y), (50, 50))),
-                _off.sprite,
-                cat_object=_off,
-                container=self.potential_partners_container,
+                _pop.sprite,
+                cat_object=_pop,
+                container=self.pot_par_container,
             )
             pos_x += 60
             if pos_x >= 495:
                 pos_x = 15
                 pos_y += 60
-            i += 1
+            i += i
 
     def exit_screen(self):
         for ele in self.current_cat_elements:
@@ -1144,10 +1084,12 @@ class ChooseMateScreen(Screens):
             self.tab_buttons[ele].kill()
         self.tab_buttons = {}
 
+        self.previous_tab = None
+
         self.all_mates = []
         self.all_partners = []
         self.all_potential_mates = []
-        self.all_potential_partners = []
+        self.all_pot_par = []
         self.all_offspring = []
 
         self.list_frame_image.kill()
@@ -1157,7 +1099,7 @@ class ChooseMateScreen(Screens):
         self.partners_cat_buttons = {}
         self.offspring_cat_buttons = {}
         self.potential_mates_buttons = {}
-        self.potential_partners_cat_buttons = {}
+        self.pot_par_cat_buttons = {}
         self.checkboxes = {}
 
         self.potential_container.kill()
@@ -1168,21 +1110,13 @@ class ChooseMateScreen(Screens):
         self.mates_container = None
         self.partners_container.kill()
         self.partners_container = None
-        self.potential_partners_container.kill()
-        self.potential_partners_container = None
+        self.pot_par_container.kill()
+        self.pot_par_container = None
 
-        self.no_mates_text.kill()
-        self.no_mates_text = None
-        self.no_partners_text.kill()
-        self.no_partners_text = None
+        self.single_only_text.kill()
+        self.single_only_text = None
         self.have_kits_text.kill()
         self.have_kits_text = None
-        self.no_mates_text_p.kill()
-        self.no_mates_text_p = None
-        self.no_partners_text_p.kill()
-        self.no_partners_text_p = None
-        self.have_kits_text_p.kill()
-        self.have_kits_text_p = None
         self.with_selected_cat_text.kill()
         self.with_selected_cat_text = None
         self.show_all_text.kill()
@@ -1192,8 +1126,6 @@ class ChooseMateScreen(Screens):
         self.the_cat_frame = None
         self.mate_frame.kill()
         self.mate_frame = None
-        self.partner_frame.kill()
-        self.partner_frame = None
         self.info.kill()
         self.info = None
         self.back_button.kill()
@@ -1204,16 +1136,14 @@ class ChooseMateScreen(Screens):
         self.next_cat_button = None
         self.toggle_mate.kill()
         self.toggle_mate = None
-        self.toggle_partner.kill()
-        self.toggle_partner = None
 
         self.potential_seperator = None
-        self.potential_partners_seperator = None
+        self.pot_par_seperator = None
         self.offspring_separator = None
         self.potential_last_page = None
         self.potential_next_page = None
-        self.potential_partners_last_page = None
-        self.potential_partners_last_page = None
+        self.pot_par_last_page = None
+        self.pot_par_next_page = None
         self.offspring_last_page = None
         self.offspring_next_page = None
         self.mates_last_page = None
@@ -1221,7 +1151,7 @@ class ChooseMateScreen(Screens):
         self.partners_last_page = None
         self.partners_next_page = None
         self.potential_page_display = None
-        self.potential_partners_page_display = None
+        self.pot_par_page_display = None
         self.offspring_page_display = None
         self.mate_page_display = None
         self.partner_page_display = None
@@ -1276,7 +1206,7 @@ class ChooseMateScreen(Screens):
         self.partners_page = 0
         self.offspring_page = 0
         self.potential_mates_page = 0
-        self.potential_partners_page = 0
+        self.pot_par_page = 0
 
         heading_rect = ui_scale(pygame.Rect((0, 25), (400, -1)))
         self.current_cat_elements["heading"] = pygame_gui.elements.UITextBox(
@@ -1325,6 +1255,10 @@ class ChooseMateScreen(Screens):
             info += f"\n{len(self.the_cat.mate)} " + i18n.t(
                 "general.mate", count=len(self.the_cat.mate)
             )
+        elif self.the_cat.partner:
+            info += f"\n{len(self.the_cat.partner)} " + i18n.t(
+                "general.partner", count=len(self.the_cat.partner)
+            )
         self.current_cat_elements["info"] = pygame_gui.elements.UITextBox(
             info,
             ui_scale(pygame.Rect((206, 175), (94, 100))),
@@ -1336,15 +1270,13 @@ class ChooseMateScreen(Screens):
             self.selected_cat = None
             if self.the_cat.mate:
                 self.selected_cat = Cat.fetch_cat(self.the_cat.mate[0])
-            if self.the_cat.partner:
+            elif self.the_cat.partner:
                 self.selected_cat = Cat.fetch_cat(self.the_cat.partner[0])
             self.update_selected_cat()
 
         self.draw_tab_button()
         self.update_mates_container()
-        self.update_partners_container()
         self.update_potential_mates_container()
-        self.update_potential_partners_container()
         self.update_offspring_container()
 
     def draw_tab_button(self):
@@ -1355,58 +1287,55 @@ class ChooseMateScreen(Screens):
             self.tab_buttons[x].kill()
         self.tab_buttons = {}
 
-        button_rect = ui_scale(pygame.Rect((0, 0), (123, 39)))
-        button_rect.bottomleft = ui_scale_offset((93, 8))
+        button_rect = ui_scale(pygame.Rect((0, 0), (153, 39)))
+        button_rect.bottomleft = ui_scale_offset((100, 8))
         self.tab_buttons["potential"] = UISurfaceImageButton(
             button_rect,
             "screens.choose_mate.potential",
-            get_button_dict(ButtonStyles.HORIZONTAL_TAB, (123, 39)),
+            get_button_dict(ButtonStyles.HORIZONTAL_TAB, (153, 39)),
             object_id="@buttonstyles_horizontal_tab",
             starting_height=2,
             anchors={"bottom": "bottom", "bottom_target": self.list_frame_image},
         )
 
-        button_rect = ui_scale(pygame.Rect((0, 0), (143, 39)))
         button_rect.bottomleft = ui_scale_offset((7, 8))
-        self.tab_buttons["potential_partners"] = UISurfaceImageButton(
+        self.tab_buttons["pot_par"] = UISurfaceImageButton(
             button_rect,
-            "screens.choose_mate.potential_partners",
-            get_button_dict(ButtonStyles.HORIZONTAL_TAB, (143, 39)),
+            "screens.choose_mate.pot_par",
+            get_button_dict(ButtonStyles.HORIZONTAL_TAB, (153, 39)),
             object_id="@buttonstyles_horizontal_tab",
             starting_height=2,
             anchors={
                 "bottom": "bottom",
                 "bottom_target": self.list_frame_image,
-                "left_target": self.tab_buttons["potential"],
-            },
+                "left_target": self.tab_buttons["potential"]
+            }
         )
 
-        button_rect = ui_scale(pygame.Rect((0, 0), (73, 39)))
         mates_tab_shown = False
         button_rect.bottomleft = ui_scale_offset((7, 8))
         if self.the_cat.mate:
             self.tab_buttons["mates"] = UISurfaceImageButton(
                 button_rect,
                 "screens.choose_mate.mates",
-                get_button_dict(ButtonStyles.HORIZONTAL_TAB, (73, 39)),
+                get_button_dict(ButtonStyles.HORIZONTAL_TAB, (153, 39)),
                 object_id="@buttonstyles_horizontal_tab",
                 starting_height=2,
                 anchors={
                     "bottom": "bottom",
                     "bottom_target": self.list_frame_image,
-                    "left_target": self.tab_buttons["potential_partners"],
+                    "left_target": self.tab_buttons["pot_par"],
                 },
             )
             mates_tab_shown = True
 
-        button_rect = ui_scale(pygame.Rect((0, 0), (83, 39)))
         partners_tab_shown = False
         button_rect.bottomleft = ui_scale_offset((7, 8))
         if self.the_cat.partner:
             self.tab_buttons["partners"] = UISurfaceImageButton(
                 button_rect,
                 "screens.choose_mate.partners",
-                get_button_dict(ButtonStyles.HORIZONTAL_TAB, (83, 39)),
+                get_button_dict(ButtonStyles.HORIZONTAL_TAB, (153, 39)),
                 object_id="@buttonstyles_horizontal_tab",
                 starting_height=2,
                 anchors={
@@ -1415,29 +1344,27 @@ class ChooseMateScreen(Screens):
                     "left_target": (
                         self.tab_buttons["mates"]
                         if mates_tab_shown
-                        else self.tab_buttons["potential_partners"]
-                    ),
-                },
+                        else self.tab_buttons["pot_par"]
+                    )
+                }
             )
             partners_tab_shown = True
 
-        button_rect = ui_scale(pygame.Rect((0, 0), (83, 39)))
-        button_rect.bottomleft = ui_scale_offset((7, 8))
         self.tab_buttons["offspring"] = UISurfaceImageButton(
             button_rect,
             "screens.choose_mate.offspring",
-            get_button_dict(ButtonStyles.HORIZONTAL_TAB, (83, 39)),
+            get_button_dict(ButtonStyles.HORIZONTAL_TAB, (153, 39)),
             object_id="@buttonstyles_horizontal_tab",
             starting_height=2,
             anchors={
                 "bottom": "bottom",
                 "bottom_target": self.list_frame_image,
                 "left_target": (
-                    self.tab_buttons["partners"]
-                    if partners_tab_shown
-                    else self.tab_buttons["mates"]
+                    self.tab_buttons["mates"]
                     if mates_tab_shown
-                    else self.tab_buttons["potential_partners"]
+                    else self.tab_buttons["partners"]
+                    if partners_tab_shown
+                    else self.tab_buttons["pot_par"]
                 ),
             },
         )
@@ -1445,18 +1372,15 @@ class ChooseMateScreen(Screens):
         if self.open_tab == "mates" and not mates_tab_shown:
             self.open_tab = "potential"
         if self.open_tab == "partners" and not partners_tab_shown:
-            self.open_tab = "potential_partners"
+            self.open_tab = "pot_par"
 
         self.switch_tab()
 
     def switch_tab(self):
-        self.update_selected_cat()
         if self.open_tab == "mates":
             self.mates_container.show()
-            self.partners_container.hide()
             self.offspring_container.hide()
             self.potential_container.hide()
-            self.potential_partners_container.hide()
 
             if "mates" in self.tab_buttons:
                 self.tab_buttons["mates"].disable()
@@ -1464,15 +1388,13 @@ class ChooseMateScreen(Screens):
                 self.tab_buttons["partners"].enable()
             self.tab_buttons["offspring"].enable()
             self.tab_buttons["potential"].enable()
-            self.tab_buttons["potential_partners"].enable()
-
-            self.toggle_partner.kill()
+            self.tab_buttons["pot_par"].enable()
         elif self.open_tab == "partners":
             self.mates_container.hide()
             self.partners_container.show()
             self.offspring_container.hide()
             self.potential_container.hide()
-            self.potential_partners_container.hide()
+            self.pot_par_container.hide()
 
             if "mates" in self.tab_buttons:
                 self.tab_buttons["mates"].enable()
@@ -1480,15 +1402,13 @@ class ChooseMateScreen(Screens):
                 self.tab_buttons["partners"].disable()
             self.tab_buttons["offspring"].enable()
             self.tab_buttons["potential"].enable()
-            self.tab_buttons["potential_partners"].enable()
-
-            self.toggle_mate.kill()
+            self.tab_buttons["pot_par"].enable()
         elif self.open_tab == "offspring":
             self.mates_container.hide()
             self.partners_container.hide()
             self.offspring_container.show()
             self.potential_container.hide()
-            self.potential_partners_container.hide()
+            self.pot_par_container.hide()
 
             if "mates" in self.tab_buttons:
                 self.tab_buttons["mates"].enable()
@@ -1496,13 +1416,13 @@ class ChooseMateScreen(Screens):
                 self.tab_buttons["partners"].enable()
             self.tab_buttons["offspring"].disable()
             self.tab_buttons["potential"].enable()
-            self.tab_buttons["potential_partners"].enable()
+            self.tab_buttons["pot_par"].enable()
         elif self.open_tab == "potential":
             self.mates_container.hide()
             self.partners_container.hide()
             self.offspring_container.hide()
             self.potential_container.show()
-            self.potential_partners_container.hide()
+            self.pot_par_container.hide()
 
             if "mates" in self.tab_buttons:
                 self.tab_buttons["mates"].enable()
@@ -1510,13 +1430,13 @@ class ChooseMateScreen(Screens):
                 self.tab_buttons["partners"].enable()
             self.tab_buttons["offspring"].enable()
             self.tab_buttons["potential"].disable()
-            self.tab_buttons["potential_partners"].enable()
+            self.tab_buttons["pot_par"].enable()
         else:
             self.mates_container.hide()
             self.partners_container.hide()
             self.offspring_container.hide()
-            self.potential_container.hide()
-            self.potential_partners_container.show()
+            self.pot_par_container.hide()
+            self.pot_par_container.show()
 
             if "mates" in self.tab_buttons:
                 self.tab_buttons["mates"].enable()
@@ -1524,7 +1444,9 @@ class ChooseMateScreen(Screens):
                 self.tab_buttons["partners"].enable()
             self.tab_buttons["offspring"].enable()
             self.tab_buttons["potential"].enable()
-            self.tab_buttons["potential_partners"].disable()
+            self.tab_buttons["pot_par"].disable()
+
+        self.update_selected_cat()
 
     def update_selected_cat(self):
         """Updates all elements of the selected cat"""
@@ -1536,7 +1458,6 @@ class ChooseMateScreen(Screens):
         if not isinstance(self.selected_cat, Cat):
             self.selected_cat = None
             self.toggle_mate.disable()
-            self.toggle_partner.disable()
             return
 
         self.draw_compatible_line_affection()
@@ -1546,10 +1467,10 @@ class ChooseMateScreen(Screens):
             pygame.transform.scale(
                 image_cache.load_image(
                     "resources/images/heart_mates.png"
-                    if self.selected_cat.ID in self.the_cat.mate
+                    if self.selected_cat.ID in [self.the_cat.mate, self.the_cat.partner]
                     else (
                         "resources/images/heart_breakup.png"
-                        if self.selected_cat.ID in self.the_cat.previous_mates
+                        if self.selected_cat.ID in [self.the_cat.previous_mates, self.the_cat.previous_partners]
                         else "resources/images/heart_maybe.png"
                     )
                 ).convert_alpha(),
@@ -1581,6 +1502,10 @@ class ChooseMateScreen(Screens):
             info += f"\n{len(self.selected_cat.mate)} " + i18n.t(
                 "general.mate", count=len(self.selected_cat.mate)
             )
+        elif self.selected_cat.partner:
+            info += f"\n{len(self.selected_cat.partner)} " + i18n.t(
+                "general.partner", count=len(self.selected_cat.partner)
+            )
 
         self.selected_cat_elements["info"] = pygame_gui.elements.UITextBox(
             info,
@@ -1592,31 +1517,16 @@ class ChooseMateScreen(Screens):
         if self.kits_selected_pair:
             self.update_offspring_container()
 
+        self.toggle_mate.kill()
 
-        if self.open_tab in ["potential", "mates"] or self.open_tab == "offspring" and self.previous_tab in ["potential", "mates"]:
-            self.toggle_mate.kill()
-            self.toggle_partner.kill()
-
-            self.toggle_mate = UISurfaceImageButton(
-                ui_scale(pygame.Rect((323, 310), (153, 30))),
-                "screens.choose_mate.unset_mate"
-                if self.selected_cat.ID in self.the_cat.mate
-                else "screens.choose_mate.set_mate",
-                get_button_dict(ButtonStyles.SQUOVAL, (153, 30)),
-                object_id="@buttonstyles_squoval",
-            )
-        elif self.open_tab in ["potential_partners", "partners"] or self.open_tab == "offspring" and self.previous_tab in ["potential_partners", "partners"]:
-            self.toggle_mate.kill()
-            self.toggle_partner.kill()
-
-            self.toggle_partner = UISurfaceImageButton(
-                ui_scale(pygame.Rect((323, 310), (153, 30))),
-                "screens.choose_mate.unset_partner"
-                if self.selected_cat.ID in self.the_cat.partner
-                else "screens.choose_mate.set_partner",
-                get_button_dict(ButtonStyles.SQUOVAL, (153, 30)),
-                object_id="@buttonstyles_squoval",
-            )
+        self.toggle_mate = UISurfaceImageButton(
+            ui_scale(pygame.Rect((323, 310), (153, 30))),
+            "screens.choose_mate.unset_mate"
+            if self.selected_cat.ID in self.the_cat.mate
+            else "screens.choose_mate.set_mate",
+            get_button_dict(ButtonStyles.SQUOVAL, (153, 30)),
+            object_id="@buttonstyles_squoval",
+        )
 
         if (
             not ((get_clan_setting("same sex birth")
@@ -1663,47 +1573,63 @@ class ChooseMateScreen(Screens):
             anchors={"centerx": "centerx"},
         )
 
-        if self.open_tab in ["potential", "mates"] or self.open_tab == "offspring" and self.previous_tab in ["potential", "mates"]:
-            # Set romantic hearts of current cat towards mate or selected cat.
-            if self.the_cat.dead:
-                romantic_love = 0
+        # Set romantic hearts of current cat towards mate or selected cat.
+        if self.the_cat.dead:
+            romantic_love = 0
+            platonic_love = 0
+        else:
+            if self.selected_cat.ID in self.the_cat.relationships:
+                relation = self.the_cat.relationships[self.selected_cat.ID]
             else:
                 relation = create_one_relationship(self.the_cat, self.selected_cat)
             romantic_love = relation.romance
+            platonic_love = relation.like
 
+        if self.open_tab not in ["partners", "pot_par"] or self.open_tab == "offspring" and self.previous_tab not in ["partners", "pot_par"]:
             if 10 <= romantic_love <= 30:
                 heart_number = 1
             elif 31 <= romantic_love <= 80:
                 heart_number = 2
             elif 81 <= romantic_love:
                 heart_number = 3
+            else:
+                heart_number = 0
+        else:
+            if 10 <= platonic_love <= 30:
+                heart_number = 1
+            elif 31 <= platonic_love <= 80:
+                heart_number = 2
+            elif 81 <= platonic_love:
+                heart_number = 3
+            else:
+                heart_number = 0
+
+        x_pos = 210
+        for i in range(0, heart_number):
+            self.selected_cat_elements["heart1" + str(i)] = pygame_gui.elements.UIImage(
+                ui_scale(pygame.Rect((x_pos, 285), (22, 20))),
+                pygame.transform.scale(
+                    image_cache.load_image(
+                        "resources/images/heart_big.png"
+                    ).convert_alpha(),
+                    ui_scale_dimensions((22, 20)),
+                ),
+            )
+            x_pos += 27
+
+        # Set romantic hearts of mate/selected cat towards current_cat.
+        if self.selected_cat.dead:
+            romantic_love = 0
+            platonic_love = 0
+        else:
+            if self.the_cat.ID in self.selected_cat.relationships:
+                relation = self.selected_cat.relationships[self.the_cat.ID]
             else:
                 relation = create_one_relationship(self.selected_cat, self.the_cat)
             romantic_love = relation.romance
+            platonic_love = relation.like
 
-            x_pos = 210
-            for i in range(0, heart_number):
-                self.selected_cat_elements["heart1" + str(i)] = pygame_gui.elements.UIImage(
-                    ui_scale(pygame.Rect((x_pos, 285), (22, 20))),
-                    pygame.transform.scale(
-                        image_cache.load_image(
-                            "resources/images/heart_big.png"
-                        ).convert_alpha(),
-                        ui_scale_dimensions((22, 20)),
-                    ),
-                )
-                x_pos += 27
-
-            # Set romantic hearts of mate/selected cat towards current_cat.
-            if self.selected_cat.dead:
-                romantic_love = 0
-            else:
-                if self.the_cat.ID in self.selected_cat.relationships:
-                    relation = self.selected_cat.relationships[self.the_cat.ID]
-                else:
-                    relation = self.selected_cat.create_one_relationship(self.the_cat)
-                romantic_love = relation.romance
-
+        if self.open_tab not in ["partners", "pot_par"] or self.open_tab == "offspring" and self.previous_tab not in ["partners", "pot_par"]:
             if 10 <= romantic_love <= 30:
                 heart_number = 1
             elif 31 <= romantic_love <= 80:
@@ -1712,30 +1638,7 @@ class ChooseMateScreen(Screens):
                 heart_number = 3
             else:
                 heart_number = 0
-
-            x_pos = 568
-            for i in range(0, heart_number):
-                self.selected_cat_elements["heart2" + str(i)] = pygame_gui.elements.UIImage(
-                    ui_scale(pygame.Rect((x_pos, 285), (22, 20))),
-                    pygame.transform.scale(
-                        image_cache.load_image(
-                            "resources/images/heart_big.png"
-                        ).convert_alpha(),
-                        ui_scale_dimensions((22, 20)),
-                    ),
-                )
-                x_pos -= 27
-        elif self.open_tab in ["potential_partners", "partners"] or self.open_tab == "offspring" and self.previous_tab in ["potential_partners", "partners"]:
-            # Set romantic hearts of current cat towards mate or selected cat.
-            if self.the_cat.dead:
-                platonic_love = 0
-            else:
-                if self.selected_cat.ID in self.the_cat.relationships:
-                    relation = self.the_cat.relationships[self.selected_cat.ID]
-                else:
-                    relation = self.the_cat.create_one_relationship(self.selected_cat)
-                platonic_love = relation.like
-
+        else:
             if 10 <= platonic_love <= 30:
                 heart_number = 1
             elif 31 <= platonic_love <= 80:
@@ -1745,50 +1648,18 @@ class ChooseMateScreen(Screens):
             else:
                 heart_number = 0
 
-            x_pos = 210
-            for i in range(0, heart_number):
-                self.selected_cat_elements["heart1" + str(i)] = pygame_gui.elements.UIImage(
-                    ui_scale(pygame.Rect((x_pos, 285), (22, 20))),
-                    pygame.transform.scale(
-                        image_cache.load_image(
-                            "resources/images/heart_big.png"
-                        ).convert_alpha(),
-                        ui_scale_dimensions((22, 20)),
-                    ),
-                )
-                x_pos += 27
-
-            # Set platonic hearts of mate/selected cat towards current_cat.
-            if self.selected_cat.dead:
-                platonic_love = 0
-            else:
-                if self.the_cat.ID in self.selected_cat.relationships:
-                    relation = self.selected_cat.relationships[self.the_cat.ID]
-                else:
-                    relation = self.selected_cat.create_one_relationship(self.the_cat)
-                platonic_love = relation.like
-
-            if 10 <= platonic_love <= 30:
-                heart_number = 1
-            elif 31 <= platonic_love <= 80:
-                heart_number = 2
-            elif 81 <= platonic_love:
-                heart_number = 3
-            else:
-                heart_number = 0
-
-            x_pos = 568
-            for i in range(0, heart_number):
-                self.selected_cat_elements["heart2" + str(i)] = pygame_gui.elements.UIImage(
-                    ui_scale(pygame.Rect((x_pos, 285), (22, 20))),
-                    pygame.transform.scale(
-                        image_cache.load_image(
-                            "resources/images/heart_big.png"
-                        ).convert_alpha(),
-                        ui_scale_dimensions((22, 20)),
-                    ),
-                )
-                x_pos -= 27
+        x_pos = 568
+        for i in range(0, heart_number):
+            self.selected_cat_elements["heart2" + str(i)] = pygame_gui.elements.UIImage(
+                ui_scale(pygame.Rect((x_pos, 285), (22, 20))),
+                pygame.transform.scale(
+                    image_cache.load_image(
+                        "resources/images/heart_big.png"
+                    ).convert_alpha(),
+                    ui_scale_dimensions((22, 20)),
+                ),
+            )
+            x_pos -= 27
 
     def on_use(self):
         super().on_use()
@@ -1796,7 +1667,10 @@ class ChooseMateScreen(Screens):
         if self.search_bar.is_focused and self.search_bar.get_text() in ("general.name_search", "general.genotype_search"):
             self.search_bar.set_text("")
         if self.search_bar.get_text() != self.previous_search_text:
-            self.update_potential_mates_container()
+            if self.open_tab not in ["partners", "pot_par"] or self.open_tab == "offspring" and self.previous_tab not in ["partners", "pot_par"]:
+                self.update_potential_mates_container()
+            else:
+                self.update_pot_par_container()
         self.previous_search_text = self.search_bar.get_text()
 
         self.loading_screen_on_use(self.work_thread, self.update_both)
@@ -1814,8 +1688,7 @@ class ChooseMateScreen(Screens):
             )
             and (i.status.group_ID == self.the_cat.status.group_ID or self.show_all)
             and i.ID not in self.the_cat.mate
-            and (not self.ab or not i.mate)
-            and (not self.cd or not i.partner)
+            and (not self.single_only or not i.mate)
             and (
                 not self.have_kits_only
                 or 
@@ -1834,17 +1707,16 @@ class ChooseMateScreen(Screens):
         """Get a list of valid partners for the current cat"""
 
         # Behold! The ugliest list comprehension ever created!
-        valid_partners= [
+        valid_partners = [
             i
             for i in Cat.all_cats_list
             if not i.faded
-            and self.the_cat.is_potential_partner(
+            and self.the_cat.is_potential_partners(
                 i, for_love_interest=False, age_restriction=False, ignore_no_partners=True, outsider=self.show_all
             )
             and (i.status.group_ID == self.the_cat.status.group_ID or self.show_all)
             and i.ID not in self.the_cat.partner
-            and (not self.ab or not i.mate)
-            and (not self.cd or not i.partner)
+            and (not self.single_only or not i.partner)
             and (
                 not self.have_kits_only
                 or 

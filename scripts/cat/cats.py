@@ -653,7 +653,7 @@ class Cat:
         else:
             if group := self.status.get_last_living_group():
                 if self.moons > 1 and grief_allowed and not self.status.is_lost(group) and not self.status.is_exiled(group):
-                    self.grief(body)
+                    grief(self, body)
                 game.dead_cats_to_grieve.append(self)
 
         # mark the sprite as outdated

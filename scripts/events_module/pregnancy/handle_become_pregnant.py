@@ -86,6 +86,7 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
                 ids.append(x.ID)
 
     mate = []
+    partner = []
     afab_mate = []
     amab_mate = []
     # afab/amab only matters if same sex setting is off
@@ -96,7 +97,7 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
             if Cat.fetch_cat(mate_id)
         ]
     else:
-        for mate_id in (cat.mate, cat.partner):
+        for mate_id in (cat.mate), (cat.partner):
             mate_cat = Cat.fetch_cat(mate_id)
             mate.append(mate_cat)
 
@@ -152,7 +153,7 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
             text, involved_cats = _create_pregnancy_announcement(cat, "announcement", clan, random_cat=choice(other_cat))
         game.cur_events_list.append(
             EventInformation(
-                text, ["birth_death"], involved_cats, clan=clan.group_ID
+                text, "birth_death", involved_cats, clan=clan.group_ID
             )
         )
     else:

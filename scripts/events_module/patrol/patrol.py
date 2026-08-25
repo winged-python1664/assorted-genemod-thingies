@@ -84,7 +84,7 @@ def get_patrol_temperament(patrol_cats: list, patrol_leader=None) -> tuple[str, 
 
 
 class Patrol:
-    used_patrols = {"romance": [], "normal": []}
+    used_patrols = {"romance": [], "normal": [], "qpr": []}
 
     def __init__(self):
         self.patrol_event: Optional[PatrolEvent] = None
@@ -481,12 +481,12 @@ class Patrol:
         # first we see if we can get a romantic patrol
         if romantic_patrols and not self.debug_patrol_id:
             chosen_patrol = self._get_valid_patrol(
-                romantic_patrols.copy(), find_romance=True
+                romantic_patrols.copy(), find_romance=True, find_qpr=False,
             )
 
-        if qpr_patrols and not patrol_override:
+        if qpr_patrols and not self.debug_patrol_id:
             chosen_patrol = self._get_valid_patrol(
-                qpr_patrols.copy(), chosen_frequency, patrol_override
+                qpr_patrols.copy(), find_romance=False, find_qpr=True
             )
 
         if chosen_patrol and not self._decide_if_qpr(chosen_patrol):
@@ -495,7 +495,7 @@ class Patrol:
         # if no romantic patrol possible, we get a normal one!
         if not chosen_patrol:
             chosen_patrol = self._get_valid_patrol(
-                normal_patrols.copy(), find_romance=False
+                normal_patrols.copy(), find_romance=False, find_qpr=False,
             )
             if not chosen_patrol:
                 raise Exception(
@@ -505,24 +505,25 @@ class Patrol:
         return chosen_patrol
 
     def _clear_used_and_retry(
-        self, possible_patrols: List[PatrolEvent], find_romance: bool = False
+        self, possible_patrols: List[PatrolEvent], find_romance: bool = False, find_qpr: bool = False,
     ):
         """
         Clears used patrols and attempts to get a new valid patrol
         """
         Patrol.used_patrols["romance" if find_romance else "normal"].clear()
+        Patrol.used_patrols["qpr" if find_qpr else "normal"].clear()
 
-        return self._get_valid_patrol(possible_patrols, find_romance)
+        return self._get_valid_patrol(possible_patrols, find_romance, find_qpr)
 
     def _get_valid_patrol(
-        self, possible_patrols: List[PatrolEvent], find_romance: bool = False
+        self, possible_patrols: List[PatrolEvent], find_romance: bool = False, find_qpr: bool = False,
     ) -> Optional[PatrolEvent]:
         chosen_patrol = None
         patrols_to_test = [
             p
             for p in possible_patrols
             if p.event_id
-            not in Patrol.used_patrols["romance" if find_romance else "normal"]
+            not in Patrol.used_patrols["romance" if find_romance else "qpr" if find_qpr else "normal"]
         ]
         while not chosen_patrol:
             chosen_patrol, involved_cats = get_valid_event(
@@ -540,14 +541,14 @@ class Patrol:
                 general_constraints_active=False,
             )
             if not chosen_patrol:
-                if not Patrol.used_patrols["romance" if find_romance else "normal"]:
+                if not Patrol.used_patrols["romance" if find_romance else "qpr" if find_qpr else "normal"]:
                     # No patrols found even after resetting used patrols.
                     # This should only be possible when filtering for romance patrols.
                     return None
 
                 # if we couldn't find a patrol, then we need to clear the used_patrols and try again
                 chosen_patrol = self._clear_used_and_retry(
-                    possible_patrols, find_romance=find_romance
+                    possible_patrols, find_romance=find_romance, find_qpr=find_qpr,
                 )
             else:
                 # otherwise, let's set our involved cats and move on with this patrol!
@@ -557,6 +558,10 @@ class Patrol:
             if not self._decide_if_romantic(chosen_patrol):
                 return None
             Patrol.used_patrols["romance"].append(chosen_patrol.event_id)
+        elif find_qpr:
+            if not self._decide_if_qpr(chosen_patrol):
+                return None
+            Patrol.used_patrols["qpr"].append(chosen_patrol.event_id)
         else:
             Patrol.used_patrols["normal"].append(chosen_patrol.event_id)
 
