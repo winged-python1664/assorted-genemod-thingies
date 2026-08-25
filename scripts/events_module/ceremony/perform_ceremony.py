@@ -283,8 +283,9 @@ def check_and_promote_deputy(clan):
             )
             return
 
+    prev_dep = {"past_deputy": clan.deputy}
     clan.deputy = main_cat
-    trigger_ceremony(main_cat, CatRank.DEPUTY, {"past_deputy": game.clan.deputy})
+    trigger_ceremony(main_cat, CatRank.DEPUTY, prev_dep)
 
 
 def check_and_promote_prophet(clan):
