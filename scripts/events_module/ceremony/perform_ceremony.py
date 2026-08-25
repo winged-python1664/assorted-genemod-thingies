@@ -102,7 +102,7 @@ def check_for_ceremony(main_cat: Cat, clan):
     # PROMOTE DEPUTY TO LEADER
     if main_cat.status.rank == CatRank.DEPUTY:
         # If a Clan deputy exists, and the leader is dead, outside, or doesn't exist, make the deputy leader.
-        if not clan.leader or not clan.leader.status.group_ID != clan.group_ID:
+        if not clan.leader or clan.leader.status.group_ID != clan.group_ID:
             _handle_leader_ceremony(main_cat, clan)
             return
 
@@ -135,7 +135,7 @@ def check_for_ceremony(main_cat: Cat, clan):
     # OLD CAT RETIRE
     if (
         not main_cat.no_retire
-        and main_cat.status.rank in (CatRank.WARRIOR, CatRank.DEPUTY) or special_can_retire
+        and (main_cat.status.rank in (CatRank.WARRIOR, CatRank.DEPUTY) or special_can_retire)
         and not main_cat.apprentice
         and main_cat.moons >= retirement_info["min_retirement_age"]
     ):
@@ -283,8 +283,8 @@ def check_and_promote_deputy(clan):
             )
             return
 
-    trigger_ceremony(main_cat, CatRank.DEPUTY, {"past_deputy": game.clan.deputy})
     clan.deputy = main_cat
+    trigger_ceremony(main_cat, CatRank.DEPUTY, {"past_deputy": game.clan.deputy})
 
 
 def check_and_promote_prophet(clan=None):

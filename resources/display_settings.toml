@@ -88,6 +88,7 @@
         rel_deputy = true
         prophet = false
         12_moon_graduation = false
+        assign_mentors = true
         retirement = false
         leader_retirement = false
         healer_retirement = false
