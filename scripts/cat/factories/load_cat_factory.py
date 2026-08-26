@@ -60,7 +60,7 @@ class LoadCatFactory(BaseCatFactory):
             mate=mate if isinstance(mate, list) else [mate],
             previous_mates=kwargs.get("previous_mates", []),
             partner=partner if isinstance(partner, list) else [partner],
-            previous_partners=kwargs.get("previous_parnters", []),
+            previous_partners=kwargs.get("previous_partners", []),
         )
 
         mentorship = MentorshipDict(
