@@ -39,6 +39,10 @@
         "-clan_founder_backstories",
         "clan_founder",
         "-clan_founder",
+        "starting_sc_backstories",
+        "-starting_sc_backstories",
+        "starting_df_backstories",
+        "-starting_df_backstories",
         "clanborn_backstories",
         "-clanborn_backstories",
         "clanborn",
@@ -243,6 +247,14 @@
             "type": "string"
           },
           "title": "Assign Mate",
+          "type": "array"
+        },
+        "assign_partner": {
+          "description": "List of designations for cats who will become this cat's partners. These cats must have already been specified prior in involved_cats",
+          "items": {
+            "type": "string"
+          },
+          "title": "Assign Partner",
           "type": "array"
         },
         "multiclan_cat": {
@@ -1048,6 +1060,8 @@
         "-warrior",
         "medicine cat",
         "-medicine cat",
+        "prophet",
+        "-prophet",
         "deputy",
         "-deputy",
         "leader",
@@ -1276,6 +1290,10 @@
         "past_deputy": {
           "$ref": "#/$defs/CatDict",
           "title": "Past Deputy"
+        },
+        "past_prophet": {
+          "$ref": "#/$defs/CatDict",
+          "title": "Past Prophet"
         },
         "r_c0": {
           "$ref": "#/$defs/CatDict",
@@ -1612,8 +1630,11 @@
         "littermates",
         "-littermates",
         "mates",
+        "partners",
         "mates_with_pl",
+        "partners_with_pl",
         "-mates",
+        "-partners",
         "parent/child",
         "-parent/child",
         "child/parent",
@@ -1906,6 +1927,8 @@
         "any_fighter",
         "medicine cat",
         "-medicine cat",
+        "prophet",
+        "-prophet",
         "deputy",
         "-deputy",
         "leader",
@@ -2016,6 +2039,7 @@
         "clan:apps",
         "clan:warrior-like",
         "romance",
+        "qpr",
         "halloween",
         "april_fools",
         "new_years",

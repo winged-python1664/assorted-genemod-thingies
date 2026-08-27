@@ -1,1 +1,11 @@
-[]
+[
+    {
+        "event_id": "becoming_prophet",
+        "strings": [
+            "Hopes {PRONOUN/m_c/subject} can serve the Clan well",
+            "Looks forwards to communing with StarClan as a prophet for the first time",
+            "Is confident that {PRONOUN/m_c/subject} can handle {PRONOUN/m_c/poss} new duties",
+            "Hopes {PRONOUN/m_c/subject} can handle {PRONOUN/m_c/poss} new duties"
+        ]
+    }
+]

@@ -17,6 +17,7 @@ class TagEnum(Enum):
     clan_apps = "clan:apps"
     clan_warrior_like = "clan:warrior-like"
     romance = "romance"
+    qpr = "qpr"
     halloween = "halloween"
     april_fools = "april_fools"
     new_years = "new_years"

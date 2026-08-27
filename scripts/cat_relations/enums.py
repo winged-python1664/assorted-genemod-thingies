@@ -166,12 +166,13 @@ class RelTier(StrEnum):
         )
 
 
+class RelKind(StrEnum):
     # closeness
     UNKNOWN = "unknown"
-    ACQUAINTANCE = "acquaintance"
+    MET = "met"
     FAMILIAR = "familiar"
+    KNOWN = "known"
     CLOSE = "close"
-    BOND = "bond"
 
     # friendship
     PAL = "pal"
@@ -189,10 +190,10 @@ class RelTier(StrEnum):
     def is_close_level(self):
         return self in(
             self.UNKNOWN,
-            self.ACQUAINTANCE,
+            self.MET,
             self.FAMILIAR,
+            self.KNOWN,
             self.CLOSE,
-            self.BOND,
         )
 
     @property

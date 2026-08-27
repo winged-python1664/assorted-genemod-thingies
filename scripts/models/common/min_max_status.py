@@ -4,6 +4,7 @@ from enum import Enum
 class MinMaxStatusDictKey(Enum):
     healer = "healer"
     medicine_cat = "medicine cat"
+    prophet = "prophet"
     warrior = "warrior"
     leader = "leader"
     deputy = "deputy"

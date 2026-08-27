@@ -39,6 +39,10 @@
         "-clan_founder_backstories",
         "clan_founder",
         "-clan_founder",
+        "starting_sc_backstories",
+        "-starting_sc_backstories",
+        "starting_df_backstories",
+        "-starting_df_backstories",
         "clanborn_backstories",
         "-clanborn_backstories",
         "clanborn",
@@ -516,6 +520,8 @@
         "-warrior",
         "medicine cat",
         "-medicine cat",
+        "prophet",
+        "-prophet",
         "deputy",
         "-deputy",
         "leader",
@@ -934,6 +940,10 @@
           },
           {
             "pattern": "^mate:([_,0-9a-zA-Z]+)$",
+            "type": "string"
+          },
+          {
+            "pattern": "^partner:([_,0-9a-zA-z]+)$",
             "type": "string"
           }
         ]
@@ -1411,8 +1421,11 @@
         "littermates",
         "-littermates",
         "mates",
+        "partners",
         "mates_with_pl",
+        "partners_with_pl",
         "-mates",
+        "-partners",
         "parent/child",
         "-parent/child",
         "child/parent",
@@ -1762,6 +1775,8 @@
         "any_fighter",
         "medicine cat",
         "-medicine cat",
+        "prophet",
+        "-prophet",
         "deputy",
         "-deputy",
         "leader",
@@ -1877,6 +1892,7 @@
         "lost",
         "kit_manipulated",
         "romance",
+        "qpr",
         "adoption",
         "tnr",
         "not_singleclan",

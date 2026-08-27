@@ -23,7 +23,7 @@ def validate_nc_status(value: str) -> str:
     statuses = [
         s.value
         for s in Status
-        if not s.value.startswith("-") or s.value not in ("leader", "deputy")
+        if not s.value.startswith("-") or s.value not in ("leader", "deputy", "prophet")
     ]
     _, status_str = value.split(":")
 
@@ -97,5 +97,6 @@ class NewCat(RootModel):
             Annotated[str, StringConstraints(pattern=r"^sibling:([,0-9]+)$")],
             Annotated[str, StringConstraints(pattern=r"^adoptive:([_,0-9a-zA-Z]+)$")],
             Annotated[str, StringConstraints(pattern=r"^mate:([_,0-9a-zA-Z]+)$")],
+            Annotated[str, StringConstraints(pattern=r"^partner:([_,0-9a-zA-z]+)$")],
         ]
     ]

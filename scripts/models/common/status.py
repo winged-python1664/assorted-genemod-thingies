@@ -29,6 +29,8 @@ class Status(Enum):
     any_fighter = "any_fighter"
     medicine_cat = "medicine cat"
     not_medicine_cat = "-medicine cat"
+    prophet = "prophet"
+    not_prophet = "-prophet"
     deputy = "deputy"
     not_deputy = "-deputy"
     leader = "leader"

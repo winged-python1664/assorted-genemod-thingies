@@ -12,6 +12,7 @@ class Rank(Enum):
     WARRIOR = "warrior"
     MEDICINE_CAT = "medicine cat"
     HEALER = "healer"
+    PROPHET = "prophet"
     MEDIATOR = "mediator"
     DEPUTY = "deputy"
     LEADER = "leader"

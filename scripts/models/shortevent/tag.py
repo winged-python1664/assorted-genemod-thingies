@@ -24,6 +24,7 @@ class TagEnum(Enum):
     lost = "lost"
     kit_manipulated = "kit_manipulated"
     romance = "romance"
+    qpr = "qpr"
     adoption = "adoption"
     tnr = "tnr"
     not_singleclan = "not_singleclan"

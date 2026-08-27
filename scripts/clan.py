@@ -593,10 +593,23 @@ class Clan:
 
     def __repr__(self):
         if self.save_id is not None:
-            _ = (
-                f"{self.save_id}: led by {self.leader.name}"
-                f" with {self.prophet.name} as prophet"
-            )
+            if self.leader and self.prophet:
+                _ = (
+                    f"{self.save_id}: led by {self.leader.name}"
+                    f" with {self.prophet.name} as prophet"
+                )
+            elif self.leader:
+                _ = (
+                    f"{self.save_id}: led by {self.leader.name}"
+                )
+            elif self.prophet:
+                _ = (
+                    f"{self.save_id}: with {self.prophet.name} as prophet"
+                )
+            else:
+                _ = (
+                    f"{self.save_id}"
+                )
             return _
 
         else:

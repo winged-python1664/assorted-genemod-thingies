@@ -10,6 +10,7 @@ class InvolvedCatsCeremonyEvent(BaseModel):
     model_config = ConfigDict(extra="forbid")
     m_c: CatDict | MISSING = MISSING
     past_deputy: CatDict | MISSING = MISSING
+    past_prophet: CatDict | MISSING = MISSING
     r_c0: CatDict | MISSING = MISSING
     r_c1: CatDict | MISSING = MISSING
     r_c2: CatDict | MISSING = MISSING

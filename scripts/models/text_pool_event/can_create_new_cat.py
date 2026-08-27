@@ -26,6 +26,10 @@ class CanCreateNewCat(BaseModel):
         MISSING,
         description="List of designations for cats who will become this cat's mates. These cats must have already been specified prior in involved_cats",
     )
+    assign_partner: Union[list[str], MISSING] = Field(
+        MISSING,
+        description="List of designations for cats who will become this cat's partners. These cats must have already been specified prior in involved_cats"
+    )
     multiclan_cat: Union[list[str], MISSING] = Field(
         MISSING,
         description="List of special tags for multiclan - change_clan, change_clan_rev, exiled, -exists",

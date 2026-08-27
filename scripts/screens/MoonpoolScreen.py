@@ -88,6 +88,7 @@ class MoonpoolScreen(Screens):
         self.message_buttons = {}
 
         self.message_type = None
+        self.bg = None
 
         if game.selected_clan is not None:
             self.moonthing = game.selected_clan.moonthing
@@ -178,6 +179,7 @@ class MoonpoolScreen(Screens):
             "buttons.back",
             get_button_dict(ButtonStyles.SQUOVAL, (105, 30)),
             object_id="@buttonstyles_squoval",
+            starting_height=2,
             manager=MANAGER,
         )
         self.help_button = UIImageButton(
@@ -185,6 +187,7 @@ class MoonpoolScreen(Screens):
             "",
             object_id="#help_button",
             manager=MANAGER,
+            starting_height=2,
             tool_tip_text="screens.moonpool.help_tooltip",
         )
 
@@ -192,11 +195,17 @@ class MoonpoolScreen(Screens):
         if not game.clan.prophet or not game.clan.prophet.status.alive_in_player_clan:
             self.no_prophet = True
 
+        if self.moonthing:
+            if self.moonthing == "moonpool":
+                self.bg = "moonpool"
+            elif self.moonthing == "moonstone":
+                self.bg = "silverpeltstone"
+
         try:
             self.screen_elements["bg_image"] = pygame_gui.elements.UIImage(
-                ui_scale(pygame.Rect((0, 0), (700, 450))),
+                ui_scale(pygame.Rect((0, 0), (300, 300))),
                 pygame.image.load(
-                    f"resources/images/{game.clan.sc_bg}.png"
+                    f"resources/images/patrol_art/backgrounds/poi_mon_{self.bg}.png"
                 ).convert_alpha(),
                 object_id="#lead_den_bg",
                 starting_height=1,
@@ -204,9 +213,9 @@ class MoonpoolScreen(Screens):
             )
         except FileNotFoundError:
             self.screen_elements["bg_image"] = pygame_gui.elements.UIImage(
-                ui_scale(pygame.Rect((0, 0), (700, 450))),
+                ui_scale(pygame.Rect((0, 0), (300, 300))),
                 pygame.image.load(
-                    f"resources/images/moonpool.png"
+                    f"resources/images/patrol_art/backgrounds/poi_mon_moonpool.png"
                 ).convert_alpha(),
                 object_id="#lead_den_bg",
                 starting_height=1,
