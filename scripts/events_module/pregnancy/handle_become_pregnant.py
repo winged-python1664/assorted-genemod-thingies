@@ -85,18 +85,15 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
             ids.append(x.ID)
 
     mate = []
-    partner = []
     afab_mate = []
     amab_mate = []
     # afab/amab only matters if same sex setting is off
     if get_clan_setting("same sex birth"):
         mate = [
             Cat.fetch_cat(mate_id)
-            for mate_id in (cat.partner)
+            for mate_id in (cat.mate)
             if Cat.fetch_cat(mate_id)
-        ]
-        partner = [
-            Cat.fetch_cat(partner_id)
+            and Cat.fetch_cat(partner_id)
             for partner_id in (cat.partner)
             if Cat.fetch_cat(partner_id)
         ]
@@ -111,7 +108,7 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
                 amab_mate.append(mate_cat)
         for partner_id in (cat.partner):
             partner_cat = Cat.fetch_cat(partner_id)
-            partner.append(partner_cat)
+            mate.append(partner_cat)
 
             if not cat_is_amab(partner_cat):
                 afab_mate.append(partner_cat)
@@ -125,9 +122,9 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
     if not hidden:
         # if both cats are faithful to each other and aren't cheaters,
         # the pregnancy will be announced as normal
-        if not affair_partner and (mate or partner):
+        if not affair_partner and mate:
             text, involved_cats = _create_pregnancy_announcement(
-                cat, "announcement", clan, random_cat=choice(mate, partner)
+                cat, "announcement", clan, random_cat=choice(mate)
             )
         # if the pregnant cat is single and had a fling with a random cat, let them
         # announce their surprise pregnancy and leave the Clan and player pointing
@@ -154,11 +151,11 @@ def _handle_pregnancy_notice(cat, other_cat, surrogate, hidden, clan):
         # sometimes they won't...
         elif (
             affair_partner
-            and (amab_mate or mate or partner)
+            and (amab_mate or mate)
         ):
             announcement_key = choice(["announcement_affair", "announcement"])
             _set_affair_visibility(cat, announcement_key == "announcement_affair")
-            random_cat = choice(amab_mate) if amab_mate else choice(mate, partner)
+            random_cat = choice(amab_mate) if amab_mate else choice(mate)
             text, involved_cats = _create_pregnancy_announcement(cat, announcement_key, clan, random_cat=random_cat)
         # if all else fails, just a regular announcement happens
         else:
