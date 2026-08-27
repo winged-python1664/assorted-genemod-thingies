@@ -166,6 +166,54 @@ class RelTier(StrEnum):
         )
 
 
+    # closeness
+    UNKNOWN = "strangers"
+    ACQUAINTANCE = "acquaintance"
+    FAMILIAR = "familiar"
+    CLOSE = "close"
+    BOND = "bond"
+
+    # friendship
+    PAL = "pal"
+    FRIEND = "friend"
+    CONFIDANT = "confidant"
+    BESTIE = "bestie"
+
+    # enemy-ship
+    RIVAL = "rival"
+    FOE = "foe"
+    ENEMY = "enemy"
+    NEMESIS = "nemesis"
+
+    @property
+    def is_close_level(self):
+        return self in(
+            self.STRANGER,
+            self.AQUAINTANCE,
+            self.FAMILIAR,
+            self.CLOSE,
+            self.BOND,
+        )
+
+    @property
+    def is_enemy(self):
+        return self in (
+            self.RIVAL,
+            self.FOE,
+            self.ENEMY,
+            self.NEMESIS
+        )
+
+    @property
+    def is_friend(self):
+        return self in (
+            self.PAL,
+            self.FRIEND,
+            self.CONFIDANT,
+            self.BESTIE,
+        )
+
+
 rel_type_tiers: dict = {
     RelType.LIKE: [l for l in [*RelTier] if l.is_like_level],
     RelType.RESPECT: [l for l in [*RelTier] if l.is_respect_level],

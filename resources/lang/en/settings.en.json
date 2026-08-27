@@ -96,6 +96,8 @@
         "deputy_tooltip": "The Warrior Code rules will be taken into account when choosing a deputy.",
         "rel_deputy": "Leader relationships influence deputy choice",
         "rel_deputy_tooltip": "Prioritise choosing a deputy that the leader gets along with.",
+        "prophet": "Allow a new prophet to be chosen automatically.",
+        "prophet_tooltip": "The most senior medicine cat will become prophet when the previous prophet dies or retires.",
         "12_moon_graduation": "Disable experience-based apprentice graduation",
         "12_moon_graduation_tooltip": "All apprentices will graduate at 12 moons.",
         "assign_mentors": "Assign mentors to apprentices automatically.",

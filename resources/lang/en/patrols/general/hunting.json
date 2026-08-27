@@ -10479,5 +10479,425 @@
                 ]
             }
         ]
+    },
+    {
+        "event_id": "gen_hunt_qprduo",
+        "types": [
+            "hunting"
+        ],
+        "frequency": 3,
+        "tags": [
+            "qpr"
+        ],
+        "required_cat_types": {
+            "patrol_cats": [
+                2,
+                2
+            ],
+            "warrior": [
+                2,
+                2
+            ],
+            "apprentice": [
+                -1,
+                -1
+            ]
+        },
+        "involved_cats": {
+            "r_c0": {}
+        },
+        "relationship_constraint": [
+            {
+                "cats_to": [
+                    "patrol_cats"
+                ],
+                "cats_from": [
+                    "patrol_cats"
+                ],
+                "mutual": true,
+                "constraints": [
+                    "can_romance"
+                ]
+            }
+        ],
+        "chance_of_success": 50,
+        "patrol_art": "cat_sprites/gen_running_WrWr",
+        "intro_text": "p_l and r_c0 set out to hunt together.",
+        "decline_text": "They are called back to camp to attend to other duties.",
+        "success_outcomes": [
+            {
+                "frequency": 4,
+                "outcome_art": "cat_sprites/gen_romanticstroll_WrWr",
+                "strings": [
+                    "p_l and r_c0 work hard and soon have a sizeable haul. r_c0 compliments p_l's great execution of a certain maneuver, with p_l replying that r_c0 was the impressive one for how much prey {PRONOUN/r_c0/subject} caught. The two return to camp still going over each other's accomplishments."
+                ],
+                "exp_gained": 20,
+                "relationship_changes": [
+                    {
+                        "cats_to": [
+                            "r_c0"
+                        ],
+                        "cats_from": [
+                            "p_l"
+                        ],
+                        "mutual": true,
+                        "values": [
+                            "comfort",
+                            "like",
+                            "respect"
+                        ],
+                        "amount": 10,
+                        "log": {
+                            "cats_from": "Hunting together felt perfectly natural to cat_from and cat_to."
+                        }
+                    }
+                ],
+                "supply": [
+                    {
+                        "type": "freshkill",
+                        "adjust": "increase_medium"
+                    }
+                ]
+            },
+            {
+                "frequency": 4,
+                "outcome_art": "cat_sprites/gen_happycat_Wr",
+                "strings": [
+                    "Working as a team, they shut down every possible escape route for their prey and dispatch it easily. p_l comments that they work well together, r_c0 agreeing with a purr. The two return to camp carrying a sizeable amount of prey, tails intertwined."
+                ],
+                "involved_cats": {
+                    "p_l": {
+                        "stat": {
+                            "trait": [
+                                "loving",
+                                "charismatic",
+                                "confident"
+                            ]
+                        }
+                    }
+                },
+                "exp_gained": 20,
+                "relationship_changes": [
+                    {
+                        "cats_to": [
+                            "p_l"
+                        ],
+                        "cats_from": [
+                            "r_c0"
+                        ],
+                        "mutual": true,
+                        "values": [
+                            "like",
+                            "comfort",
+                            "respect"
+                        ],
+                        "amount": 7,
+                        "log": {
+                            "cats_from": "cat_from and cat_to had a successful hunt together and agreed that they make a good team."
+                        }
+                    }
+                ],
+                "supply": [
+                    {
+                        "type": "freshkill",
+                        "adjust": "increase_large"
+                    }
+                ]
+            },
+            {
+                "frequency": 4,
+                "outcome_art": "cat_sprites/gen_flowerdate_WrWr",
+                "strings": [
+                    "p_l is amazed by how intuitively r_c0 can anticipate {PRONOUN/p_l/poss} movements and how natural it feels to work as a team with {PRONOUN/r_c0/object}. After a very successful hunt, p_l and r_c0 exchange admiring looks, a pleasant warmth to their conversation on the way back to camp."
+                ],
+                "involved_cats": {
+                    "r_c0": {
+                        "stat": {
+                            "skill": [
+                                "SENSE,1",
+                                "CLAIRVOYANT,1",
+                                "CLEVER,1"
+                            ]
+                        }
+                    }
+                },
+                "exp_gained": 20,
+                "relationship_changes": [
+                    {
+                        "cats_to": [
+                            "r_c0"
+                        ],
+                        "cats_from": [
+                            "p_l"
+                        ],
+                        "mutual": true,
+                        "values": [
+                            "like",
+                            "comfort",
+                            "trust",
+                            "respect"
+                        ],
+                        "amount": 10,
+                        "log": {
+                            "cats_from": "cat_from and cat_to worked excellently as a team while hunting together, leaving both of them feeling content."
+                        }
+                    }
+                ],
+                "supply": [
+                    {
+                        "type": "freshkill",
+                        "adjust": "increase_large"
+                    }
+                ]
+            },
+            {
+                "frequency": 4,
+                "outcome_art": "cat_sprites/gen_happycat_Wr",
+                "strings": [
+                    "p_l and r_c0 corner a large prey animal, but the wind changes and their prey perks up at the last moment. Without hesitation, r_c0 bolts forward and slams a paw down on it. p_l is amazed by {PRONOUN/r_c0/poss} lightning-fast reflexes, complimenting {PRONOUN/r_c0/object} and earning a purr in turn."
+                ],
+                "involved_cats": {
+                    "r_c0": {
+                        "stat": {
+                            "skill": [
+                                "HUNTER,1",
+                                "RUNNER,1"
+                            ]
+                        }
+                    }
+                },
+                "exp_gained": 20,
+                "relationship_changes": [
+                    {
+                        "cats_to": [
+                            "r_c0"
+                        ],
+                        "cats_from": [
+                            "p_l"
+                        ],
+                        "mutual": false,
+                        "values": [
+                            "respect",
+                            "like",
+                            "comfort"
+                        ],
+                        "amount": 5,
+                        "log": {
+                            "cats_from": "cat_from was impressed by s_c0's reflexes."
+                        }
+                    },
+                    {
+                        "cats_to": [
+                            "p_l"
+                        ],
+                        "cats_from": [
+                            "r_c0"
+                        ],
+                        "mutual": false,
+                        "values": [
+                            "respect",
+                            "trust",
+                            "romance",
+                            "like"
+                        ],
+                        "amount": 5,
+                        "log": {
+                            "cats_from": "cat_from is flattered p_l recognized {PRONOUN/r_c0/poss} talent."
+                        }
+                    }
+                ],
+                "supply": [
+                    {
+                        "type": "freshkill",
+                        "adjust": "increase_large"
+                    }
+                ]
+            },
+            {
+                "frequency": 4,
+                "outcome_art": "cat_sprites/gen_train_speakingromance_WrWr",
+                "strings": [
+                    "After a successful hunt together, p_l comments that the two of them make a great team. r_c0 shrugs and attributes their success to the favorable direction of the wind."
+                ],
+                "involved_cats": {
+                    "r_c0": {
+                        "stat": {
+                            "trait": [
+                                "oblivious",
+                                "gloomy"
+                            ]
+                        }
+                    }
+                },
+                "exp_gained": 20,
+                "relationship_changes": [
+                    {
+                        "cats_to": [
+                            "r_c0"
+                        ],
+                        "cats_from": [
+                            "p_l"
+                        ],
+                        "mutual": false,
+                        "values": [
+                            "comfort",
+                            "like",
+                            "respect"
+                        ],
+                        "amount": 5,
+                        "log": {
+                            "cats_from": "Hunting together felt perfectly natural to cat_from and cat_to."
+                        }
+                    }
+                ],
+                "supply": [
+                    {
+                        "type": "freshkill",
+                        "adjust": "increase_medium"
+                    }
+                ]
+            },
+            {
+                "frequency": 1,
+                "outcome_art": "cat_sprites/gen_catlookingup_Wr",
+                "strings": [
+                    "p_l and r_c0 work together to bring back an impressive haul of prey. p_l comments that they should spend time together more often- they make such a great team, after all. r_c0 makes a face."
+                ],
+                "exp_gained": 20,
+                "relationship_changes": [
+                    {
+                        "cats_to": [
+                            "r_c0"
+                        ],
+                        "cats_from": [
+                            "p_l"
+                        ],
+                        "mutual": false,
+                        "values": [
+                            "comfort",
+                            "like"
+                        ],
+                        "amount": 5,
+                        "log": {
+                            "cats_from": "cat_from had an amazing time hunting with cat_to."
+                        }
+                    },
+                    {
+                        "cats_to": [
+                            "p_l"
+                        ],
+                        "cats_from": [
+                            "r_c0"
+                        ],
+                        "mutual": false,
+                        "values": [
+                            "trust",
+                            "like",
+                            "comfort"
+                        ],
+                        "amount": -10,
+                        "log": {
+                            "cats_from": "cat_to expressed interest in getting closer to cat_from, but the feeling isn't mutual."
+                        }
+                    }
+                ],
+                "supply": [
+                    {
+                        "type": "freshkill",
+                        "adjust": "increase_huge"
+                    }
+                ]
+            }
+        ],
+        "fail_outcomes": [
+            {
+                "frequency": 4,
+                "outcome_art": "cat_sprites/gen_matesheadbump_WrWr",
+                "strings": [
+                    "p_l and r_c0 do their best, but the prey just isn't there today. They reassure each other as they return to camp."
+                ],
+                "exp_gained": 0,
+                "relationship_changes": [
+                    {
+                        "cats_to": [
+                            "r_c0"
+                        ],
+                        "cats_from": [
+                            "p_l"
+                        ],
+                        "mutual": true,
+                        "values": [
+                            "comfort"
+                        ],
+                        "amount": 5,
+                        "log": {
+                            "cats_from": "cat_from and cat_to reassured each other after a failed hunt."
+                        }
+                    }
+                ],
+                "supply": [
+                    {
+                        "type": "freshkill",
+                        "adjust": "increase_tiny"
+                    }
+                ]
+            },
+            {
+                "frequency": 4,
+                "outcome_art": "cat_sprites/gen_hunt_heat_WrWr",
+                "strings": [
+                    "p_l and r_c0 can't seem to find a rhythm together and return to camp empty-pawed, feeling a little annoyed with each other."
+                ],
+                "exp_gained": 0,
+                "relationship_changes": [
+                    {
+                        "cats_to": [
+                            "r_c0"
+                        ],
+                        "cats_from": [
+                            "p_l"
+                        ],
+                        "mutual": true,
+                        "values": [
+                            "comfort",
+                            "respect",
+                            "like"
+                        ],
+                        "amount": -5,
+                        "log": {
+                            "cats_from": "cat_from and cat_to couldn't quite manage to hunt in tandem."
+                        }
+                    }
+                ]
+            },
+            {
+                "frequency": 3,
+                "outcome_art": "cat_sprites/gen_train_argue_WrWr",
+                "strings": [
+                    "After a disastrous failed hunt and one too many snide comments, p_l and r_c0 break out into an argument. p_l storms back to camp, resolving to ignore r_c0 for the rest of the day until both their tempers have cooled."
+                ],
+                "exp_gained": 0,
+                "relationship_changes": [
+                    {
+                        "cats_to": [
+                            "r_c0"
+                        ],
+                        "cats_from": [
+                            "p_l"
+                        ],
+                        "mutual": true,
+                        "values": [
+                            "comfort",
+                            "respect",
+                            "like"
+                        ],
+                        "amount": -10,
+                        "log": {
+                            "cats_from": "cat_from and cat_to had a bad argument while hunting together."
+                        }
+                    }
+                ]
+            }
+        ]
     }
 ]

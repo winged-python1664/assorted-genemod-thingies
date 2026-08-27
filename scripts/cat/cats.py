@@ -2078,7 +2078,7 @@ class Cat:
         if (self.status.is_outsider and not outsider) or (other_cat.status.is_outsider and not outsider):
             return False
 
-        # No Mates Check
+        # No Partners Check
         if not ignore_no_partners and (self.no_partners or other_cat.no_partners):
             return False
 
