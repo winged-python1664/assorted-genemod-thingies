@@ -1,6 +1,5 @@
 import random
 from random import choice, random, randint, shuffle
-from re import sub
 
 import i18n
 
@@ -8,10 +7,7 @@ from scripts.config import get_config
 import scripts.game_structure.screen_settings
 from scripts.cat.enums import CatAge
 from scripts.cat.sprites.load_sprites import sprites
-from scripts.game_structure import constants
 from .phenotype import Phenotype
-from scripts.game_structure import game
-from scripts.game_structure.localization import get_lang_config
 from scripts.events_module.text_adjust import adjust_list_text
 
 
@@ -118,7 +114,8 @@ class Pelt:
             "LEG_BACK_LEFT_SMALL", "LEG_BACK_LEFT_MIN", "LEG_FRONT_LEFT_SMALL", "LEG_FRONT_LEFT_MIN",
             "LEG_BACK_RIGHT_SMALL", "LEG_BACK_RIGHT_MIN", "LEG_FRONT_RIGHT_SMALL", "LEG_FRONT_RIGHT_MIN"],
             '2': ['LITTLE', 'LIGHTTUXEDO', 'BUZZARDFANG', 'TIP', 'PAWS', 'BROKENBLAZE', 'BEARD', 'BIB', 'VEE', 'HONEY', 'TOESTAIL',
-                  'RAVENPAW', 'DAPPLEPAW', 'LILTWO', 'MUSTACHE', 'REVERSEHEART', 'SPARKLE', 'REVERSEEYE', "CHEST_MID", "CHEST_SMALL"],
+                  'RAVENPAW', 'DAPPLEPAW', 'LILTWO', 'MUSTACHE', 'REVERSEHEART', 'SPARKLE', 'REVERSEEYE', "CHEST_MID", "CHEST_SMALL",
+                  "CHEST_STREAK", "BELLY_MIN"],
             '3': ['TUXEDO', 'SAVANNAH', 'FANCY', 'DIVA', 'BEARD', "DAMIEN_REDUCED", 'DAMIEN', 'BELLY', 'SQUEAKS', 'STAR', 'MISS', 'BOWTIE',
                   'FCTWO', 'FCONE', 'MIA', 'PRINCESS', 'DOUGIE', 'STREAMSTRIKE'],
             '4': ['TUXEDO', 'SAVANNAH', 'OWL', 'RINGTAIL', 'UNDERS', 'FAROFA', 'VEST', 'FRONT', 'BLOSSOMSTEP', 'DIGIT',
@@ -453,10 +450,10 @@ class Pelt:
                     while len(white_pattern) == 0:
                         #chest
                         if random () < 0.5:
-                            white_pattern.append(choice(['chest tuft', 'locket', 'chest tuft', 'locket', 'bib', "BIB_SMALL", "CHEST_MIN", "CHEST_SMALL", "LOCKET"]))
+                            white_pattern.append(choice(['chest tuft', 'locket', 'chest tuft', 'locket', 'bib', "BIB_SMALL", "CHEST_MIN", "CHEST_SMALL", "LOCKET", "CHEST_STREAK"]))
                         #belly
                         elif random () < 0.5:
-                            white_pattern.append(choice(['belly tuft', 'belly spot', 'belly tuft', 'belly spot', 'belly', "BELLY_SMALL"]))
+                            white_pattern.append(choice(['belly tuft', 'belly spot', 'belly tuft', 'belly spot', 'belly', "BELLY_SMALL", "BELLY_MIN"]))
 
                         #toes
                         nropaws = choice([4, 3, 2, 1, 0, 0])
@@ -476,7 +473,7 @@ class Pelt:
 
                         # belly
                         if random() < 0.8:
-                            white_pattern.append(choice(['belly spot', 'belly', 'belly spot', 'belly', 'belly spot', 'BELLY_SMALL']))
+                            white_pattern.append(choice(['belly spot', 'belly', 'belly spot', 'belly', 'belly spot', 'BELLY_SMALL', "BELLY_MIN"]))
 
                         #paws
                         nropaws = choice([4, 4, 3, 2, 1, 0])

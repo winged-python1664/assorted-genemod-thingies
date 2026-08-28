@@ -230,7 +230,6 @@ class AllegiancesScreen(Screens):
         self.ranks_boxes = []
         self.names_boxes = []
         self.names_buttons = []
-        y_pos = 0
         for x in allegiance_list:
             self.ranks_boxes.append(
                 pygame_gui.elements.UITextBox(

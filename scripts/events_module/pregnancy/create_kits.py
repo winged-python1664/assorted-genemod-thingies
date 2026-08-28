@@ -6,9 +6,8 @@ from copy import deepcopy, copy
 import i18n
 
 from scripts.cat.cats import Cat
-from scripts.cat.enums import CatAge, CatRank, CatSocial, CatGroup, CatThought, CatCompatibility
+from scripts.cat.enums import CatRank, CatSocial, CatThought, CatCompatibility
 from scripts.cat.factories.new_cat_factory import NewCatFactory
-from scripts.cat.factories.typed_dicts import StatusDict
 from scripts.cat.microservices.add_to_clan import add_to_clan
 from scripts.cat.names import Name
 from scripts.cat_relations.enums import RelType
@@ -599,7 +598,7 @@ def handle_adoption(cat: Cat, other_cat: Optional[Cat] = None, clan=game.clan):
     cat.birth_cooldown = get_config("pregnancy.birth_cooldown")
 
     game.cur_events_list.append(
-        EventInformation(print_event, ["birth_death"], cat_dict=cats_involved, clan=clan.group_ID)
+        EventInformation(print_event, ["birth_death"], cats_involved=cats_involved, clan=clan.group_ID)
     )
 
 
@@ -718,7 +717,6 @@ def get_balanced_kit_chance(first_parent: Cat, second_parent: Cat, is_affair, cl
     # COMPATIBILITY
     # - decrease / increase depending on the compatibility
     comp = None
-    inv = inverse_chance
     if second_parent:
         for x in second_parent:
             if x == "Surrogate":

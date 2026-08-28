@@ -42,7 +42,6 @@ from scripts.events_module.ceremony.perform_ceremony import (
     trigger_ceremony,
     check_and_promote_deputy,
     check_and_promote_prophet,
-    _adult_becomes_mediator,
 )
 
 from scripts.events_module.generate_events import GenerateEvents, generate_events
@@ -142,8 +141,7 @@ def one_moon():
         handle_moonpool_event()
 
     clancount = game.clan.clancount == "multiclan"
-    clannames = [game.clan.prefix] + [c.prefix for c in game.clan.all_other_clans]
-
+    
     # checking if a lost cat returns on their own
     rejoin_upperbound = get_config("lost_cat.rejoin_chance")
     if random.randint(1, rejoin_upperbound) == 1:

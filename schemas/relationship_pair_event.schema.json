@@ -382,9 +382,16 @@
           "title": "Name"
         },
         "clan": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            }
+          ],
           "description": "Used to specify a Clan in Cross-Clan Rel Events",
-          "title": "Clan",
-          "type": "integer"
+          "title": "Clan"
         }
       },
       "title": "CatDict",
@@ -734,6 +741,7 @@
         "quilled by a porcupine",
         "broken back",
         "poisoned",
+        "venom sickness",
         "bee sting",
         "headache",
         "severe headache",
@@ -1384,6 +1392,7 @@
         "halloween",
         "april_fools",
         "new_years",
+        "war",
         "tnr",
         "tnr2",
         "disaster"
