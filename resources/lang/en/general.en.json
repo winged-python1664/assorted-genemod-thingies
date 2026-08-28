@@ -81,6 +81,7 @@
             "one": "kitten",
             "many": "kittens"
         },
+        "newborn_profile": "newborn",
         "kitten_profile": "young",
         "adolescent": "adolescent",
         "young adult": "young adult",

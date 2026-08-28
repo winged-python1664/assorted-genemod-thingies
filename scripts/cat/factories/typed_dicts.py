@@ -17,6 +17,15 @@ class CatTogglesDict(TypedDict):
     favourite: bool
 
 
+class DisplayCatTogglesDict(TypedDict):
+    show_living: bool
+    show_healthy: bool
+    show_white: bool
+    show_scar: bool
+    show_accessory: bool
+    user_life_stage: List[str]
+
+
 class GenderDict(TypedDict, total=False):
     sex: Literal["tom", "molly", "intersex"]
     genderalign: str

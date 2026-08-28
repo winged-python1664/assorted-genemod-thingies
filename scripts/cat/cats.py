@@ -29,6 +29,7 @@ from scripts.cat.enums import (
 from scripts.cat.factories.typed_dicts import (
     MentorshipDict,
     CatTogglesDict,
+    DisplayCatTogglesDict,
     InheritanceDict,
     AfterlifeAffinityDict,
     GenderDict,
@@ -142,6 +143,7 @@ class Cat:
         inheritance: InheritanceDict,
         affinity: AfterlifeAffinityDict,
         toggles: CatTogglesDict,
+        display_toggles: DisplayCatTogglesDict,
         experience: int,
         birth_cooldown: int,
         specsuffix_hidden=False,  # to delete once Name is decoupled from Cat
@@ -239,6 +241,14 @@ class Cat:
         self.no_retire = toggles["no_retire"]
         self.prevent_fading = toggles["prevent_fading"]  # Prevents a cat from fading
         self.favourite = toggles["favourite"]
+
+        # sprite toggles
+        self.show_living = display_toggles["show_living"]
+        self.show_healthy = display_toggles["show_healthy"]
+        self.show_white = display_toggles["show_white"]
+        self.show_scar = display_toggles["show_scar"]
+        self.show_accessory = display_toggles["show_accessory"]
+        self.user_life_stage = display_toggles["user_life_stage"]
 
         # misc
         self.experience = experience
@@ -2862,6 +2872,11 @@ class Cat:
                 "faded_offspring": self.faded_offspring,
                 "opacity": self.pelt.opacity,
                 "prevent_fading": self.prevent_fading,
+                "show_living": self.show_living,
+                "show_white": self.show_white,
+                "show_scar": self.show_scar,
+                "show_accessory": self.show_accessory,
+                "user_life_stage": self.user_life_stage,
                 "favourite": self.favourite,
             }
 

@@ -19,6 +19,7 @@ from scripts.cat.constants import BACKSTORIES
 from scripts.cat.sprites.display_sprites import calculate_size
 from ..cat.enums import CatAge, CatRank, CatGroup
 from scripts.cat.pelts import Pelt
+from scripts.cat.sprites.display_sprites import generate_sprite
 from scripts.clan_resources.freshkill import FRESHKILL_ACTIVE
 from scripts.events import handle_fading
 from scripts.game_structure import image_cache, game
@@ -143,8 +144,8 @@ class ProfileScreen(Screens):
         self.cat_thought = None
         self.cat_name = None
         self.placeholder_tab_4 = None
-        self.placeholder_tab_3 = None
-        self.placeholder_tab_2 = None
+        self.display_tab_button = None
+        self.display_background = None
         self.backstory_tab_button = None
         self.dangerous_tab_button = None
         self.personal_tab_button = None
@@ -155,7 +156,10 @@ class ProfileScreen(Screens):
         self.next_cat_button = None
         self.the_cat = None
         self.checkboxes = {}
+        self.show_text = {}
         self.profile_elements = {}
+        self.display_sprite_ages = {}
+        self.displayed_life_stage = None
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[2]:
@@ -208,6 +212,8 @@ class ProfileScreen(Screens):
                 self.toggle_history_tab()
             elif event.ui_element == self.conditions_tab_button:
                 self.toggle_conditions_tab()
+            elif event.ui_element == self.display_tab_button:
+                self.toggle_display_tab()
             elif (
                 "leader_ceremony" in self.profile_elements
                 and event.ui_element == self.profile_elements["leader_ceremony"]
@@ -230,8 +236,12 @@ class ProfileScreen(Screens):
                 self.change_screen(GameScreen.SCSCREEN)
             elif event.ui_element == self.profile_elements["favourite_button"]:
                 self.the_cat.favourite += 1
-                if self.the_cat.favourite > 6 or event.mouse_button == pygame.BUTTON_RIGHT:
+                if self.the_cat.favourite > 6:
                     self.the_cat.favourite = 0
+                if event.mouse_button == pygame.BUTTON_RIGHT:
+                    self.the_cat.favourite -= 1
+                    if self.the_cat.favourite < 0:
+                        self.the_cat.favourite = 6
                 self.profile_elements["favourite_button"].change_object_id(
                     f"#fav_star{self.the_cat.favourite}" if self.the_cat.favourite else "#not_fav_star"
                 )
@@ -488,6 +498,44 @@ class ProfileScreen(Screens):
                 self.conditions_page -= 1
                 self.display_conditions_page()
 
+        # Display Tab
+        elif self.open_tab == "display":
+            if event.ui_element == self.checkboxes["show_living"]:
+                self.checkboxes["show_living"].toggle()
+                self.the_cat.show_living = self.checkboxes["show_living"].checked
+                self.build_cat_image()
+            elif event.ui_element == self.checkboxes["show_healthy"]:
+                self.checkboxes["show_healthy"].toggle()
+                self.the_cat.show_healthy = self.checkboxes["show_healthy"].checked
+                self.build_cat_image()
+            elif event.ui_element == self.checkboxes["show_white"]:
+                self.checkboxes["show_white"].toggle()
+                self.the_cat.show_white = self.checkboxes["show_white"].checked
+                self.build_cat_image()
+            elif event.ui_element == self.checkboxes["show_scar"]:
+                self.checkboxes["show_scar"].toggle()
+                self.the_cat.show_scar = self.checkboxes["show_scar"].checked
+                self.build_cat_image()
+            elif event.ui_element == self.checkboxes["show_accessory"]:
+                self.checkboxes["show_accessory"].toggle()
+                self.the_cat.show_accessory = self.checkboxes["show_accessory"].checked
+                self.build_cat_image()
+            elif event.ui_element == self.display_sprite_ages["newborn"]:
+                self.change_shown_age("newborn")
+                self.build_cat_image()
+            elif event.ui_element == self.display_sprite_ages["kitten"]:
+                self.change_shown_age("kitten")
+                self.build_cat_image()
+            elif event.ui_element == self.display_sprite_ages["adolescent"]:
+                self.change_shown_age("adolescent")
+                self.build_cat_image()
+            elif event.ui_element == self.display_sprite_ages["adult"]:
+                self.change_shown_age("adult")
+                self.build_cat_image()
+            elif event.ui_element == self.display_sprite_ages["senior"]:
+                self.change_shown_age("senior")
+                self.build_cat_image()
+
     def screen_switches(self):
         super().screen_switches()
         self.the_cat = Cat.all_cats.get(switch_get_value(Switch.cat))
@@ -567,15 +615,14 @@ class ProfileScreen(Screens):
             manager=MANAGER,
         )
 
-        self.placeholder_tab_3 = UISurfaceImageButton(
+        self.display_tab_button = UISurfaceImageButton(
             ui_scale(pygame.Rect((400, 622), (176, 30))),
-            "",
+            "screens.profile.tab_display",
             get_button_dict(ButtonStyles.PROFILE_MIDDLE, (176, 30)),
             object_id="@buttonstyles_profile_middle",
             starting_height=1,
             manager=MANAGER,
         )
-        self.placeholder_tab_3.disable()
 
         self.placeholder_tab_4 = UISurfaceImageButton(
             ui_scale(pygame.Rect((576, 622), (176, 30))),
@@ -592,6 +639,8 @@ class ProfileScreen(Screens):
         self.hide_menu_buttons()  # Menu buttons don't appear on the profile screen
         if game.last_screen_forProfile == GameScreen.MED_DEN:
             self.toggle_conditions_tab()
+        if game.last_screen_forProfile == GameScreen.SPRITE_INSPECT:
+            self.toggle_display_tab()
 
         self.set_cat_location_bg(self.the_cat)
 
@@ -619,9 +668,10 @@ class ProfileScreen(Screens):
         self.dangerous_tab_button.kill()
         self.backstory_tab_button.kill()
         self.conditions_tab_button.kill()
-        self.placeholder_tab_3.kill()
+        self.display_tab_button.kill()
         self.placeholder_tab_4.kill()
         self.inspect_button.kill()
+        self.cat_image = None
         self.close_current_tab()
 
     def build_profile(self):
@@ -702,33 +752,6 @@ class ProfileScreen(Screens):
                 manager=MANAGER,
             )
             self.profile_elements["backgrounds"].disable()
-
-        scale = 0
-        if get_clan_setting("sprite_scaling"):
-            cat_size = calculate_size(self.the_cat)
-            if isinstance(cat_size, str):
-                mapper = {
-                    "big": 11.5,
-                    "average": 9.5,
-                    "small": 7.5,
-                    "runt": 5.5
-                }
-                cat_size = mapper[cat_size]
-            else:
-                if self.the_cat.phenotype.munch[0] == "Mk":
-                    cat_size *= 1.5
-
-            scale = int((cat_size-9.5)*5)
-
-        # Create cat image object
-        self.profile_elements["cat_image"] = pygame_gui.elements.UIImage(
-            ui_scale(pygame.Rect((100-scale//2, 200-(scale//4 if scale > 0 and self.the_cat.age not in [CatAge.KITTEN, CatAge.NEWBORN] else scale)), (150+scale, 150+scale))),
-            pygame.transform.scale(
-                self.the_cat.sprite, ui_scale_dimensions((150+scale, 150+scale))
-            ),
-            manager=MANAGER,
-        )
-        self.profile_elements["cat_image"].disable()
 
         if self.the_cat.status.group.is_any_clan_group() and (
             self.the_cat.status.rank.is_any_medicine_rank()
@@ -819,7 +842,7 @@ class ProfileScreen(Screens):
 
         clan = self.the_cat.status.fetch_clan_object(game.clan)
 
-        if self.the_cat.status.is_leader or self.the_cat.ID in clan.all_leader_predecessors:
+        if self.the_cat.status.is_leader:
             self.profile_elements["leader_ceremony"] = UIImageButton(
                 ui_scale(pygame.Rect((383, 110), (34, 34))),
                 "",
@@ -835,6 +858,72 @@ class ProfileScreen(Screens):
                 tool_tip_text="screens.profile.leader_ceremony",
                 manager=MANAGER,
             )
+
+        self.build_cat_image()
+
+    def build_cat_image(self):
+        if "cat_image" in self.profile_elements:
+            self.profile_elements["cat_image"].kill()
+
+        cat_life_stages = ["newborn", "kitten", "adolescent", "adult", "senior"]
+
+        if self.the_cat.user_life_stage not in cat_life_stages:
+            if (self.the_cat.age in ("young adult", "adult", "senior adult") or 
+            (game_setting_get("ageup dead") and self.the_cat.dead and self.the_cat.moons < 12) or
+            (game_setting_get("youthful dead") and self.the_cat.dead and self.the_cat.age == "senior")):
+                current_life_stage = "adult"
+            else:
+                current_life_stage = self.the_cat.age
+        else:
+            current_life_stage = self.the_cat.user_life_stage
+
+        self.valid_life_stages = []
+
+        # Store the index of the currently displayed life stage.
+        self.displayed_life_stage = 0
+
+        for life_stage in cat_life_stages:
+            self.valid_life_stages.append(life_stage)
+            if life_stage == current_life_stage:
+                self.displayed_life_stage = len(self.valid_life_stages) - 1
+
+        scale = 0
+        if get_clan_setting("sprite_scaling"):
+            cat_size = calculate_size(self.the_cat)
+            if isinstance(cat_size, str):
+                mapper = {
+                    "big": 11.5,
+                    "average": 9.5,
+                    "small": 7.5,
+                    "runt": 5.5
+                }
+                cat_size = mapper[cat_size]
+            else:
+                if self.the_cat.phenotype.munch[0] == "Mk":
+                    cat_size *= 1.5
+
+            scale = int((cat_size-9.5)*5)
+
+        # Create cat image object
+        self.cat_image = generate_sprite(
+            self.the_cat,
+            life_state=self.valid_life_stages[self.displayed_life_stage],
+            scars_hidden=not self.the_cat.show_scar,
+            acc_hidden=not self.the_cat.show_accessory,
+            always_living=self.the_cat.show_living,
+            disable_sick_sprite=self.the_cat.show_healthy,
+            hide_white=not self.the_cat.show_white,
+            season_override=None
+        )
+
+        self.profile_elements["cat_image"] = pygame_gui.elements.UIImage(
+            ui_scale(pygame.Rect((100-scale//2, 200-(scale//4 if scale > 0 and self.the_cat.age not in [CatAge.KITTEN, CatAge.NEWBORN] else scale)), (150+scale, 150+scale))),
+            pygame.transform.scale(
+                self.cat_image, ui_scale_dimensions((150+scale, 150+scale))
+            ),
+            manager=MANAGER,
+        )
+        self.profile_elements["cat_image"].disable()
 
     def generate_column1(self, the_cat):
         """Generate the left column information"""
@@ -896,7 +985,7 @@ class ProfileScreen(Screens):
             if get_clan_setting("showyears"):
                 output += the_cat.age + f" (dead for {dead_years} {dead_year}{dead_moons})"
             else:
-                i18n.t("general.moons_age_in_death", count=the_cat.dead_for)
+                output += i18n.t("general.moons_age_in_death", count=the_cat.dead_for)
 
         # EYE COLOR
         if the_cat.age != CatAge.NEWBORN:
@@ -1456,8 +1545,7 @@ class ProfileScreen(Screens):
             self.info_list += f"Chimera Pseudo-Merle Markings: {self.the_cat.chimerapheno.merlepattern}\n"
 
         self.info_list += f"Body Type Value: {self.the_cat.phenotype.body_value}, Height Value: {self.the_cat.phenotype.height_value}, Growth Pattern: {self.the_cat.phenotype.growth_pattern}\n"
-        
-        
+
 
     def save_user_notes(self):
         """Saves user-entered notes."""
@@ -2370,6 +2458,213 @@ class ProfileScreen(Screens):
         text = "<br><br>".join(text_list)
         return text
 
+    def toggle_display_tab(self):
+        """Opens the display tab"""
+        previous_open_tab = self.open_tab
+
+        # This closes the current tab, so only one can be open at a time
+        self.close_current_tab()
+
+        if previous_open_tab == "display":
+            """If the current open tab is display, just close the tab and do nothing else."""
+            pass
+        else:
+            self.open_tab = "display"
+            rect = ui_scale(pygame.Rect((0, 0), (620, 157)))
+            rect.bottomleft = ui_scale_offset((89, 0))
+            self.display_background = pygame_gui.elements.UIImage(
+                rect,
+                get_box(
+                    BoxStyles.ROUNDED_BOX, (620, 157), sides=(True, True, False, True)
+                ),
+                anchors={
+                    "bottom": "bottom",
+                    "bottom_target": self.conditions_tab_button,
+                },
+            )
+            self.display_background.disable()
+
+            self.display_tab_checkbox = UICheckbox(
+                position=(52, 484),
+                check=Switch.display_sprite_changes,
+                tool_tip_text="screens.profile.sprite_changes_tooltip",
+                manager=MANAGER,
+            )
+
+            self.display_sprite_ages["newborn"] = UISurfaceImageButton(
+                ui_scale(pygame.Rect((104, 477), (92, 30))),
+                "general.newborn_profile",
+                get_button_dict(ButtonStyles.SQUOVAL, (92, 30)),
+                object_id="@buttonstyles_squoval",
+                manager=MANAGER,
+            )
+            self.display_sprite_ages["kitten"] = UISurfaceImageButton(
+                ui_scale(pygame.Rect((104, 7), (92, 30))),
+                "general.kitten_profile",
+                get_button_dict(ButtonStyles.SQUOVAL, (92, 30)),
+                object_id="@buttonstyles_squoval",
+                manager=MANAGER,
+                anchors={"top_target": self.display_sprite_ages["newborn"]},
+            )
+            self.display_sprite_ages["adolescent"] = UISurfaceImageButton(
+                ui_scale(pygame.Rect((104, 7), (92, 30))),
+                "general.adolescent",
+                get_button_dict(ButtonStyles.SQUOVAL, (92, 30)),
+                object_id="@buttonstyles_squoval",
+                manager=MANAGER,
+                anchors={"top_target": self.display_sprite_ages["kitten"]}
+            )
+            self.display_sprite_ages["adult"] = UISurfaceImageButton(
+                ui_scale(pygame.Rect((104, 7), (92, 30))),
+                "general.adult",
+                get_button_dict(ButtonStyles.SQUOVAL, (92, 30)),
+                object_id="@buttonstyles_squoval",
+                manager=MANAGER,
+                anchors={"top_target": self.display_sprite_ages["adolescent"]}
+            )
+            self.display_sprite_ages["senior"] = UISurfaceImageButton(
+                ui_scale(pygame.Rect((5, 477), (92, 30))),
+                "general.senior",
+                get_button_dict(ButtonStyles.SQUOVAL, (92, 30)),
+                object_id="@buttonstyles_squoval",
+                manager=MANAGER,
+                anchors={"left_target": self.display_sprite_ages["newborn"]}
+            )
+
+            self.update_disabled_buttons_and_text()
+
+    def show_display_tab(self):
+        self.display_sprite_ages["newborn"].enable()
+        self.display_sprite_ages["kitten"].enable()
+        self.display_sprite_ages["adolescent"].enable()
+        self.display_sprite_ages["adult"].enable()
+        self.display_sprite_ages["senior"].enable()
+
+        cat_life_stages = ["newborn", "kitten", "adolescent", "adult", "senior"]
+
+        if self.the_cat.user_life_stage not in cat_life_stages:
+            if (self.the_cat.age in ("young adult", "adult", "senior adult") or 
+            (game_setting_get("ageup dead") and self.the_cat.dead and self.the_cat.moons < 12) or
+            (game_setting_get("youthful dead") and self.the_cat.dead and self.the_cat.age == "senior")):
+                current_life_stage = "adult"
+            else:
+                current_life_stage = self.the_cat.age
+        else:
+            current_life_stage = self.the_cat.user_life_stage
+
+        self.display_sprite_ages[current_life_stage].disable()
+
+        self.checkboxes["show_living"] = UICheckbox(
+            (5, 473),
+            starting_height=2,
+            anchors={"left_target": self.display_sprite_ages["senior"]},
+            tool_tip_text="screens.profile.show_living_tooltip",
+            check=self.the_cat.show_living,
+        )
+        if not self.the_cat.dead:
+            self.checkboxes["show_living"].disable()
+
+        self.show_text["living"] = pygame_gui.elements.UITextBox(
+            "screens.profile.show_living",
+            ui_scale(pygame.Rect((1, 474), (-1, 30))),
+            object_id=get_text_box_theme("#text_box_26_horizcenter_pad_10_14"),
+            starting_height=2,
+            anchors={"left_target": self.checkboxes["show_living"]},
+        )
+
+        self.checkboxes["show_healthy"] = UICheckbox(
+            (5, 5),
+            starting_height=2,
+            anchors={
+                "left_target": self.display_sprite_ages["senior"],
+                "top_target": self.checkboxes["show_living"],
+            },
+            check=self.the_cat.show_healthy,
+        )
+        if not self.the_cat.not_working():
+            self.checkboxes["show_healthy"].disable()
+
+        self.show_text["healthy"] = pygame_gui.elements.UITextBox(
+            "screens.profile.show_healthy",
+            ui_scale(pygame.Rect((1, 6), (-1, 30))),
+            object_id=get_text_box_theme("#text_box_26_horizcenter_pad_10_14"),
+            starting_height=2,
+            anchors={"left_target": self.checkboxes["show_healthy"], "top_target": self.checkboxes["show_living"]},
+        )
+
+        self.checkboxes["show_white"] = UICheckbox(
+            (5, 5),
+            starting_height=2,
+            anchors={
+                "left_target": self.display_sprite_ages["senior"],
+                "top_target": self.checkboxes["show_healthy"],
+            },
+            check=self.the_cat.show_white,
+        )
+        if (self.the_cat.phenotype.white_pattern == "No" and self.the_cat.phenotype.white[0] == "w") and (not self.the_cat.chimerapheno or self.the_cat.chimerapheno.white_pattern == "No" and self.the_cat.chimerapheno.white[0] == "w"):
+            self.checkboxes["show_white"].disable()
+
+        self.show_text["white"] = pygame_gui.elements.UITextBox(
+            "screens.profile.show_white",
+            ui_scale(pygame.Rect((1, 6), (-1, 30))),
+            object_id=get_text_box_theme("#text_box_26_horizcenter_pad_10_14"),
+            starting_height=2,
+            anchors={"left_target": self.checkboxes["show_white"], "top_target": self.checkboxes["show_healthy"]},
+        )
+
+        self.checkboxes["show_scar"] = UICheckbox(
+            (5, 5),
+            starting_height=2,
+            anchors={
+                "left_target": self.display_sprite_ages["senior"],
+                "top_target": self.checkboxes["show_white"],
+            },
+            check=self.the_cat.show_scar,
+        )
+        if not self.the_cat.pelt.scars:
+            self.checkboxes["show_scar"].disable()
+
+        self.show_text["scar"] = pygame_gui.elements.UITextBox(
+            "screens.profile.show_scar",
+            ui_scale(pygame.Rect((1, 6), (-1, 30))),
+            object_id=get_text_box_theme("#text_box_26_horizcenter_pad_10_14"),
+            starting_height=2,
+            anchors={"left_target": self.checkboxes["show_scar"], "top_target": self.checkboxes["show_white"]},
+        )
+
+        self.checkboxes["show_accessory"] = UICheckbox(
+            (5, 473),
+            starting_height=2,
+            anchors={
+                "left_target": self.show_text["living"],
+            },
+            check=self.the_cat.show_accessory,
+        )
+        if not self.the_cat.pelt.accessory:
+            self.checkboxes["show_accessory"].disable()
+
+        self.show_text["accessory"] = pygame_gui.elements.UITextBox(
+            "screens.profile.show_accessory",
+            ui_scale(pygame.Rect((1, 474), (-1, 30))),
+            object_id=get_text_box_theme("#text_box_26_horizcenter_pad_10_14"),
+            starting_height=2,
+            anchors={"left_target": self.checkboxes["show_accessory"]},
+        )
+
+    def change_shown_age(self, age):
+        cat_life_stages = ["newborn", "kitten", "adolescent", "adult", "senior"]
+        if age not in cat_life_stages:
+            return
+        else:
+            self.display_sprite_ages["newborn"].enable()
+            self.display_sprite_ages["kitten"].enable()
+            self.display_sprite_ages["adolescent"].enable()
+            self.display_sprite_ages["adult"].enable()
+            self.display_sprite_ages["senior"].enable()
+            self.display_sprite_ages[age].disable()
+
+            self.the_cat.user_life_stage = age
+
     def toggle_relations_tab(self):
         """Opens relations tab"""
         # Save what is previously open, for toggle purposes.
@@ -2879,6 +3174,10 @@ class ProfileScreen(Screens):
         elif self.open_tab == "conditions":
             self.display_conditions_page()
 
+        # Display Tab
+        elif self.open_tab == "display":
+            self.show_display_tab()
+
     def close_current_tab(self):
         """Closes current tab."""
         if self.open_tab is None:
@@ -2942,6 +3241,16 @@ class ProfileScreen(Screens):
             for data in self.condition_data.values():
                 data.kill()
             self.condition_data = {}
+
+        elif self.open_tab == "display":
+            self.display_background.kill()
+            self.display_tab_checkbox.kill()
+            for i in self.display_sprite_ages:
+                self.display_sprite_ages[i].kill()
+            for i in self.checkboxes:
+                self.checkboxes[i].kill()
+            for i in self.show_text:
+                self.show_text[i].kill()
 
         self.open_tab = None
 

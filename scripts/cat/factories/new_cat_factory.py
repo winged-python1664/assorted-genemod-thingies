@@ -11,6 +11,7 @@ from scripts.cat.enums import CatAge, CatRank, CatSocial
 from scripts.cat.factories.base_factory import BaseCatFactory
 from scripts.cat.factories.typed_dicts import (
     MentorshipDict,
+    DisplayCatTogglesDict,
     CatTogglesDict,
     InheritanceDict,
     AfterlifeAffinityDict,
@@ -136,6 +137,14 @@ class NewCatFactory(BaseCatFactory, ABC):
                 no_retire=False,
                 prevent_fading=False,
                 favourite=False,
+            ),
+            "display_toggles": DisplayCatTogglesDict(
+                show_living=False,
+                show_healthy=False,
+                show_white=True,
+                show_scar=True,
+                show_accessory=True,
+                user_life_stage=[],
             ),
             "experience": overrides.get(
                 "experience", cls._get_random_experience(age, moons)

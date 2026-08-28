@@ -11,6 +11,7 @@ from scripts.cat.factories.base_factory import BaseCatFactory
 from scripts.cat.factories.typed_dicts import (
     MentorshipDict,
     CatTogglesDict,
+    DisplayCatTogglesDict,
     GenderDict,
     InheritanceDict,
     AfterlifeAffinityDict,
@@ -78,6 +79,15 @@ class LoadCatFactory(BaseCatFactory):
             favourite=kwargs.get("favourite", False),
         )
 
+        display_toggles = DisplayCatTogglesDict(
+            show_living=kwargs.get("show_living", False),
+            show_healthy=kwargs.get("show_healthy", False),
+            show_white=kwargs.get("show_white", True),
+            show_scar=kwargs.get("show_scar", True),
+            show_accessory=kwargs.get("show_accessory", True),
+            user_life_stage=kwargs.get("user_life_stage", []),
+        )
+
         status = cls._convert_status(
             kwargs.get("status"),
             kwargs.get("moons"),
@@ -139,6 +149,7 @@ class LoadCatFactory(BaseCatFactory):
             "inheritance": inheritance,
             "affinity": affinity,
             "toggles": toggles,
+            "display_toggles": display_toggles,
             "experience": kwargs.get("experience"),
             "birth_cooldown": kwargs.get("birth_cooldown", 0),
             "specsuffix_hidden": kwargs.get("specsuffix_hidden", False),
