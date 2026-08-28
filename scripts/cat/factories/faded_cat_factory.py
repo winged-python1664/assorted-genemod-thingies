@@ -55,6 +55,7 @@ class FadedCatFactory(BaseCatFactory):
             ),
             affinity={},
             toggles={},
+            display_toggles={},
             experience=0,
             birth_cooldown=0,
             specsuffix_hidden=False,

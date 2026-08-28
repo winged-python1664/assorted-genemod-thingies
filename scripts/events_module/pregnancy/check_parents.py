@@ -182,8 +182,8 @@ def get_second_parent(cat, clan):
     if not samesex and mate and not cat_is_amab(cat):
         opposite_mate = [cat.fetch_cat(mate_id) for mate_id in cat.mate if xor(cat_is_amab(cat.fetch_cat(
             mate_id)), cat_is_amab(cat)) and "sterile" not in cat.fetch_cat(mate_id).permanent_condition
-            and cat.fetch_cat(partner_id) for partner_id in cat.partner if xor(cat_is_amab(cat.fetch_cat(
-                partner_id)), cat_is_amab(cat)) and "sterile" not in cat.fetch_cat(partner_id).permanent_condition]
+            and (cat.fetch_cat(partner_id) for partner_id in cat.partner if xor(cat_is_amab(cat.fetch_cat(
+                partner_id)), cat_is_amab(cat)) and "sterile" not in cat.fetch_cat(partner_id).permanent_condition) if cat.partner]
         if len(opposite_mate) > 0:
             mate = opposite_mate
             if not get_clan_setting('multisire'):
