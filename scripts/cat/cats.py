@@ -167,6 +167,7 @@ class Cat:
         :param inheritance: Inheritance object
         :param affinity: AffinityDict containing starclan & dark forest affinity values
         :param toggles: Dict of cat-related behavior toggles
+        :param display_toggles: Dict of cat sprite display toggles
         :param experience: Cat's experience value
         :param birth_cooldown: How many moons that must pass before this cat can give birth again
         :param specsuffix_hidden: Whether to show or hide the "special suffix" for a cat's name
@@ -2536,6 +2537,7 @@ class Cat:
             ),
             affinity={},
             toggles={},
+            display_toggles={},
             experience=0,
             birth_cooldown=0,
             specsuffix_hidden=False,
