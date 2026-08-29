@@ -4,6 +4,7 @@ from random import choice, randint
 from typing import List, Optional, Dict, Union, Literal
 
 from scripts.cat.constants import BACKSTORIES
+from scripts.cat.pelts import Pelt
 from scripts.cat.personality import Personality
 from scripts.cat_relations.enums import RelType, rel_type_tiers, RelTier
 from scripts.cat.enums import CatRank, CatAge, CatCompatibility, CatGroup, CatStanding
@@ -797,7 +798,7 @@ def _check_cat_trait(cat, traits: list) -> bool:
     is_exclusionary = _check_for_exclusionary_value(traits)
 
     if is_exclusionary:
-        traits = [x.replace("-", "") for x in traits]
+        traits = [x.removeprefix("-") for x in traits]
 
     for trait in traits:
         if trait not in ALL_TRAITS_LIST:
@@ -1083,7 +1084,8 @@ def _check_cat_gender(cat, genders: list) -> bool:
     equivalents = {
         "male" : ["tom", "intersex tom", "intersex trans tom", "trans tom"],
         "female" : ["molly", "intersex molly", "intersex trans molly", "trans molly"],
-        "nonbinary" : ["sam", "intersex sam"]
+        "nonbinary": ["sam", "intersex sam"],
+        "agender": ["agender", "intersex agender"]
     }
 
     for g in genders:
@@ -1167,6 +1169,7 @@ def cat_for_event(
     comparison_cat=None,
     comparison_cat_rel_status: list = None,
     injuries: list = None,
+    new_accessories: list = None,
     other_involved_clan_id: str = None,
     return_id: bool = True,
     return_list: bool = False,
@@ -1182,6 +1185,7 @@ def cat_for_event(
      cat. Keep in mind that this will search for a possible cat with the given relationship toward comparison cat.
     :param comparison_cat_rel_status: The relationship_status dict for the comparison cat
     :param injuries: List of injuries a cat may get from the event
+    :param new_accessories: List of accessories a cat may get from the event
     :param other_involved_clan_id: if another Clan is involved, include their ID
     :param return_id: If true, return cat ID instead of object
     :param return_list: if true, return a list of all valid cats instead of a single valid cat
@@ -1195,6 +1199,7 @@ def cat_for_event(
         "stat": _get_cats_with_stat,
         "skill": _get_cats_with_skill,
         "trait": _get_cats_with_trait,
+        "gender": _get_cats_with_gender,
         "backstory": _get_cats_with_backstory,
         "has_mentor": _get_cats_with_mentor,
         "has_apprentice": _get_cats_with_apprentice,
@@ -1244,6 +1249,45 @@ def cat_for_event(
         # if the list is emptied, return
         if not allowed_cats:
             return None
+
+    if new_accessories:
+        for cat in allowed_cats.copy():
+            if len(cat.pelt.accessory) >= 3:
+                allowed_cats.remove(cat)
+                continue
+
+            accessory_groups = [
+                Pelt.collar_accessories,
+                Pelt.head_accessories,
+                Pelt.tail_accessories,
+                Pelt.body_accessories,
+                Pelt.paw_accessories,
+            ]
+            possible_accs = new_accessories.copy()
+            if cat.pelt.accessory:
+                used_groups = [
+                    group
+                    for group in accessory_groups
+                    if set(cat.pelt.accessory).intersection(set(group))
+                ]
+                if any(
+                    [
+                        set(new_accessories).intersection(set(group))
+                        for group in used_groups
+                    ]
+                ):
+                    allowed_cats.remove(cat)
+                    continue
+
+            if cat.pelt.scars:
+                if "NOTAIL" in cat.pelt.scars or "HALFTAIL" in cat.pelt.scars:
+                    if any(acc in Pelt.tail_accessories for acc in possible_accs):
+                        allowed_cats.remove(cat)
+                        continue
+                if "NOPAW" in cat.pelt.scars:
+                    if any(acc in Pelt.paw_accessories for acc in possible_accs):
+                        allowed_cats.remove(cat)
+                        continue
 
     # rel status check
     if "romance" in tags and comparison_cat:
@@ -1392,6 +1436,23 @@ def _get_cats_with_age(cat_list: list, ages: list[str]) -> list:
         return [kitty for kitty in cat_list if kitty.age not in ages]
     else:
         return [kitty for kitty in cat_list if kitty.age in ages]
+
+
+def _get_cats_with_gender(cat_list: list, genders: list[str]) -> list:
+    """
+    Checks cat_list against required ages and returns qualifying cats.
+    """
+    if not genders or "any" in genders:
+        return cat_list
+
+    is_exclusionary = _check_for_exclusionary_value(genders)
+
+    if is_exclusionary:
+        genders = [x.replace("-", "") for x in genders]
+        return [kitty for kitty in cat_list if not _check_cat_gender(kitty, genders)]
+    else:
+        check_genders = []
+        return [kitty for kitty in cat_list if _check_cat_gender(kitty, genders)]
 
 
 def _get_cats_with_status(cat_list: list, statuses: list[str]) -> list:
