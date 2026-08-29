@@ -64,12 +64,6 @@ class ChooseMateScreen(Screens):
         self.current_cat_elements = {}
         self.selected_cat_elements = {}
 
-        self.mates_tab_button = None
-        self.partners_tab_button = None
-        self.offspring_tab_button = None
-        self.potential_mates_button = None
-        self.pot_par_tab_button = None
-
         # Keep track of all the cats we want to display
         self.all_mates = []
         self.all_partners = []
@@ -142,11 +136,15 @@ class ChooseMateScreen(Screens):
                     return
                 if self.work_thread is not None and self.work_thread.is_alive():
                     return
-                self.work_thread = self.loading_screen_start_work(self.change_mate(mate=True))
+                self.work_thread = self.loading_screen_start_work(
+                    lambda: self.change_mate(mate=True)
+                )
             elif event.ui_element == self.toggle_partner:
                 if self.work_thread is not None and self.work_thread.is_alive():
                     return
-                self.work_thread = self.loading_screen_start_work(self.change_mate(mate=False))
+                self.work_thread = self.loading_screen_start_work(
+                    lambda: self.change_mate(mate=False)
+                )
 
             elif event.ui_element == self.previous_cat_button:
                 if isinstance(Cat.fetch_cat(self.previous_cat), Cat):
@@ -1287,12 +1285,12 @@ class ChooseMateScreen(Screens):
             self.tab_buttons[x].kill()
         self.tab_buttons = {}
 
-        button_rect = ui_scale(pygame.Rect((0, 0), (153, 39)))
+        button_rect = ui_scale(pygame.Rect((0, 0), (133, 39)))
         button_rect.bottomleft = ui_scale_offset((100, 8))
         self.tab_buttons["potential"] = UISurfaceImageButton(
             button_rect,
             "screens.choose_mate.potential",
-            get_button_dict(ButtonStyles.HORIZONTAL_TAB, (153, 39)),
+            get_button_dict(ButtonStyles.HORIZONTAL_TAB, (133, 39)),
             object_id="@buttonstyles_horizontal_tab",
             starting_height=2,
             anchors={"bottom": "bottom", "bottom_target": self.list_frame_image},
@@ -1302,7 +1300,7 @@ class ChooseMateScreen(Screens):
         self.tab_buttons["pot_par"] = UISurfaceImageButton(
             button_rect,
             "screens.choose_mate.pot_par",
-            get_button_dict(ButtonStyles.HORIZONTAL_TAB, (153, 39)),
+            get_button_dict(ButtonStyles.HORIZONTAL_TAB, (143, 39)),
             object_id="@buttonstyles_horizontal_tab",
             starting_height=2,
             anchors={
@@ -1318,7 +1316,7 @@ class ChooseMateScreen(Screens):
             self.tab_buttons["mates"] = UISurfaceImageButton(
                 button_rect,
                 "screens.choose_mate.mates",
-                get_button_dict(ButtonStyles.HORIZONTAL_TAB, (153, 39)),
+                get_button_dict(ButtonStyles.HORIZONTAL_TAB, (73, 39)),
                 object_id="@buttonstyles_horizontal_tab",
                 starting_height=2,
                 anchors={
@@ -1335,7 +1333,7 @@ class ChooseMateScreen(Screens):
             self.tab_buttons["partners"] = UISurfaceImageButton(
                 button_rect,
                 "screens.choose_mate.partners",
-                get_button_dict(ButtonStyles.HORIZONTAL_TAB, (153, 39)),
+                get_button_dict(ButtonStyles.HORIZONTAL_TAB, (103, 39)),
                 object_id="@buttonstyles_horizontal_tab",
                 starting_height=2,
                 anchors={
@@ -1350,10 +1348,11 @@ class ChooseMateScreen(Screens):
             )
             partners_tab_shown = True
 
+        button_rect.bottomleft = ui_scale_offset((7, 8))
         self.tab_buttons["offspring"] = UISurfaceImageButton(
             button_rect,
             "screens.choose_mate.offspring",
-            get_button_dict(ButtonStyles.HORIZONTAL_TAB, (153, 39)),
+            get_button_dict(ButtonStyles.HORIZONTAL_TAB, (103, 39)),
             object_id="@buttonstyles_horizontal_tab",
             starting_height=2,
             anchors={
