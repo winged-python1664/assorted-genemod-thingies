@@ -338,7 +338,7 @@ class SpriteInspectScreen(Screens):
         self.override_dead_lineart = self.the_cat.show_living
         self.acc_shown = self.the_cat.show_accessory
         self.override_not_working = self.the_cat.show_healthy
-        self.hide_white = self.the_cat.show_white
+        self.hide_white = not self.the_cat.show_white
 
         # Make the cat image
         self.make_cat_image()

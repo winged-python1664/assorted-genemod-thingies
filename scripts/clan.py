@@ -730,6 +730,7 @@ class Clan:
             clan_data["leader"] = None
 
         clan_data["leader_predecessors"] = self.leader_predecessors
+        clan_data["all_leader_predecessors"] = self.all_leader_predecessors
 
         # DEPUTY DATA
         if self.deputy:
@@ -738,6 +739,7 @@ class Clan:
             clan_data["deputy"] = None
 
         clan_data["deputy_predecessors"] = self.deputy_predecessors
+        clan_data["all_deputy_predecessors"] = self.all_deputy_predecessors
 
         # PROPHET DATA
         if self.prophet:
@@ -746,6 +748,7 @@ class Clan:
             clan_data["prophet"] = None
         
         clan_data["prophet_predecessors"] = self.prophet_predecessors
+        clan_data["all_prophet_predecessors"] = self.all_prophet_predecessors
 
         # MED CAT DATA
         if self.medicine_cat:
