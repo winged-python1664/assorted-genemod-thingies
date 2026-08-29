@@ -330,11 +330,15 @@ class SpriteInspectScreen(Screens):
                 #     break
 
         # Reset all the toggles
-        self.lifestage = None
-        self.scars_shown = True
-        self.override_dead_lineart = False
-        self.acc_shown = True
-        self.override_not_working = False
+        if self.the_cat.user_life_stage:
+            self.lifestage = self.the_cat.user_life_stage
+        else:
+            self.lifestage = None
+        self.scars_shown = self.the_cat.show_scar
+        self.override_dead_lineart = self.the_cat.show_living
+        self.acc_shown = self.the_cat.show_accessory
+        self.override_not_working = self.the_cat.show_healthy
+        self.hide_white = self.the_cat.show_white
 
         # Make the cat image
         self.make_cat_image()

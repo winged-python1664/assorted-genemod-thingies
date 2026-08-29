@@ -51,6 +51,8 @@ def generate_sprite(
 
     if life_state is not None:
         age = life_state
+    elif life_state is None and cat.user_life_stage and cat.toggles_shown == True:
+        age = cat.user_life_stage
     else:
         if game_setting_get("ageup dead") and cat.dead and cat.age in [CatAge.NEWBORN, CatAge.KITTEN, CatAge.ADOLESCENT]:
             age = CatAge.ADULT
@@ -61,6 +63,8 @@ def generate_sprite(
 
 
     if always_living:
+        dead = False
+    elif not always_living and cat.show_living == True and cat.toggles_shown == True:
         dead = False
     else:
         dead = cat.dead
@@ -73,6 +77,7 @@ def generate_sprite(
         and cat.not_working()
         and age != CatAge.NEWBORN
         and get_config("cat_sprites.sick_sprites")
+        and (not cat.show_healthy and cat.toggles_shown == True)
     ):
         if age in (CatAge.KITTEN, CatAge.ADOLESCENT):
             if age == CatAge.KITTEN:
@@ -1427,13 +1432,17 @@ def generate_sprite(
                 geno.white = ["w", "w"]
                 geno.white_pattern = "No"
                 geno.PhenotypeOutput()
+            elif not hide_white and cat.show_white == False and cat.toggles_shown == True:
+                geno.white = ["w", "w"]
+                geno.white_pattern = "No"
+                geno.PhenotypeOutput()
             chimerapatches = pygame.Surface((sprites.size, sprites.size), pygame.HWSURFACE | pygame.SRCALPHA)
             for pattern in cat.chimerapheno.chimerapattern:
                 chimerapatches.blit(sprites.sprites[pattern + cat_sprite], (0, 0))
             chimerapatches.blit(gen_sprite(geno, age), (0, 0), special_flags=pygame.BLEND_RGB_MULT)
             gensprite.blit(chimerapatches, (0, 0))
 
-        if not scars_hidden:
+        if not scars_hidden and not (cat.show_scar == False and cat.toggles_shown == True):
             for scar in cat.pelt.scars:
                 if scar in cat.pelt.general_scars:
                     sprite_name = (
@@ -1606,7 +1615,7 @@ def generate_sprite(
                     new_sprite.blit(
                         sprites.sprites['aprilfoolslineartdead' + cat_sprite], (0, 0))
 
-        if not scars_hidden:
+        if not scars_hidden and not (cat.show_scar == False and cat.toggles_shown == True):
             for scar in cat.pelt.scars:
                 if scar in cat.pelt.missing_part_scars:
                     sprite_name = f"{sprites.SCAR_MISSING_PART_DATA['spritesheet']}{scar}{cat_sprite}"
@@ -1623,7 +1632,7 @@ def generate_sprite(
         # draw accessories
         from scripts.cat.pelts import Pelt
 
-        if not acc_hidden and cat.pelt.accessory:
+        if not acc_hidden and not (cat.show_accessory == False and cat.toggles_shown == True) and cat.pelt.accessory:
             cat_accessories = cat.pelt.accessory
             categories = [
                 "collar_accessories",
@@ -1750,6 +1759,10 @@ def generate_sprite(
             geno.white = ["w", "w"]
             geno.white_pattern = "No"
             geno.PhenotypeOutput()
+        elif not hide_white and cat.show_white == False and cat.toggles_shown == True:
+            geno.white = ["w", "w"]
+            geno.white_pattern = "No"
+            geno.PhenotypeOutput
         new_sprite = draw_sprite(geno, cat_sprite)
         if cat.phenotype.somatic.get('base', False):
             som_sprite = pygame.Surface((sprites.size, sprites.size), pygame.HWSURFACE | pygame.SRCALPHA)
@@ -1792,6 +1805,7 @@ def update_sprite(cat):
 
     # apply
     cat.sprite = generate_sprite(cat)
+    print("sprite updated. cat-", cat, "sprite-", cat.sprite)
     # update class dictionary
     cat.all_cats[cat.ID] = cat
 

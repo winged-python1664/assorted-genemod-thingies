@@ -88,7 +88,8 @@ def get_kits(
         not surrogate or i not in surrogate)]
     for _par in birth_parents:
         mate_par = []
-        mate_par.extend(_par.mate, _par.partner)
+        mate_par.extend(_par.mate)
+        mate_par.extend(_par.partner)
         if affair_parents and _par in affair_parents:
             continue
         for _m in (mate_par):

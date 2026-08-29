@@ -31,7 +31,6 @@ class Switch(StrEnum):
     root_cat = auto()
     skip_conditions = auto()
     show_history_moons = auto()
-    display_sprite_changes = auto()
     fps = auto()
     war_rel_change_type = auto()
     disallowed_symbol_tags = auto()
@@ -67,7 +66,6 @@ _switches: Dict[str, Union[str, int, bool, list, dict, None]] = {
     "root_cat": None,
     "skip_conditions": [],
     "show_history_moons": False,
-    "display_sprite_changes": False,
     "fps": 30,
     "war_rel_change_type": {},
     "disallowed_symbol_tags": [],

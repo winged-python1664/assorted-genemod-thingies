@@ -86,6 +86,7 @@ class LoadCatFactory(BaseCatFactory):
             show_scar=kwargs.get("show_scar", True),
             show_accessory=kwargs.get("show_accessory", True),
             user_life_stage=kwargs.get("user_life_stage", []),
+            toggles_shown=kwargs.get("toggles_shown", True)
         )
 
         status = cls._convert_status(

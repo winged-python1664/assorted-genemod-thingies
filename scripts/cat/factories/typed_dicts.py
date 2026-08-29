@@ -24,6 +24,7 @@ class DisplayCatTogglesDict(TypedDict):
     show_scar: bool
     show_accessory: bool
     user_life_stage: List[str]
+    toggles_shown: bool
 
 
 class GenderDict(TypedDict, total=False):

@@ -250,6 +250,7 @@ class Cat:
         self.show_scar = display_toggles["show_scar"]
         self.show_accessory = display_toggles["show_accessory"]
         self.user_life_stage = display_toggles["user_life_stage"]
+        self.toggles_shown = display_toggles["toggles_shown"]
 
         # misc
         self.experience = experience
@@ -2879,6 +2880,7 @@ class Cat:
                 "show_scar": self.show_scar,
                 "show_accessory": self.show_accessory,
                 "user_life_stage": self.user_life_stage,
+                "toggles_shown": self.toggles_shown,
                 "favourite": self.favourite,
             }
 

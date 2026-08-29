@@ -535,6 +535,10 @@ class ProfileScreen(Screens):
             elif event.ui_element == self.display_sprite_ages["senior"]:
                 self.change_shown_age("senior")
                 self.build_cat_image()
+            elif event.ui_element == self.checkboxes["show_changes"]:
+                self.checkboxes["show_changes"].toggle()
+                self.the_cat.toggles_shown = self.checkboxes["show_changes"].checked
+                self.build_cat_image()
 
     def screen_switches(self):
         super().screen_switches()
@@ -905,16 +909,7 @@ class ProfileScreen(Screens):
             scale = int((cat_size-9.5)*5)
 
         # Create cat image object
-        self.cat_image = generate_sprite(
-            self.the_cat,
-            life_state=self.valid_life_stages[self.displayed_life_stage],
-            scars_hidden=not self.the_cat.show_scar,
-            acc_hidden=not self.the_cat.show_accessory,
-            always_living=self.the_cat.show_living,
-            disable_sick_sprite=self.the_cat.show_healthy,
-            hide_white=not self.the_cat.show_white,
-            season_override=None
-        )
+        self.cat_image = generate_sprite(self.the_cat)
 
         self.profile_elements["cat_image"] = pygame_gui.elements.UIImage(
             ui_scale(pygame.Rect((100-scale//2, 200-(scale//4 if scale > 0 and self.the_cat.age not in [CatAge.KITTEN, CatAge.NEWBORN] else scale)), (150+scale, 150+scale))),
@@ -2484,13 +2479,6 @@ class ProfileScreen(Screens):
             )
             self.display_background.disable()
 
-            self.display_tab_checkbox = UICheckbox(
-                position=(52, 484),
-                check=Switch.display_sprite_changes,
-                tool_tip_text="screens.profile.sprite_changes_tooltip",
-                manager=MANAGER,
-            )
-
             self.display_sprite_ages["newborn"] = UISurfaceImageButton(
                 ui_scale(pygame.Rect((104, 477), (92, 30))),
                 "general.newborn_profile",
@@ -2553,6 +2541,16 @@ class ProfileScreen(Screens):
             current_life_stage = self.the_cat.user_life_stage
 
         self.display_sprite_ages[current_life_stage].disable()
+
+        for ele in self.show_text:
+            self.show_text[ele].kill()
+
+        self.checkboxes["show_changes"] = UICheckbox(
+            position=(52, 484),
+            check=self.the_cat.toggles_shown,
+            tool_tip_text="screens.profile.sprite_changes_tooltip",
+            manager=MANAGER,
+        )
 
         self.checkboxes["show_living"] = UICheckbox(
             (5, 473),
@@ -3244,7 +3242,6 @@ class ProfileScreen(Screens):
 
         elif self.open_tab == "display":
             self.display_background.kill()
-            self.display_tab_checkbox.kill()
             for i in self.display_sprite_ages:
                 self.display_sprite_ages[i].kill()
             for i in self.checkboxes:

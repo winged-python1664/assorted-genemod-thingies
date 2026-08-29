@@ -145,6 +145,7 @@ class NewCatFactory(BaseCatFactory, ABC):
                 show_scar=True,
                 show_accessory=True,
                 user_life_stage=[],
+                toggles_shown=True,
             ),
             "experience": overrides.get(
                 "experience", cls._get_random_experience(age, moons)
