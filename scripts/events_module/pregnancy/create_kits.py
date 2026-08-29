@@ -82,6 +82,8 @@ def get_kits(
     all_adoptive_parents = []
 
     all_pars = [cat]
+    mate_par = []
+    mate_par.extend(_par.mate, _par.partner)
     if other_cat:
         all_pars += other_cat
     birth_parents = [i for i in all_pars if i and (
@@ -89,7 +91,7 @@ def get_kits(
     for _par in birth_parents:
         if affair_parents and _par in affair_parents:
             continue
-        for _m in (_par.mate, _par.partner):
+        for _m in (mate_par):
             _mcat = Cat.fetch_cat(_m)
             if _mcat not in birth_parents and _m not in all_adoptive_parents and not _mcat.dead:
                 all_adoptive_parents.append(_m)
