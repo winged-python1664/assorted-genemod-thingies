@@ -550,7 +550,7 @@ def _handle_main_birth_event(
                 who_outside = x
             if x.status.group_ID == cat.status.group_ID or not (x.status.is_lost() or x.status.is_exiled()):
                 all_mates_outside = False
-            if len(x.mate, x.partner) > 0:
+            if len(x.mate) + len(x.partner) > 0:
                 both_unmated = False
 
     if surrogate and cat in surrogate:
