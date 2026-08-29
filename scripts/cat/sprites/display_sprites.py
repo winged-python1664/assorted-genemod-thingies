@@ -1805,7 +1805,6 @@ def update_sprite(cat):
 
     # apply
     cat.sprite = generate_sprite(cat)
-    print("sprite updated. cat-", cat, "sprite-", cat.sprite)
     # update class dictionary
     cat.all_cats[cat.ID] = cat
 

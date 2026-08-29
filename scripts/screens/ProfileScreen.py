@@ -503,42 +503,42 @@ class ProfileScreen(Screens):
             if event.ui_element == self.checkboxes["show_living"]:
                 self.checkboxes["show_living"].toggle()
                 self.the_cat.show_living = self.checkboxes["show_living"].checked
-                self.build_cat_image()
+                self.build_cat_image(rebuild_sprite=True)
             elif event.ui_element == self.checkboxes["show_healthy"]:
                 self.checkboxes["show_healthy"].toggle()
                 self.the_cat.show_healthy = self.checkboxes["show_healthy"].checked
-                self.build_cat_image()
+                self.build_cat_image(rebuild_sprite=True)
             elif event.ui_element == self.checkboxes["show_white"]:
                 self.checkboxes["show_white"].toggle()
                 self.the_cat.show_white = self.checkboxes["show_white"].checked
-                self.build_cat_image()
+                self.build_cat_image(rebuild_sprite=True)
             elif event.ui_element == self.checkboxes["show_scar"]:
                 self.checkboxes["show_scar"].toggle()
                 self.the_cat.show_scar = self.checkboxes["show_scar"].checked
-                self.build_cat_image()
+                self.build_cat_image(rebuild_sprite=True)
             elif event.ui_element == self.checkboxes["show_accessory"]:
                 self.checkboxes["show_accessory"].toggle()
                 self.the_cat.show_accessory = self.checkboxes["show_accessory"].checked
-                self.build_cat_image()
+                self.build_cat_image(rebuild_sprite=True)
             elif event.ui_element == self.display_sprite_ages["newborn"]:
                 self.change_shown_age("newborn")
-                self.build_cat_image()
+                self.build_cat_image(rebuild_sprite=True)
             elif event.ui_element == self.display_sprite_ages["kitten"]:
                 self.change_shown_age("kitten")
-                self.build_cat_image()
+                self.build_cat_image(rebuild_sprite=True)
             elif event.ui_element == self.display_sprite_ages["adolescent"]:
                 self.change_shown_age("adolescent")
-                self.build_cat_image()
+                self.build_cat_image(rebuild_sprite=True)
             elif event.ui_element == self.display_sprite_ages["adult"]:
                 self.change_shown_age("adult")
-                self.build_cat_image()
+                self.build_cat_image(rebuild_sprite=True)
             elif event.ui_element == self.display_sprite_ages["senior"]:
                 self.change_shown_age("senior")
-                self.build_cat_image()
+                self.build_cat_image(rebuild_sprite=True)
             elif event.ui_element == self.checkboxes["show_changes"]:
                 self.checkboxes["show_changes"].toggle()
                 self.the_cat.toggles_shown = self.checkboxes["show_changes"].checked
-                self.build_cat_image()
+                self.build_cat_image(rebuild_sprite=True)
 
     def screen_switches(self):
         super().screen_switches()
@@ -865,7 +865,7 @@ class ProfileScreen(Screens):
 
         self.build_cat_image()
 
-    def build_cat_image(self):
+    def build_cat_image(self, rebuild_sprite=False):
         if "cat_image" in self.profile_elements:
             self.profile_elements["cat_image"].kill()
 
@@ -919,6 +919,9 @@ class ProfileScreen(Screens):
             manager=MANAGER,
         )
         self.profile_elements["cat_image"].disable()
+
+        if rebuild_sprite == True:
+            self.the_cat.pelt.rebuild_sprite = True
 
     def generate_column1(self, the_cat):
         """Generate the left column information"""
