@@ -305,7 +305,7 @@ class Clan:
         self.all_other_clans = []
 
         if self.instructor.status.rank == CatRank.LEADER:
-            self.all_leader_predecessors.append(self.instructor.ID).append(",")
+            self.all_leader_predecessors.append(self.instructor.ID)
         self.all_instructors.append(self.instructor.ID)
 
         key_copy = tuple(Cat.all_cats.keys())
@@ -505,7 +505,7 @@ class Clan:
         if self.leader:
             self.leader.generate_lead_ceremony()
         if self.instructor.status.rank == CatRank.LEADER:
-            self.all_leader_predecessors.append(self.instructor.ID).append(",")
+            self.all_leader_predecessors.append(self.instructor.ID)
             self.instructor.generate_lead_ceremony()
         if self.clancount == "multiclan":
             for clan in self.all_other_clans:
@@ -1831,7 +1831,7 @@ class OtherClan:
             )
 
             if self.instructor.status.rank == CatRank.LEADER:
-                clan.all_leader_predecessors.append(self.instructor.ID).append(",")
+                clan.all_leader_predecessors.append(self.instructor.ID)
                 self.instructor.generate_lead_ceremony()
 
             self.instructor.dead_for = randint(20, 200)
@@ -1870,7 +1870,7 @@ class OtherClan:
             self.instructor.status.group_history.insert(0, {"rank": instructor_rank, "group": self.group_ID, "moons_as": self.instructor.moons})
 
             if self.instructor.status.rank == CatRank.LEADER:
-                self.all_leader_predecessors.append(self.instructor.ID).append(",")
+                self.all_leader_predecessors.append(self.instructor.ID)
                 self.instructor.generate_lead_ceremony()
 
             member_amount = get_config("clan_creation.neighbourclan_cats")
