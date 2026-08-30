@@ -844,7 +844,8 @@ def relationship_text_adjust(mate_string: str, cat_from, cat_to) -> str:
             for mate_id in cat_from.mate
             if cat_from.fetch_cat(mate_id) is not None
             and cat_from.fetch_cat(mate_id).status.alive_in_player_clan
-            + str(cat_from.fetch_cat(partner_id).name)
+            +
+            str(cat_from.fetch_cat(partner_id).name)
             for partner_id in cat_from.partner
             if cat_from.fetch_cat(partner_id) is not None
             and cat_from.fetch_cat(partner_id).status.alive_in_player_clan

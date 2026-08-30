@@ -166,15 +166,22 @@ def get_second_parent(cat, clan):
     # randomly select a mate/partner of given cat
     samesex = get_clan_setting("same sex birth")
 
-    pot_par = [cat.mate, cat.partner]
+    pot_par = []
+    for x in cat.mate:
+        pot_par.append(x)
+    for y in cat.partner:
+        pot_par.append(y)
 
     mate = None
     if len(pot_par) > 0:
         mate = []
         if get_clan_setting('multisire'):
-            mate_copy = [cat.mate, cat.partner]
+            mate_copy = cat.mate
+            partner_copy = cat.partner
             for x in mate_copy:
                 mate.append(cat.fetch_cat(x))
+            for y in partner_copy:
+                mate.append(cat.fetch_cat(y))
         else:
             mate.append(cat.fetch_cat(choice(pot_par)))
 
