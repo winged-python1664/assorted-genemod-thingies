@@ -2409,11 +2409,11 @@ class ProfileScreen(Screens):
 
             if get_clan_setting("showyears"):
                 text_list.append(
-                    join_age=self.the_cat.age + f" ({years} {year}{moons})"
+                    self.the_cat.age + f" ({years} {year}{moons})"
                 )
             else:
                 text_list.append(
-                    join_age=i18n.t(insert, moons=i18n.t("general.moons_age", count=moons_with))
+                    i18n.t(insert, moons=i18n.t("general.moons_age", count=moons_with))
                 )
 
             # infected or festering
