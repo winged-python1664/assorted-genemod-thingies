@@ -7,6 +7,7 @@ import i18n
 from scripts.cat.cats import Cat
 from scripts.cat.enums import CatCompatibility
 from scripts.cat_relations.relationship import Relationship, create_one_relationship
+from scripts.clan_package.settings import get_clan_setting
 from scripts.events_module.event_information import EventInformation
 from scripts.game_structure import game
 from scripts.game_structure.localization import load_lang_resource
@@ -272,6 +273,7 @@ def _handle_new_partner_events(cat: Cat):
         Cat.fetch_cat(x)
         for x in cat.relationships
         if x not in cat.partner
+        and x not in cat.mate if get_clan_setting("mutually exclusive mates partnerrs")
         and Cat.fetch_cat(x).status.group_ID == cat.status.group_ID
         and cat.is_potential_partner(Cat.fetch_cat(x))
     ]
@@ -309,6 +311,10 @@ def _attempt_confession(cat_from: Cat) -> bool:
         return False
 
     cat_to: Cat = chosen_relationship.cat_to
+
+    if get_clan_setting("mutually exclusive mates partners"):
+        if cat_to in cat_from.mates:
+            return False
 
     # need to be in the same "place"
     if cat_to.status.group != cat_from.status.group:

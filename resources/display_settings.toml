@@ -111,6 +111,7 @@
         block_litters_warrior = false
     
     [clan.relation]
+        "mutually exclusive mates partners" = true
         affair = false
         "unmated parentage" = false
         "same sex birth" = false
