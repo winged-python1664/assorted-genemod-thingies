@@ -97,7 +97,13 @@ def check_second_parent(cat: Cat, second_parent: Cat) -> tuple[bool, bool]:
     returns:
     parent can have kits, kits are adopted
     """
-    pot_par = (cat.mate, cat.partner)
+    pot_par = []
+
+    for x in cat.mate:
+        pot_par.append(x)
+    for y in cat.partner:
+        pot_par.append(y)
+
     surrogates = get_clan_setting("surrogates")
     same_sex_birth = get_clan_setting("same sex birth")
     same_sex_adoption = get_clan_setting("same sex adoption")
@@ -475,15 +481,11 @@ def handle_outside_parent(cat, clan, amount=0, background_category= "1"):
                                                     gender=('fem' if cat_is_amab(cat) else 'masc') if not get_clan_setting('same sex birth') else None,
                                                     outside=True,
                                                     is_parent=True)[0]
-                outside_parent.get_new_thought(CatThought.OUTSIDE_DAM if background_category == "2" else CatThought.OUTSIDE_SIRE, other_cat=cat)
+                get_new_thought(outside_parent, CatThought.OUTSIDE_DAM if background_category == "2" else CatThought.OUTSIDE_SIRE, other_cat=cat)
                 outside_parent.birth_cooldown = get_config("pregnancy.birth_cooldown")
                 if random() < get_config("mates.outsider_litter_mates_chance") and get_config("mates.allow_mating"):
-                    if random() < 0.8:
-                        outside_parent[0].set_mate(cat)
-                        cat.set_mate(outside_parent[0])
-                    else:
-                        outside_parent[0].set_partner(cat)
-                        cat.set_partner(outside_parent[0])
+                    outside_parent[0].set_mate(cat)
+                    cat.set_mate(outside_parent[0])
 
                 outside_parents.append(outside_parent)
 

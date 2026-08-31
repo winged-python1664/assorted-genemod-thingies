@@ -198,7 +198,13 @@ class LeaderDenScreen(Screens):
                     and game.clan.deputy.status.alive_in_player_clan
                 ):
                     self.helper_cat = game.clan.deputy  # if lead is sick, dep helps
-            if not self.helper_cat:  # if dep is sick, med cat helps
+            elif game.clan.prophet:
+                if (
+                    not game.clan.prophet.not_working()
+                    and game.clan.prophet.status.alive_in_player_clan
+                ):
+                    self.helper_cat = game.clan.prophet # if dep is sick, prophet helps
+            if not self.helper_cat:  # if prophet is sick, med cat helps
                 meds = find_alive_cats_with_rank(
                     Cat,
                     ranks=[CatRank.MEDICINE_CAT, CatRank.MEDICINE_APPRENTICE],

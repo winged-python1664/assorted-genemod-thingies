@@ -498,7 +498,11 @@ class RoleScreen(Screens):
                 self.promote_deputy.enable()
             else:
                 self.promote_deputy.disable()
-            self.promote_prophet.disable()
+
+            if prophet_invalid:
+                self.promote_prophet.enable()
+            else:
+                self.promote_prophet.disable()
 
             self.switch_warrior.enable()
             self.switch_med_cat.enable()
@@ -521,7 +525,11 @@ class RoleScreen(Screens):
                 self.promote_deputy.enable()
             else:
                 self.promote_deputy.disable()
-            self.promote_prophet.disable()
+
+            if prophet_invalid:
+                self.promote_prophet.enable()
+            else:
+                self.promote_prophet.disable()
 
             self.switch_warrior.enable()
             self.switch_med_cat.enable()
@@ -544,7 +552,11 @@ class RoleScreen(Screens):
                 self.promote_deputy.enable()
             else:
                 self.promote_deputy.disable()
-            self.promote_prophet.disable()
+
+            if prophet_invalid:
+                self.promote_prophet.enable()
+            else:
+                self.promote_prophet.disable()
 
             # ADULT CAT ROLES
             self.switch_warrior.enable()
