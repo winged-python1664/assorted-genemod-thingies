@@ -313,7 +313,7 @@ def _attempt_confession(cat_from: Cat) -> bool:
     cat_to: Cat = chosen_relationship.cat_to
 
     if get_clan_setting("mutually exclusive mates partners"):
-        if cat_to in cat_from.mates:
+        if cat_to in cat_from.mate:
             return False
 
     # need to be in the same "place"
