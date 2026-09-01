@@ -25,6 +25,7 @@ from scripts.game_structure import constants
 from scripts.game_structure.screen_settings import MANAGER
 from scripts.ui.elements.sprite_button import UISpriteButton
 from scripts.ui.elements.image_button import UIImageButton
+from ..ui.elements.checkbox import UICheckbox
 from scripts.ui.elements.surface_image_button import UISurfaceImageButton
 from scripts.screens.Screens import Screens
 from scripts.ui.generate_box import get_box, BoxStyles
@@ -79,8 +80,7 @@ class MoonpoolScreen(Screens):
         self.focus_cat_images = {}
         self.focus_cat_info = {}
 
-        self.show_text = None
-        self.edit_text = None
+        self.checkboxes = {}
         self.message_elements = {}
         self.message_container = None
         self.show_message_elements = {}
@@ -125,37 +125,43 @@ class MoonpoolScreen(Screens):
             elif event.ui_element in self.sc_cat_buttons.values():
                 self.focus_sc_cat = event.ui_element.return_cat_object()
                 self.update_cat_focus()
-            elif event.ui_element == self.show_text:
-                self.editing_message = False
-                self.user_message_text = sub(
-                    r"[^A-Za-z0-9<->/.()*'&#!?,| _+=@~:;[]{}%$^`]+",
-                    "",
-                    self.edit_message_elements["message"].get_text(),
-                )
-                self.user_cat_message_text = sub(
-                    r"[^A-Za-z0-9<->/.()*'&#!?,| _+=@~:;[]{}%$^`]+",
-                    "",
-                    self.edit_message_elements["cat"].get_text(),
-                )
-                self.record_user_text()
-                self.switch_text_mode()
-                self.cat_selection_elements["clans"].enable()
-                self.cat_selection_elements["sc"].enable()
-            elif event.ui_element == self.edit_text:
-                self.editing_message = True
-                self.message_buttons["sent"].hide()
-                self.message_buttons["generic"].hide()
-                self.cat_selection_elements["clans"].disable()
-                self.cat_selection_elements["sc"].disable()
-                self.switch_text_mode()
-            elif event.ui_element == self.message_buttons["generic"]:
-                self.message_buttons["generic"].hide()
-                self.message_buttons["sent"].show()
-                self.screen_elements["notice_text"].set_text(
-                    f"screens.moonpool.notice_sent_{self.moonthing}",
-                    text_kwargs={"m_c": self.focus_clan_cat},
-                )
-                self.handle_message()
+            elif event.ui_element == self.checkboxes["edit_text"]:
+                self.editing_message = self.checkboxes["edit_text"].checked
+                if self.editing_message == False:
+                    self.update_text_focus()
+                    self.edit_message_elements["message"].show()
+                    self.edit_message_elements["cat"].show()
+
+                    self.show_message_elements["message"].hide()
+                    self.show_message_elements["cat"].hide()
+
+                    self.message_buttons["send"].disable()
+
+                    self.cat_selection_elements["clans"].disable()
+                    self.cat_selection_elements["sc"].disable()
+                else:
+                    self.user_message_text = sub(
+                        r"[^A-Za-z0-9<->/.()*'&#!?,| _+=@~:;[{}%$^`]]+",
+                        "",
+                        self.edit_message_elements["message"].get_text(),
+                    )
+                    self.user_cat_message_text = sub(
+                        r"[^A-Za-z0-9<->/.()*'&#!?,| _+=@~:;[{}%$^`]]+",
+                        "",
+                        self.edit_message_elements["cat"].get_text(),
+                    )
+                    self.record_user_text()
+                    self.update_text_focus()
+                    self.edit_message_elements["message"].hide()
+                    self.edit_message_elements["cat"].hide()
+
+                    self.show_message_elements["message"].show()
+                    self.show_message_elements["cat"].show()
+
+                    self.message_buttons["send"].enable()
+                    self.cat_selection_elements["clans"].enable()
+                    self.cat_selection_elements["sc"].enable()
+                self.checkboxes["edit_text"].toggle()
 
     def record_user_text(self):
         set_clan_setting(
@@ -628,81 +634,24 @@ class MoonpoolScreen(Screens):
             anchors={"left": "left", "left_target": self.show_message_elements["message"]},
         )
 
-        self.show_text = UIImageButton(
-            ui_scale(pygame.Rect((650, 31), (34, 34))),
-            "",
-            object_id="@unchecked_checkbox",
+        self.checkboxes["edit_text"] = UICheckbox(
+            position=(38, 35),
+            manager=MANAGER,
             container=self.text_selection_container,
-            tool_tip_text="screens.moonpool.save_message",
             starting_height=2,
-            manager=MANAGER,
-            visible=False,
+            check=self.editing_message,
+            tool_tip_text="screens.moonpool.save_message"
         )
-        self.edit_text = UIImageButton(
-            ui_scale(pygame.Rect((650, 31), (34, 34))),
-            "",
-            object_id="@checked_checkbox",
+
+        self.message_buttons["send"] = UISurfaceImageButton(
+            ui_scale(pygame.Rect((38, 15), (60, 30))),
+            "screens.moonpool.send_message",
+            get_button_dict(ButtonStyles.SQUOVAL, (60, 30)),
+            object_id="@buttonstyles_squoval",
+            manager=MANAGER,
             container=self.text_selection_container,
-            tool_tip_text="screens.moonpool.edit_message",
-            starting_height=2,
-            tool_tip_text_kwargs={
-                "m_c": self.focus_clan_cat,
-            },
-            manager=MANAGER,
+            anchors={"top_target": self.checkboxes["edit_text"]},
         )
-
-        self.message_buttons["generic"] = UIImageButton(
-            ui_scale(pygame.Rect((35, 35), (34, 34))),
-            "",
-            object_id="@unchecked_checkbox",
-            container=self.text_selection_container,
-            tool_tip_text="screens.moonpool.message_generic",
-            starting_height=3,
-            manager=MANAGER,
-            tool_tip_text_kwargs={
-                "m_c": self.focus_clan_cat,
-                "r_c": self.focus_sc_cat,
-            }
-        )
-        self.message_buttons["sent"] = UIImageButton(
-            ui_scale(pygame.Rect((35, 35), (34, 34))),
-            "",
-            object_id="@checked_checkbox",
-            container=self.text_selection_container,
-            tool_tip_text="screens.moonpool.message_sent",
-            starting_height=3,
-            manager=MANAGER,
-            tool_tip_text_kwargs={
-                "m_c": self.focus_clan_cat,
-                "r_c": self.focus_sc_cat,
-            },
-            visible=False,
-        )
-
-    def switch_text_mode(self):
-        if self.editing_message == True:
-            self.update_text_focus()
-            self.edit_message_elements["message"].show()
-            self.edit_message_elements["cat"].show()
-
-            self.show_message_elements["message"].hide()
-            self.show_message_elements["cat"].hide()
-
-            self.edit_text.hide()
-            self.show_text.show()
-            self.message_buttons["generic"].hide()
-            self.message_buttons["sent"].hide()
-        else:
-            self.update_text_focus()
-            self.edit_message_elements["message"].hide()
-            self.edit_message_elements["cat"].hide()
-
-            self.show_message_elements["message"].show()
-            self.show_message_elements["cat"].show()
-
-            self.show_text.hide()
-            self.edit_text.show()
-            self.message_buttons["sent"].hide()
 
     def open_clans_tab(self):
         self.cat_selection_container.show()
