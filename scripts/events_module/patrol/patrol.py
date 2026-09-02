@@ -506,9 +506,6 @@ class Patrol:
                 qpr_patrols.copy(), find_romance=False, find_qpr=True
             )
 
-        if chosen_patrol and not self._decide_if_qpr(chosen_patrol):
-            chosen_patrol = None
-
         # if no romantic patrol possible, we get a normal one!
         if not chosen_patrol:
             chosen_patrol = self._get_valid_patrol(
