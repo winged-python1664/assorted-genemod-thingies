@@ -240,9 +240,15 @@ def _retrieve_secret_kittens(cat, other_cat, surrogate, clan):
     if len(kits) > 0:
         cats_involved = [cat.ID]
         cat.birth_cooldown = birth_cooldown
+        pot_par = []
+
+        for x in cat.mate:
+            pot_par.append(x)
+        for y in cat.partner:
+            pot_par.append(y)
         if surrogate:
             cats_involved.append(pregnant_cat.ID)
-            
+
             get_injured(pregnant_cat, "recovering from birth", event_triggered=True)
             pregnant_cat.injuries["recovering from birth"]["risks"] = []
             print_event = i18n.t(
@@ -250,7 +256,7 @@ def _retrieve_secret_kittens(cat, other_cat, surrogate, clan):
                 name=cat.name,
                 insert=i18n.t("conditions.pregnancy.kit_amount", count=len(kits)),
             )
-            for p in (cat.mate, cat.partner):
+            for p in pot_par:
                 par = Cat.fetch_cat(p)
                 par.birth_cooldown = birth_cooldown
         else:
