@@ -10733,8 +10733,8 @@
         ],
         "chance_of_success": 50,
         "patrol_art": "cat_sprites/gen_running_WrWr",
-        "intro_text": "p_l and r_c0 set out to hunt together.",
-        "decline_text": "They are called back to camp to attend to other duties.",
+        "intro_strings": "p_l and r_c0 set out to hunt together.",
+        "decline_strings": "They are called back to camp to attend to other duties.",
         "success_outcomes": [
             {
                 "frequency": 4,
