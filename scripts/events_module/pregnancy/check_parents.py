@@ -303,13 +303,21 @@ def handle_surrogate(cat, other_cats, clan):
     only_clanmate = get_clan_setting("only inclan surrogates")
     mate = []
 
-    pot_par = (cat.mate, cat.partner)
+    pot_par = []
+
+    for x in cat.mate:
+        pot_par.append(x)
+    for y in cat.partner:
+        pot_par.append(y)
 
     # gather up mates to participate in the *selection* ig
     if len(pot_par) > 0:
-        mate_copy = cat.mate, cat.partner
+        mate_copy = cat.mate
+        partner_copy = cat.partner
         for x in mate_copy:
             mate.append(cat.fetch_cat(x))
+        for y in partner_copy:
+            mate.append(cat.fetch_cat(y))
 
     all_cats = [cat] + mate
     if other_cats[1:]:
