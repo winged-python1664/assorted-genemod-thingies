@@ -337,11 +337,11 @@ def ongoing_event_text_adjust(Cat, text, clan=None, other_clan_name=None):
     :param other_clan_name: the other Clan's name if another Clan is involved
     """
     cat_dict = {}
-    if "lead_name" in text:
+    if "lead_name" in text and clan.leader:
         cat_dict["lead_name"] = (str(clan.leader.name), choice(clan.leader.pronouns))
-    if "dep_name" in text:
+    if "dep_name" in text and clan.deputy:
         cat_dict["dep_name"] = (str(clan.deputy.name), choice(clan.deputy.pronouns))
-    if "prophet_name" in text:
+    if "prophet_name" in text and clan.prophet:
         cat_dict["prophet_name"] = (str(clan.prophet.name), choice(clan.prophet.pronouns))
     if "med_name" in text:
         meds = find_alive_cats_with_rank(Cat, [CatRank.MEDICINE_CAT, CatRank.PROPHET], working=True, clan=clan.group_ID)
