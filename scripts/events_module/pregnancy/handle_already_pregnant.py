@@ -340,7 +340,7 @@ def handle_two_moon_pregnant(cat: Cat, clan):
         mate_is_med = [mate_id for mate_id in (cat.mate) if mate_id in meds and partner_id for partner_id in (cat.partner) if partner_id in meds]
         if not meds or cat in meds or len(mate_is_med) > 0:
             for event in possible_events:
-                if (CatRank.MEDICINE_CAT, CatRank.PROPHET) in event:
+                if (CatRank.MEDICINE_CAT) in event or (CatRank.PROPHET) in event:
                     possible_events.remove(event)
 
         if cat.status.is_outsider:
