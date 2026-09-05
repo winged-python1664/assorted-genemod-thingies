@@ -604,7 +604,7 @@ def _current_partners_allow_new_partner(
             ):
                 return False
 
-        if [partner] in cat_from.relationships and cat_from.ID in partner.relationships:
+        if partner in cat_from.relationships and cat_from.ID in partner.relationships:
             if not cat_from.relationships[partner_id].relationship_qualifies(
                 current_to_new_condition
             ) or not partner.relationships[cat_from.ID].relationship_qualifies(
