@@ -1258,7 +1258,7 @@ def queen_influence(cat):
                 affect_personality[0],
                 affect_personality[1],
             )
-            if cat.personality.trait != personality and (not cat.history.prev_pers or cat.personality.trait != cat.history.prev_pers[-1]):
+            if cat.personality.trait != personality and (not cat.history.prev_pers or personality != cat.history.prev_pers[-1]):
                 cat.history.prev_pers.append(personality)
         if affect_skills:
             cat.history.add_skill_queen_influence(
@@ -2190,9 +2190,7 @@ def handle_outbreaks(cat, clan):
                 population.append(n)
                 weight = 1 / (0.75 * n)  # Lower chance for more infected cats
                 weights.append(weight)
-            infected_count = random.choices(population, weights=weights)[
-                0
-            ]  # the infected..
+            infected_count = random.choices(population, weights=weights)[0]  # the infected..
 
             infected_names = []
             involved_cats = []

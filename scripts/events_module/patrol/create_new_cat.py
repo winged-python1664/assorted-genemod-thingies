@@ -23,6 +23,7 @@ from scripts.cat.microservices.conditions import (
     get_injured,
     get_permanent_condition,
 )
+from scripts.events_module.event_filters import cat_for_event
 from scripts.config import get_config
 from scripts.events_module.consequences import change_relationship_values
 from scripts.events_module.parameter_dicts import InvolvedCatDict
@@ -150,19 +151,19 @@ def updated_create_new_cat(
             or status.get("social") == CatSocial.CLANCAT and not status.get("group_ID")
         ):
             status["group_ID"] = _get_id_for_group(
-                [CatGroup.OTHER_CLAN], involved_cats, other_clan
+                [CatGroup.OTHER_CLAN], involved_cats, other_clan, clan
             )
 
     if option_dict.get("group"):
         status["group_ID"] = _get_id_for_group(
-            option_dict["group"], involved_cats, other_clan
+            option_dict["group"], involved_cats, other_clan, clan
         )
 
     if not status.get("rank") and not status.get("age"):
         # if no group was given either, then we just pick either no group or other clan
         if not option_dict.get("group") and not status.get("group_ID"):
             status["group_ID"] = _get_id_for_group(
-                ["no_group", CatGroup.OTHER_CLAN], involved_cats, other_clan
+                ["no_group", CatGroup.OTHER_CLAN] if game.clan.clancount == "singleclan" else ["no_group"], involved_cats, other_clan, clan
             )
 
         # then we find an appropriate rank for that group
@@ -289,11 +290,11 @@ def updated_create_new_cat(
 
         # PAST STATUS
         _assign_past_status_and_standing(
-            created_cat, option_dict, involved_cats, other_clan
+            created_cat, option_dict, involved_cats, other_clan, clan
         )
 
         # CURRENT STANDING
-        _assign_current_standing(created_cat, option_dict, involved_cats, other_clan)
+        _assign_current_standing(created_cat, option_dict, involved_cats, other_clan, clan)
 
         # TRAIT AND SKILL
         _assign_stats(created_cat, option_dict)
@@ -586,11 +587,11 @@ def _assign_stats(created_cat, option_dict):
 
 
 def _assign_current_standing(
-    created_cat, option_dict, involved_cats, other_clan: OtherClan
+    created_cat, option_dict, involved_cats, other_clan: OtherClan, clan
 ):
     if option_dict.get("standing", {}).get("currently"):
         group = _get_id_for_group(
-            option_dict["standing"]["group"], involved_cats, other_clan
+            option_dict["standing"]["group"], involved_cats, other_clan, clan
         )
 
         created_cat.status.change_standing(
@@ -600,7 +601,7 @@ def _assign_current_standing(
 
 
 def _assign_past_status_and_standing(
-    created_cat, option_dict, involved_cats, other_clan: OtherClan
+    created_cat, option_dict, involved_cats, other_clan: OtherClan, clan
 ):
     status = StatusDict()
     if option_dict.get("past_status"):
@@ -619,13 +620,13 @@ def _assign_past_status_and_standing(
             or status.get("social") == CatSocial.CLANCAT
         ):
             status["group_ID"] = _get_id_for_group(
-                [CatGroup.OTHER_CLAN], involved_cats, other_clan
+                [CatGroup.OTHER_CLAN], involved_cats, other_clan, clan
             )
 
         created_cat.status.generate_new_status(**status)
     if option_dict.get("standing", {}).get("past"):
         group = _get_id_for_group(
-            option_dict["standing"]["group"], involved_cats, other_clan
+            option_dict["standing"]["group"], involved_cats, other_clan, clan
         )
 
         created_cat.status.change_standing(
@@ -641,7 +642,8 @@ def _assign_past_status_and_standing(
     # we do this after the past standing is applied in order to avoid any overwriting of memberships
     if option_dict.get("past_status"):
         if option_dict.get("group"):
-            group = _get_id_for_group(option_dict["group"], involved_cats, other_clan)
+            group = _get_id_for_group(
+                option_dict["group"], involved_cats, other_clan, clan)
 
             created_cat.status.add_to_group(
                 new_group_ID=group,
@@ -657,7 +659,7 @@ def _assign_past_status_and_standing(
 
 
 def _get_id_for_group(
-    group_list: list[str], involved_cats: dict[str, Cat], other_clan: OtherClan
+    group_list: list[str], involved_cats: dict[str, Cat], other_clan: OtherClan, clan
 ) -> str:
     possible_groups = []
 
@@ -677,7 +679,7 @@ def _get_id_for_group(
     for ID, group in game.used_group_IDs.items():
         if group in group_list:
             # only allow this event's chosen other clan
-            if group == CatGroup.OTHER_CLAN and other_clan and ID != other_clan.group_ID:
+            if group == CatGroup.OTHER_CLAN and (other_clan and ID != other_clan.group_ID or clan and ID == clan.group_ID):
                 continue
             possible_groups.append(ID)
 
@@ -726,7 +728,7 @@ def updated_find_clan_cats(option_dict: InvolvedCatDict, involved_cats: dict[str
         if "clancat" in option_dict["status"]:
             status = [r for r in option_dict["status"] if r != "clancat"]
         else:
-            status = [option_dict["status"]]
+            status = option_dict["status"]
     if option_dict.get("age"):
         age = option_dict["age"]
 
@@ -800,10 +802,13 @@ def updated_find_clan_cats(option_dict: InvolvedCatDict, involved_cats: dict[str
                     del parents[par_id]
             all_clan_cats = [Cat.fetch_cat(par_id) for par_id in parents.keys()]
         else:
-            age_filtered = []
-            for a in age:
-                age_filtered += [cat for cat in all_clan_cats if cat.age.value == a]
-            all_clan_cats = age_filtered
+            all_clan_cats = cat_for_event(
+                constraint_dict={"age": age},
+                possible_cats=all_clan_cats,
+                tags=[],
+                return_id=False,
+                return_list=True
+            )
         
         all_clan_cats_status = [i for i in all_clan_cats if i in status_filtered]
         if all_clan_cats_status:

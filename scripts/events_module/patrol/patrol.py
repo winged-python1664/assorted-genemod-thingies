@@ -4,8 +4,8 @@ import logging
 import random
 import statistics
 from os.path import exists as path_exists
-from random import choice, randint, choices
-from typing import List, Tuple, Optional, Union
+from random import choice, randint, choices, sample
+from typing import List, Tuple, Optional, Union, Literal, TypedDict
 
 import pygame
 
@@ -15,6 +15,7 @@ from scripts.clan_package.settings import get_clan_setting
 from scripts.clan_package.get_clan_cats import get_living_clan_cat_count
 from scripts.cat_relations.enums import RelType
 from scripts.clan import get_temper_alignment
+from scripts.clan_resources.point_of_interest import get_poi_from_constraints
 from scripts.config import get_config
 from scripts.events_module.consequences import gather_cat_objects
 from scripts.events_module.event_filters import (
@@ -39,7 +40,6 @@ from scripts.events_module.text_pool_event.check_general_constraints import (
 from scripts.events_module.text_pool_event.event_retrieval import get_valid_event
 from scripts.events_module.text_pool_event.find_involved_cats import find_cats
 from scripts.events_module.text_pool_event.text_pool_event import TextPoolEvent
-from scripts.config import get_config
 from scripts.game_structure import game
 from scripts.game_structure.game.settings import game_setting_get
 from scripts.special_dates import SpecialDate, is_today
@@ -95,10 +95,10 @@ class Patrol:
         """Holds all the cats that are on the patrol"""
         self.involved_cats: dict[str, Union[list[Cat], Cat]] = {}
         """Cats directly involved and referenced in the event. Keys are their text abbreviation, values are the associated cat objects"""
-        self.outcome_cats: dict[PatrolOutcome, dict] = {
-            PatrolOutcome.SUCCESS: {},
-            PatrolOutcome.FAILURE: {},
-        }
+        self.outcome_cats: TypedDict(
+            "outcome_cats", {"success": dict[str, Cat], "failure": dict[str, Cat]}
+        ) = {"success": {}, "failure": {}}
+        self.chosen_poi = None
 
     def begin_patrol(self, patrol_cats: List[Cat], patrol_type: str, clan) -> str:
         """
@@ -131,6 +131,14 @@ class Patrol:
         self.patrol_event = self._get_possible_patrol(patrol_type)
         self._create_needed_cats()
 
+        if self.patrol_event.poi:
+            self.chosen_poi = get_poi_from_constraints(
+                self.patrol_event.poi.get("name"),
+                self.patrol_event.poi.get("tags"),
+                self.patrol_event.poi.get("category"),
+                clan=self.clan.group_ID
+            )
+
         # Return text adjusted patrol intro
         return event_text_adjust(
             Cat,
@@ -138,6 +146,7 @@ class Patrol:
             involved_cat_dict=self.involved_cats,
             clan=self.clan,
             other_clan=self.other_clan,
+            chosen_poi=self.chosen_poi,
         )
 
     def proceed_patrol(
@@ -157,6 +166,7 @@ class Patrol:
                         involved_cat_dict=self.involved_cats,
                         clan=self.clan,
                         other_clan=self.other_clan,
+                        chosen_poi=self.chosen_poi,
                     ),
                     "",
                     [],
@@ -261,7 +271,7 @@ class Patrol:
         self.involved_cats["patrol_cats"] = patrol_cats
         # some_patrol will be a random assortment of the patrol cats, but not 1 nor all
         if len(patrol_cats) >= 3:
-            self.involved_cats["some_patrol"] = choices(
+            self.involved_cats["some_patrol"] = sample(
                 patrol_cats,
                 k=randint(min(2, len(patrol_cats)), min(5, len(patrol_cats) - 1)),
             )
@@ -708,7 +718,7 @@ class Patrol:
         outside_cats = [
             c
             for c in Cat.all_cats_list
-            if (c.status.is_other_clancat or c.status.is_outsider) and not c.dead
+            if (c.status.group_ID != self.clan.group_ID or c.status.is_outsider) and not c.dead
         ]
         involved_cats = self.outcome_cats[
             PatrolOutcome.SUCCESS if success else PatrolOutcome.FAILURE
@@ -737,6 +747,7 @@ class Patrol:
             involved_cats,
             self.clan,
             self.other_clan,
+            self.chosen_poi,
             self.patrol_event.tags,
         ) + (self.get_patrol_art(chosen_outcome),)
 

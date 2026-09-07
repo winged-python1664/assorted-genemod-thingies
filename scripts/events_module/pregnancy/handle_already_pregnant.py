@@ -1,4 +1,4 @@
-from random import choices, choice, randint, random
+from random import choices, choice, randint, random, sample
 from typing import Optional, Dict, List
 
 import i18n
@@ -481,7 +481,7 @@ def _get_affair_visibility_from_pregnancy(
 def _get_cheated_mate(subject_cat: Cat, include_dead: bool = False):
     """Gets cheating cat's mate for the events"""
     mates = []
-    for mate_id in choices(subject_cat.mate, subject_cat.partner):
+    for mate_id in subject_cat.mate:
         mate = Cat.fetch_cat(mate_id)
         if not mate or mate.status.is_outsider:
             continue
@@ -489,6 +489,16 @@ def _get_cheated_mate(subject_cat: Cat, include_dead: bool = False):
             mates.append(mate)
         if not include_dead and not mate.dead:
             mates.append(mate)
+    for partner_id in subject_cat.partner:
+        partner = Cat.fetch_cat(partner_id)
+        if partner_id in subject_cat.mate:
+            continue
+        if not partner or partner.status.is_outsider:
+            continue
+        if include_dead and partner.dead:
+            mates.append(partner)
+        if not include_dead and not partner.dead:
+            mates.append(partner)
     return mates
 
 
@@ -624,8 +634,8 @@ def _handle_main_birth_event(
         # including the dead mate version
         # because of a bug where the game can't find any birthing events
         # if the cheated mate is dead
-        else:
-            cat_dict["mc_mate"] = dead_mate
+        elif dead_mate:
+            cat_dict["mc_mate"] = choice(dead_mate)
             involved_cats.append(dead_mate.ID)
             event_list.append(
                 choice(events["birth"]["affair_mated_dead_mate"]))
