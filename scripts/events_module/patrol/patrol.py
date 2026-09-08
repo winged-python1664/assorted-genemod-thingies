@@ -96,8 +96,8 @@ class Patrol:
         self.involved_cats: dict[str, Union[list[Cat], Cat]] = {}
         """Cats directly involved and referenced in the event. Keys are their text abbreviation, values are the associated cat objects"""
         self.outcome_cats: TypedDict(
-            "outcome_cats", {"success": dict[str, Cat], "failure": dict[str, Cat]}
-        ) = {"success": {}, "failure": {}}
+            "outcome_cats", {PatrolOutcome.SUCCESS: dict[str, Cat], PatrolOutcome.FAILURE: dict[str, Cat]}
+        ) = {PatrolOutcome.SUCCESS: {}, PatrolOutcome.FAILURE: {}}
         self.chosen_poi = None
 
     def begin_patrol(self, patrol_cats: List[Cat], patrol_type: str, clan) -> str:
@@ -128,7 +128,7 @@ class Patrol:
             self.other_clan = None
 
         # Find valid patrol
-        self.patrol_event = self._get_possible_patrol(patrol_type)
+        self._load_patrols_and_set_patrol(patrol_type)
         self._create_needed_cats()
 
         if self.patrol_event.poi:
@@ -278,7 +278,7 @@ class Patrol:
 
         print("Patrol Leader:", str(self.involved_cats["p_l"].name))
 
-    def _get_possible_patrol(
+    def _load_patrols_and_set_patrol(
         self,
         patrol_type: str,
     ) -> PatrolEvent:
@@ -350,9 +350,9 @@ class Patrol:
             )
         # FILTER PATROLS when no debug set
         else:
-            chosen_patrol = self._filter_patrols(patrol_list, patrol_type)
+            chosen_patrol = self._filter_and_set_patrol(patrol_list, patrol_type)
 
-        return chosen_patrol
+        self.patrol_event = chosen_patrol
 
     def _decide_if_romantic(self, romantic_event: Optional[PatrolEvent]) -> bool:
         """
@@ -471,7 +471,7 @@ class Patrol:
         print("final qpr chance:", chance_of_qpr_patrol)
         return not int(random.random() * chance_of_qpr_patrol)
 
-    def _filter_patrols(
+    def _filter_and_set_patrol(
         self,
         possible_patrols: List[PatrolEvent],
         patrol_type: str,
@@ -510,18 +510,18 @@ class Patrol:
 
         # first we see if we can get a romantic patrol
         if romantic_patrols:
-            chosen_patrol = self._get_valid_patrol(
-                romantic_patrols.copy(), find_romance=True, find_qpr=False,
+            chosen_patrol = self._set_valid_patrol(
+                romantic_patrols.copy(), find_romance=True
             )
 
-        if qpr_patrols and not self.debug_patrol_id:
-            chosen_patrol = self._get_valid_patrol(
-                qpr_patrols.copy(), find_romance=False, find_qpr=True
+        elif qpr_patrols:
+            chosen_patrol = self._set_valid_patrol(
+                qpr_patrols.copy(), find_qpr=True
             )
 
         # if no romantic patrol possible, we get a normal one!
         if not chosen_patrol:
-            chosen_patrol = self._get_valid_patrol(
+            chosen_patrol = self._set_valid_patrol(
                 normal_patrols.copy(), find_romance=False, find_qpr=False,
             )
             if not chosen_patrol:
@@ -540,11 +540,16 @@ class Patrol:
         Patrol.used_patrols["romance" if find_romance else "normal"].clear()
         Patrol.used_patrols["qpr" if find_qpr else "normal"].clear()
 
-        return self._get_valid_patrol(possible_patrols, find_romance, find_qpr)
+        return self._set_valid_patrol(possible_patrols, find_romance, find_qpr)
 
-    def _get_valid_patrol(
+    def _set_valid_patrol(
         self, possible_patrols: List[PatrolEvent], find_romance: bool = False, find_qpr: bool = False,
     ) -> Optional[PatrolEvent]:
+        """
+        Finds a valid patrol
+        If one if found, sets the patrol event and involved cats,
+            and returns the patrol event.
+        """
         chosen_patrol = None
         patrols_to_test = [
             p
@@ -576,6 +581,7 @@ class Patrol:
             else:
                 # otherwise, let's set our involved cats and move on with this patrol!
                 self.involved_cats = involved_cats
+                self.patrol_event = chosen_patrol
 
         if find_romance:
             if not self._decide_if_romantic(chosen_patrol):
