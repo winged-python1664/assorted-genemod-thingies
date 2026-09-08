@@ -941,7 +941,12 @@ class ChooseAdoptiveParentScreen(Screens):
         It checks the potential parent is a relative of your mate.
         Return if the cat is a possible adoptive parent.
         """
-        if len(self.the_cat.mate, self.the_cat.partner) > 0:
+        part = []
+        for i in self.the_cat.mate:
+            part.append(i)
+        for i in self.the_cat.partner:
+            part.append(i)
+        if len(part) > 0:
             for mate_id in (self.the_cat.mate, self.the_cat.partner):
                 mate = Cat.fetch_cat(mate_id)
                 mate_relatives = mate.get_relatives()
