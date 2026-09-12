@@ -49,7 +49,7 @@ def create_bio_parents(Cat, flip=False, second_parent=True, age=None, clan=None)
     }, {}, None, None)[0]
     while 'sterile' in blood_parent.permanent_condition:
         if (blood_parent):
-            del Cat.all_cats[blood_parent.ID]
+            game.clan.remove_cat(blood_parent.ID)
         blood_parent = updated_create_new_cat({
             "status": [social],
             "group_ID": clan,
@@ -72,7 +72,7 @@ def create_bio_parents(Cat, flip=False, second_parent=True, age=None, clan=None)
         }, {}, None, None)[0]
         while 'sterile' in blood_parent2.permanent_condition:
             if blood_parent2 and Cat.all_cats[blood_parent2.ID]:
-                del Cat.all_cats[blood_parent2.ID]
+                game.clan.remove_cat(blood_parent2.ID)
             blood_parent2 = updated_create_new_cat({
                 "status": [social],
                 "group_ID": clan,
@@ -252,7 +252,7 @@ def updated_create_new_cat(
         if created_cat.phenotype.manx[1] in ["Ab", "M"] or created_cat.phenotype.sexgene[0] == "Y" or created_cat.phenotype.munch[1] == "Mk" or ('NoDBE' not in created_cat.phenotype.pax3 and 'DBEalt' not in created_cat.phenotype.pax3 and created_cat.phenotype.pax3 != ["DBEcel", "DBEcel"]):
             if len(new_cats) == 0:
                 while created_cat.phenotype.manx[1] in ["Ab", "M"] or created_cat.phenotype.sexgene[0] == "Y" or created_cat.phenotype.munch[1] == "Mk" or ('NoDBE' not in created_cat.phenotype.pax3 and 'DBEalt' not in created_cat.phenotype.pax3 and created_cat.phenotype.pax3 != ["DBEcel", "DBEcel"]):
-                    del Cat.all_cats[created_cat.ID]
+                    game.clan.remove_cat(created_cat.ID)
                     created_cat = NewCatFactory.create_cat(
                         status_dict=status,
                         moons=moons,
@@ -733,11 +733,11 @@ def updated_find_clan_cats(option_dict: InvolvedCatDict, involved_cats: dict[str
         age = option_dict["age"]
 
     if par := option_dict.get("can_create_new_cat", {}).get("assign_blood_parent", []):
-        blood_parent = involved_cats[par]
+        blood_parent = involved_cats[par[0]]
         if isinstance(blood_parent, list):
             blood_parent = blood_parent[0]
     if sib := option_dict.get("can_create_new_cat", {}).get("assign_sibling", []):
-        sibling = involved_cats[sib]
+        sibling = involved_cats[sib[0]]
         if isinstance(sibling, list):
             sibling = sibling[0]
 

@@ -7,6 +7,7 @@ from scripts.cat.genotype import Genotype
 from scripts.cat.factories.new_cat_factory import NewCatFactory
 from scripts.cat.cats import Cat
 from ..cat.enums import CatRank
+from scripts.game_structure import game
 from ..game_structure.game.settings import game_setting_get
 from ..clan_package.settings import get_clan_setting
 from ..clan_package.get_clan_cats import search_cats
@@ -306,7 +307,7 @@ class PredictOffspringScreen(Screens):
             if offspring in Cat.all_cats_list:
                 Cat.all_cats_list.remove(offspring)
             if offspring.ID in Cat.all_cats:
-                del Cat.all_cats[offspring.ID]
+                game.clan.remove_cat(offspring.ID)
     
     def exit_screen(self):
         self.back_button.kill()
