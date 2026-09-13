@@ -1542,6 +1542,7 @@ dev_tools = false
     deputy = [2, 3, 3, 4]
     warrior = [2, 3, 3, 4]
     apprentice = [1, 2, 2, 3]
+    prophet = [0, 1, 1, 2]
     healer = [0, 1, 1, 2]
     "healer apprentice" = [0, 1]
     mediator = [0, 1, 2, 2]
