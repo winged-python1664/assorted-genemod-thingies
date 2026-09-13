@@ -386,45 +386,48 @@ class Clan:
 
         allowed_range_sc = get_config("clan_creation.starting_sc")
         number_sc = randint(allowed_range_sc[0], allowed_range_sc[1])
-        for i in range(number_sc):
-            create_new_cat(
-                Cat,
-                backstory=choice(
-                    BACKSTORIES["backstory_categories"]["starting_sc"]
-                ),
-                rank=choices(rank_options, rank_weights),
-                original_group=choice(clan_options) if self.clancount == "multiclan" else "1",
-                thought=choice([CatThought.WHILE_DEAD]),
-                dead_for=randint(10, 150),
-                alive=False,
-                group="2",
-            )
+        if allowed_range_sc[1] != 0:
+            for i in range(number_sc):
+                create_new_cat(
+                    Cat,
+                    backstory=choice(
+                        BACKSTORIES["backstory_categories"]["starting_sc"]
+                    ),
+                    rank=choices(rank_options, rank_weights),
+                    original_group=choice(clan_options) if self.clancount == "multiclan" else "1",
+                    thought=choice([CatThought.WHILE_DEAD]),
+                    dead_for=randint(10, 150),
+                    alive=False,
+                    group="2",
+                )
         allowed_range_ur = get_config("clan_creation.starting_ur")
         number_ur = randint(allowed_range_ur[0], allowed_range_ur[1])
-        for i in range(number_ur):
-            create_new_cat(
-                Cat,
-                original_social=choice([CatSocial.KITTYPET, CatSocial.LONER * 2, CatSocial.ROGUE * 2]),
-                thought=choice([CatThought.WHILE_DEAD]),
-                dead_for=randint(10, 150),
-                alive=False,
-                group="3",
-            )
+        if allowed_range_ur[1] != 0:
+            for i in range(number_ur):
+                create_new_cat(
+                    Cat,
+                    original_social=choice([CatSocial.KITTYPET, CatSocial.LONER * 2, CatSocial.ROGUE * 2]),
+                    thought=choice([CatThought.WHILE_DEAD]),
+                    dead_for=randint(10, 150),
+                    alive=False,
+                    group="3",
+                )
         allowed_range_df = get_config("clan_creation.starting_df")
         number_df = randint(allowed_range_df[0], allowed_range_df[1])
-        for i in range(number_df):
-            create_new_cat(
-                Cat,
-                backstory=choice(
-                    BACKSTORIES["backstory_categories"]["starting_df"]
-                ),
-                rank=choices(rank_options, rank_weights),
-                original_group=choice(clan_options) if self.clancount == "multiclan" else "1",
-                thought=choice([CatThought.WHILE_DEAD]),
-                dead_for=randint(10, 150),
-                alive=False,
-                group="4",
-            )
+        if allowed_range_df[1] != 0:
+            for i in range(number_df):
+                create_new_cat(
+                    Cat,
+                    backstory=choice(
+                        BACKSTORIES["backstory_categories"]["starting_df"]
+                    ),
+                    rank=choices(rank_options, rank_weights),
+                    original_group=choice(clan_options) if self.clancount == "multiclan" else "1",
+                    thought=choice([CatThought.WHILE_DEAD]),
+                    dead_for=randint(10, 150),
+                    alive=False,
+                    group="4",
+                )
 
         for cat_id in Cat.all_cats:
             if cat_id not in self.clan_cats:
@@ -512,6 +515,14 @@ class Clan:
                 if clan.leader:
                     clan.leader.generate_lead_ceremony()
 
+        # please ignore how manually setting the med to prophet is a bad idea and will probably cause issues k thanks
+        if self.medicine_cat:
+            if self.prophet == None:
+                self.prophet = self.medicine_cat
+                if self.prophet.status.rank == CatRank.MEDICINE_CAT:
+                    self.prophet.rank_change(CatRank.PROPHET)
+                    self.medicine_cat = None
+
         self.save_clan()
         save_clanlist(self.save_id)
         switch_set_value(Switch.clan_list, read_clans())
@@ -534,6 +545,8 @@ class Clan:
         if switch_get_value(Switch.game_mode) == "":
             switch_set_value(Switch.game_mode, "classic")
             self.game_mode = "classic"
+
+        game.dead_cats_to_grieve.clear()
 
         rebuild_top_menu_buttons()
         # makes sure all the settings are at their starting positions
