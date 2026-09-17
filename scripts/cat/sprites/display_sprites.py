@@ -162,7 +162,7 @@ def generate_sprite(
                     hairless.blit(sprites.sprites['furpoint' + cat_sprite], (0, 0))
                     hairless.blit(sprites.sprites['furpoint' + cat_sprite], (0, 0))
                     hairless.set_alpha(120)
-                elif ('patchy ' in cat.phenotype.furtype) or (cat.pelt.length == 'hairless' and cat.phenotype.sedesp[0] != "hr" and cat.phenotype.ruhr[1] != "Hrbd" and sprite_age > 5):
+                elif ('patchy ' in cat.phenotype.furtype and sprite_age > 11) or (cat.pelt.length == 'hairless' and cat.phenotype.sedesp[0] != "hr" and cat.phenotype.ruhr[1] != "Hrbd" and sprite_age > 5):
                     hairless.blit(sprites.sprites['donskoy' + cat_sprite], (0, 0))
                 
                 if('sparse' in cat.phenotype.furtype):
@@ -427,16 +427,16 @@ def generate_sprite(
                 if not preset_pattern and len(pattern) > 2:
                     if phenotype.soktype == "full sokoke":
                         stripebase = create_stripes(
-                            stripecolour, whichbase, coloursurface, preset_pattern=pattern[1:])
+                            stripecolour, whichbase, coloursurface, preset_pattern=pattern[1:] if pattern[0] != pattern[1] and pattern[0] != "agouti" else pattern[2:])
                         middle = create_stripes(
-                            stripecolour, whichbase, coloursurface, special="no_shading", preset_pattern=pattern[:1])
+                            stripecolour, whichbase, coloursurface, special="no_shading", preset_pattern=pattern[:1] if pattern[0] != pattern[1] and pattern[0] != "agouti" else pattern[:2])
                         middle.set_alpha(150)
                         stripebase.blit(middle, (0, 0))
                     elif phenotype.soktype == "mild fading":
                         stripebase = create_stripes(
-                            stripecolour, whichbase, coloursurface, preset_pattern=pattern[1:])
+                            stripecolour, whichbase, coloursurface, preset_pattern=pattern[1:] if pattern[0] != pattern[1] and pattern[0] != "agouti" else pattern[2:])
                         middle = create_stripes(
-                            stripecolour, whichbase, coloursurface, special="no_shading", preset_pattern=pattern[:1])
+                            stripecolour, whichbase, coloursurface, special="no_shading", preset_pattern=pattern[:1] if pattern[0] != pattern[1] and pattern[0] != "agouti" else pattern[:2])
                         middle.set_alpha(204)
                         stripebase.blit(middle, (0, 0))
                 elif preset_pattern and (len(preset_pattern) > 1 or special == "no_shading"):
@@ -1237,6 +1237,7 @@ def generate_sprite(
             
             if (
                 game_setting_get('tints')
+                and cat.pelt.tint is not None
                 and cat.pelt.tint in sprites.cat_tints["tint_colours"]
             ):
                 tint = pygame.Surface((sprites.size, sprites.size)).convert_alpha()
@@ -1244,11 +1245,21 @@ def generate_sprite(
                 gensprite.blit(tint, (0, 0), special_flags=pygame.BLEND_RGB_MULT)
             if (
                 game_setting_get('tints')
+                and cat.pelt.tint is not None
                 and cat.pelt.tint in sprites.cat_tints["dilute_tint_colours"]
             ):
                 tint = pygame.Surface((sprites.size, sprites.size)).convert_alpha()
                 tint.fill(tuple(sprites.cat_tints["dilute_tint_colours"][cat.pelt.tint]))
                 gensprite.blit(tint, (0, 0), special_flags=pygame.BLEND_RGB_ADD)
+
+            if (
+                game_setting_get('tints')
+                and cat.pelt.tint is not None
+                and cat.pelt.tint in sprites.cat_tints["remove_tone_tint_colours"]
+            ):
+                tint = pygame.Surface((sprites.size, sprites.size)).convert_alpha()
+                tint.fill(tuple(sprites.cat_tints["remove_tone_tint_colours"][cat.pelt.tint]))
+                gensprite.blit(tint, (0, 0), special_flags=pygame.BLEND_RGB_SUB)
 
             if is_today(SpecialDate.APRIL_FOOLS) and "Dg" in phenotype.april_fools.get("danish_green", []):
                 green = pygame.Surface((sprites.size, sprites.size), pygame.HWSURFACE | pygame.SRCALPHA)
@@ -1788,6 +1799,8 @@ def generate_sprite(
 # ------------------------------------------------------------------------------------------------------
 #  generate_sprites() Helper Functions
 # ------------------------------------------------------------------------------------------------------
+
+
 
 
 

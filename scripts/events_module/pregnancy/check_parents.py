@@ -30,18 +30,15 @@ def cat_is_amab(cat):
     return (('Y' in cat.phenotype.sexgene and cat.phenotype.sex != "molly") or cat.phenotype.sex == "tom")
 
 def no_kits_allowed(cat):
-    kit_blocked_ranks = set()
-    if get_clan_setting("block_litters_by_rank"):
-        for rank in CatRank:
-            rank_str = rank
-            if rank == CatRank.APPRENTICE:
-                rank_str = CatRank.WARRIOR
-            elif "apprentice" in rank:
-                rank_str = rank.replace(" apprentice", "")
-            if get_clan_setting(f"block_litters_{rank_str}"):
-                kit_blocked_ranks.add(rank)
-    return cat.no_kits or cat.status.rank in kit_blocked_ranks
-
+    if cat.no_kits:
+        return True
+    if cat.status.rank not in get_config("pregnancy.can_have_kits"):
+        if not cat.mate:
+            return True
+        elif cat.mate:
+            if all([cat.fetch_cat(mate_id).status.rank not in get_config("pregnancy.can_have_kits") for mate_id in cat.mate]):
+                return True
+    return False
 
 def check_if_can_have_kits(cat, for_surrogate=False):
     """Check if the given cat can have kits, see for age, birth-cooldown and so on."""
@@ -63,7 +60,10 @@ def check_if_can_have_kits(cat, for_surrogate=False):
     if not_correct_age or no_kits_allowed(cat) or cat.dead:
         return False
 
-    # check for mate or partner
+    if not check_parent_rank(cat):
+        return False
+
+    # check for mate
     if cat.mate or cat.partner:
         for mate_id in cat.mate:
             if mate_id not in cat.all_cats:
@@ -629,3 +629,20 @@ def _get_unmated_coparenting_chance(relation: Relationship) -> int:
         coparenting_chance -= 5
 
     return coparenting_chance
+
+
+def check_parent_rank(cat):
+    # check for role
+    if cat.status.rank not in get_config("pregnancy.can_have_kits"):
+        if not cat.mate:
+            return False
+        elif cat.mate:
+            if all(
+                [
+                    cat.fetch_cat(mate_id).status.rank
+                    not in get_config("pregnancy.can_have_kits")
+                    for mate_id in cat.mate
+                ]
+            ):
+                return False
+    return True

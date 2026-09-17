@@ -8,6 +8,7 @@ from scripts.cat.pelts import Pelt
 from scripts.cat.personality import Personality
 from scripts.cat_relations.enums import RelType, rel_type_tiers, RelTier
 from scripts.cat.enums import CatRank, CatAge, CatCompatibility, CatGroup, CatStanding
+from scripts.clan_package.settings import get_clan_setting
 from scripts.clan_resources.point_of_interest import (
     get_poi_names_set,
     get_poi_tags_set,
@@ -160,6 +161,9 @@ def event_for_tags(tags: list, cat, clan=CatGroup.PLAYER_CLAN_ID, other_cat=None
     for _poss in possible_modes:
         if _poss in tags and mode != _poss:
             return False
+
+    if "disaster" in tags and not get_clan_setting("disasters"):
+        return False
 
     # check romance
     if "romance" in tags and other_cat and other_cat not in get_possible_mates(cat):
@@ -1187,6 +1191,7 @@ def cat_for_event(
     # gather funcs to use
     func_dict = {
         "age": _get_cats_with_age,
+        "gender": _get_cats_with_gender,
         "status": _get_cats_with_status,
         "past_status": _get_cats_with_status_history,
         "stat": _get_cats_with_stat,
@@ -1432,19 +1437,15 @@ def _get_cats_with_age(cat_list: list, ages: list[str]) -> list:
 
 
 def _get_cats_with_gender(cat_list: list, genders: list[str]) -> list:
-    """
-    Checks cat_list against required ages and returns qualifying cats.
-    """
-    if not genders or "any" in genders:
+    if not genders:
         return cat_list
 
     is_exclusionary = _check_for_exclusionary_value(genders)
 
     if is_exclusionary:
-        genders = [x.replace("-", "") for x in genders]
+        ages = [x.replace("-", "") for x in genders]
         return [kitty for kitty in cat_list if not _check_cat_gender(kitty, genders)]
     else:
-        check_genders = []
         return [kitty for kitty in cat_list if _check_cat_gender(kitty, genders)]
 
 

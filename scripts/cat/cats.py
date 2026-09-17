@@ -1053,7 +1053,7 @@ class Cat:
         load_leader_ceremonies()
         self.history.prev_names.append(str(self.name))
 
-        num_of_lives_to_give = min(max(1, choice(get_config("death_related.leader_lives_nr"))), get_config("death_related.max_leader_lives"))
+        num_of_lives_to_give = min(max(get_config("death_related.min_leader_lives"), choice(get_config("death_related.leader_lives_nr"))), get_config("death_related.max_leader_lives"))
         self.status.fetch_clan_object().leader_lives = num_of_lives_to_give
 
         # determine which dict we're pulling from
@@ -1868,7 +1868,7 @@ class Cat:
             for cat in self.all_cats.values():
                 if self.is_valid_mentor(cat):
                     potential_mentors.append(cat)
-                    if not cat.apprentice and not cat.not_working() and cat.moons >= get_config("ranks.min_mentorship_age"):
+                    if not cat.apprentice and not cat.not_working() and cat.moons >= get_config("roles.min_mentorship_age"):
                         priority_mentors.append(cat)
             # First try for a cat who currently has no apprentices and is working
             if priority_mentors:  # length of list > 0
