@@ -274,6 +274,7 @@ def _handle_new_partner_events(cat: Cat):
         for x in cat.relationships
         if x not in cat.partner
         and x not in cat.mate if get_clan_setting("mutually exclusive mates partnerrs")
+        and Cat.fetch_cat(x)
         and Cat.fetch_cat(x).status.group_ID == cat.status.group_ID
         and cat.is_potential_partner(Cat.fetch_cat(x))
     ]
