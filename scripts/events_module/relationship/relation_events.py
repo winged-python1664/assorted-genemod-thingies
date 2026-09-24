@@ -43,7 +43,7 @@ def handle_relationships(cat: Cat):
     if not random.getrandbits(4):
         _trigger_romantic_event(cat)
 
-        romantic_events.handle_mates_and_breakup(cat)
+    romantic_events.handle_mates_and_breakup(cat)
 
     if not random.getrandbits(4):
         _trigger_qpr_event(cat)
