@@ -246,9 +246,9 @@ class Name:
         self.phenotype.SpriteInfo(moons)
 
         if (self.phenotype.colour in ['white', 'albino'] or 
-            (self.phenotype.maincolour == 'white' and not self.phenotype.patchmain) or
+            self.phenotype.basecolour == 'white' or
             (self.phenotype.white[1] in ['ws', 'wt'] and self.phenotype.whitegrade == 5) or
-            (self.phenotype.tortiepattern == ['revCRYPTIC'] and self.phenotype.brindledbi) or 
+            (self.phenotype.is_cryptic(all_rev=True) and self.phenotype.brindledbi) or 
             (self.phenotype.dilute[0] == 'd' and self.phenotype.pinkdilute[0] == 'dp' and 
                 (('dove' in self.phenotype.colour and self.phenotype.fur_shade < 2) or 
                 ('platinum' in self.phenotype.colour and self.phenotype.fur_shade < 3) or
@@ -321,15 +321,17 @@ class Name:
             used_prefixes = []
 
         namer = Namer(used_prefixes, self.mod_prefixes, self.moons, self.phenotype, self.chimpheno)
+        tries = 0
         if get_clan_setting("modded names") and get_clan_setting('new prefixes'):
             while True:
+                tries += 1
                 self.prefix = namer.start()
                 if no_suffix:
                     if self.prefix == "Striped":
                         self.prefix = "Stripe"
                     elif self.prefix == "Spotted":
                         self.prefix = "Spot"
-                if self.prefix and self._usable_name(self.prefix, self.suffix, self.cat):
+                if self.prefix and self._usable_name(self.prefix, self.suffix, self.cat) or tries > 20:
                     return
             
 
@@ -482,7 +484,7 @@ class Name:
                     (self.phenotype.white[1] in ['ws', 'wt'] and self.phenotype.whitegrade < 4) or\
                     (self.phenotype.white[0] in ['ws', 'wt'] and self.phenotype.white[1] not in ['ws', 'wt'] and self.phenotype.whitegrade > 2):
                     appearance += self.mod_suffixes['other']['appearance'].get('patchy', [])
-                    if (self.phenotype.tortiepattern and self.phenotype.tortiepattern[0].replace('rev', '') in self.phenotype.def_tortie_low_patterns):
+                    if (self.phenotype.tortiepattern and self.phenotype.tortiepattern["0"][0].replace('rev', '') in self.phenotype.def_tortie_low_patterns):
                         appearance += self.mod_suffixes['other']['appearance'].get('spotted', [])
                     if ((self.phenotype.white[1] in ['ws', 'wt'] and self.phenotype.whitegrade < 4) or\
                     (self.phenotype.white[0] in ['ws', 'wt'] and self.phenotype.white[1] not in ['ws', 'wt'] and self.phenotype.whitegrade > 2)):
