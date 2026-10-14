@@ -1184,7 +1184,8 @@
                     "warrior", 
                     "leader", 
                     "deputy"
-                ]
+                ],
+                "group": ["player_clan"]
             }
         },
         "strings": [
@@ -1222,7 +1223,8 @@
                     "warrior", 
                     "leader", 
                     "deputy"
-                ]
+                ],
+                "group": [ "player_clan" ]
             }
         },
         "strings": [
@@ -1278,7 +1280,7 @@
      {
         "event_id": "app_no_mentor_mentor_hoping1",
         "tags": [
-            "clan:leader"
+            "clan:leader", "-card:pride_and_joy"
         ],
         "involved_cats": {
             "m_c": {},
@@ -1436,7 +1438,7 @@
         },
         "involved_cats": {
             "m_c": {},
-            "r_c0": {}
+            "r_c0": {"status": ["-leader"]}
         },
         "strings": [
             "When lead_name gives m_c to r_c0 to train, r_c0 leads {PRONOUN/r_c0/poss} new apprentice out of camp to see the sights, starting with POI."

@@ -345,7 +345,7 @@ class Name:
             "black" : ["BLACK"],
             "blue" : ["GREY", "DARKGREY", "DAWN"],
             "chocolate" : ["BROWN", "GOLDEN-BROWN", "DARKBROWN", "CHOCOLATE", "RUST"],
-            "lilac" : ["PALEGREY", "SILVER", "LILAC", "MALLOW"],
+            "lilac": ["PALEGREY", "SILVER", "LILAC", "MALLOW", "SOOT"],
             "cinnamon" : ["SIENNA", "DARKGINGER", "GOLDEN-BROWN"],
             "fawn" : ["LIGHTBROWN", "BLOSSOM"],
             "ginger" : ["GINGER", "DARKGINGER"],
@@ -364,6 +364,8 @@ class Name:
             colours.append('GHOST')
         if params[2]['type'] == 'golden' and params[0] not in ['ginger', 'cream']:
             colours.append('GOLDEN')
+            if params[0] in ["black", "chocolate"]:
+                colours.append("SUNSHINE")
         if self.phenotype.ruftype == 'rufoused' and params[0] == 'ginger':
             colours.append('DARKGINGER')
         if self.phenotype.ruftype == 'low' and params[0] == 'ginger':
@@ -524,7 +526,7 @@ class Name:
                 "black": ["BLACK"],
                 "blue": ["GREY", "DARKGREY", "DAWN"],
                 "chocolate": ["BROWN", "GOLDEN-BROWN", "DARKBROWN", "CHOCOLATE", "RUST"],
-                "lilac": ["PALEGREY", "SILVER", "LILAC", "MALLOW"],
+                "lilac": ["PALEGREY", "SILVER", "LILAC", "MALLOW", "SOOT"],
                 "cinnamon": ["SIENNA", "DARKGINGER", "GOLDEN-BROWN"],
                 "fawn": ["LIGHTBROWN", "BLOSSOM"],
                 "ginger": ["GINGER", "DARKGINGER"],
@@ -544,6 +546,8 @@ class Name:
                 colours.append('GHOST')
             if params[2]['type'] == 'golden' and params[0] not in ['ginger', 'cream']:
                 colours.append('GOLDEN')
+                if params[0] in ["black", "chocolate"]:
+                    colours.append("SUNSHINE")
             if self.phenotype.ruftype == 'rufoused' and params[0] == 'ginger':
                 colours.append('DARKGINGER')
             if self.phenotype.ruftype == 'low' and params[0] == 'ginger':

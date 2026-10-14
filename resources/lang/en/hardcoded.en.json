@@ -21,12 +21,12 @@
         "ceremony_deputy_none": "There are no cats fit to become deputy.",
         "ceremony_prophet_none": "There are no cats able to become prophet.",
         "adoption_kittens_single": {
-            "one": "%{names} found a %{insert} and decides to adopt it.",
-            "many": "%{names} found a %{insert} and decides to adopt them."
+            "one": "%{names} found a %{insert} and decided to adopt it.",
+            "many": "%{names} found a %{insert} and decided to adopt them."
         },
         "adoption_kittens_pair": {
-            "one": "%{names} found a %{insert} and decide to adopt it.",
-            "many": "%{names} found a %{insert} and decide to adopt them."
+            "one": "%{names} found a %{insert} and decided to adopt it.",
+            "many": "%{names} found a %{insert} and decided to adopt them."
         },
         "herbs_found": {
             "zero": "med_name could not find any herbs this moon.",

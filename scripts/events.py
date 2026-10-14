@@ -1954,8 +1954,23 @@ def handle_outbreaks(cat, clan):
             ):
                 continue
 
-            if get_clan_setting("rest_and_recover") and clan == game.clan:
+            if get_clan_setting("rest_and_recover") and clan == game.clan and (
+                game.clan.deputy and game.clan.deputy.status.alive_in_player_clan
+            ):
                 stopping_chance = get_config("focus.rest_and_recover.outbreak_prevention")
+                buffs = get_config("focus.rest_and_recover.buff")
+                for skill, tier in game.clan.deputy.skills.get_all().items():
+                    skill = skill.name
+                    if skill not in buffs.keys():
+                        continue
+                    if buffs[skill]["tier"] > tier:
+                        continue
+
+                    if "outbreak_prevention_modifier" in buffs[skill]:
+                        stopping_chance -= get_config(
+                            f"focus.rest_and_recover.buff.{skill}.outbreak_prevention_modifier"
+                        )
+
                 if not int(random.random() * stopping_chance):
                     continue
 
