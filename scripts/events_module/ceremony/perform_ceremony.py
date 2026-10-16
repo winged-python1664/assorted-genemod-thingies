@@ -121,7 +121,7 @@ def check_for_ceremony(main_cat: Cat, clan):
     if main_cat.status.rank == CatRank.LEADER:
         special_can_retire = get_clan_setting("leader_retirement") and random.random() < (1/retirement_info["max_leader_retire_chance"])
     if main_cat.status.rank == CatRank.PROPHET:
-        special_can_retire = get_clan_setting("prophet_retirement") and len(clan.medicine_cat) >= 1 and medicine_cats_can_cover_clan(
+        special_can_retire = get_clan_setting("prophet_retirement") and medicine_cats_can_cover_clan(
             Cat.all_cats.values(), get_amount_cat_for_one_medic(), clan=clan.group_ID, exclude=main_cat
         ) and random.random() < (1/retirement_info["max_prophet_retire_chance"])
     if main_cat.status.rank == CatRank.MEDICINE_CAT:
