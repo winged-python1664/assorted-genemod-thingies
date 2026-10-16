@@ -525,7 +525,7 @@ dev_tools = false
 
 [pregnancy]
   # decides which roles can have kits
-  can_have_kits = ["leader", "deputy", "healer", "warrior", "mediator", "queen", "elder", "kittypet", "rogue", "loner"]
+  can_have_kits = ["leader", "deputy", "prophet", "healer", "warrior", "mediator", "queen", "elder", "kittypet", "rogue", "loner"]
 
   # cooldown for cats getting pregnant that applies after giving birth
   birth_cooldown = 6
@@ -581,6 +581,7 @@ dev_tools = false
   [pregnancy.rank_litter_chance_modifier]
     leader = 0
     deputy = 0
+    prophet = 0
     healer = 0
     mediator = 0
     warrior = 0
@@ -1494,7 +1495,7 @@ dev_tools = false
         supply_amount_buff = 0.5
 
   [focus.hoarding]
-    # injury chance of each warrior(leader/deputy to get injured
+    # injury chance of each warrior(leader/deputy) to get injured
     injury_chance_warrior = 25
     injury_chance_healer = 35
 
