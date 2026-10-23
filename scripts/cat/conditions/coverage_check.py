@@ -18,7 +18,7 @@ def amount_of_clan_covered_total(all_cats, clan=CatGroup.PLAYER_CLAN_ID, exclude
         and i.status.rank.is_any_medicine_rank()
         and i != exclude
     ]
-    full_med = [i for i in medicine_cats if i.status.rank == CatRank.MEDICINE_CAT]
+    full_med = [i for i in medicine_cats if i.status.rank in (CatRank.MEDICINE_CAT, CatRank.PROPHET)]
     apprentices = [
         i for i in medicine_cats if i.status.rank == CatRank.MEDICINE_APPRENTICE
     ]
