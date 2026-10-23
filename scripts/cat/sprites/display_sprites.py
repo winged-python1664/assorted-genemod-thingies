@@ -44,7 +44,7 @@ def generate_sprite(
     :param acc_hidden: If True, hide the accessory. If false, show the accessory.
     :param always_living: If True, always show the cat with living lineart
     :param disable_sick_sprite: If true, never use the not_working lineart.
-                    If false, use the cat.not_working() to determine the no_working art.
+                    If false, use the not i.can_work() to determine the no_working art.
     """
     poses: list = sprites.POSE_DATA["poses"]
     sprite_poses = {x: str(poses.index(x)) for x in poses}
@@ -74,7 +74,7 @@ def generate_sprite(
     # sick sprites
     if (
         not disable_sick_sprite
-        and cat.not_working()
+        and not cat.can_work()
         and age != CatAge.NEWBORN
         and get_config("cat_sprites.sick_sprites")
         and (not cat.show_healthy and cat.toggles_shown == True)
@@ -609,6 +609,32 @@ def calculate_base_colour(base, warmth):
     layer.fill(lukewarm_colour)
     return layer
 
+def apply_mineral_red(phenotype, layer):
+    if is_today(SpecialDate.APRIL_FOOLS) and phenotype.mineral:
+        colouradd = pygame.Surface(
+            (sprites.size, sprites.size), pygame.HWSURFACE | pygame.SRCALPHA)
+        if phenotype.rufousing > 5:
+            if phenotype.dilute[0] == "D" and phenotype.pinkdilute[0] == "Dp":
+                colouradd.fill((255, 75, 25))
+            else:
+                colouradd.fill((255, 255, 50))
+            layer.blit(colouradd, (0, 0), special_flags=pygame.BLEND_RGB_MULT)
+        elif phenotype.rufousing > 2:
+            if phenotype.dilute[0] == "D" and phenotype.pinkdilute[0] == "Dp":
+                colouradd.fill((255, 175, 0))
+            else:
+                colouradd.fill((255, 225, 200))
+            layer.blit(colouradd, (0, 0), special_flags=pygame.BLEND_RGB_MULT)
+        else:
+            if phenotype.dilute[0] == "D" and phenotype.pinkdilute[0] == "Dp":
+                colouradd.fill((255, 255, 75))
+                layer.blit(colouradd, (0, 0), special_flags=pygame.BLEND_RGB_MULT)
+            else:
+                colouradd.fill((255, 255, 255))
+                colouradd.set_alpha(100)
+                layer.blit(colouradd, (0, 0))
+    return layer
+
 def calculate_red_stripes(phenotype, base, rufousing):
     is_apricot = "apricot" in base
     basecolour = stripecolourdict.get(base[:-1], base[:-1]).removeprefix("low").removeprefix("medium").removeprefix("rufoused")+base[-1]
@@ -651,6 +677,9 @@ def calculate_red_stripes(phenotype, base, rufousing):
 
     layer = pygame.Surface((sprites.size, sprites.size), pygame.HWSURFACE | pygame.SRCALPHA)
     layer.fill(final_colour)
+
+    layer = apply_mineral_red(phenotype, layer)
+
     return layer
 
 def get_tabby_base(phenotype, base_string, stripe_colour, is_apricot = False):
@@ -943,7 +972,7 @@ def create_cat(cat, phenotype, cat_sprite, sprite_age, season_override, merle=Fa
                 shading.blit(
                     sprites.sprites[phenotype.wbtype + 'shading' + cat_sprite], (0, 0))
             if "silver" in whichbase:
-                shading.set_alpha(150)
+                shading.set_alpha(200)
 
             stripebase.blit(shading, (0, 0))
 
@@ -967,7 +996,9 @@ def create_cat(cat, phenotype, cat_sprite, sprite_age, season_override, merle=Fa
     def tabby_base(whichcolour, whichbase, cat_unders, special=None):
         is_red = ('red' in whichcolour or 'cream' in whichcolour or 'honey' in whichcolour or 'ivory' in whichcolour or 'apricot' in whichcolour)
         whichmain = get_tabby_base(phenotype, whichbase, stripecolourdict.get(whichcolour[:-1], whichcolour[:-1])+whichcolour[-1], 'apricot' in whichcolour)
-        if special !='copper' and sprite_age > 12 and (phenotype.silver[0] == 'I' and phenotype.corin[0] == 'fg' and (get_current_season(season_override) in ['Leaf-fall', 'Leaf-bare'] or 'sterile' in cat.permanent_condition)):
+        if is_red:
+            whichmain = apply_mineral_red(phenotype, whichmain)
+        if special !='copper' and sprite_age > 12 and (phenotype.silver[0] == 'I' and phenotype.corin[0] == 'fg' and (get_current_season(season_override) in ['Leaf-fall', 'Leaf-bare'] or 'sterile' in cat.permanent_conditions)):
             sunshine = pygame.Surface((sprites.size, sprites.size), pygame.HWSURFACE | pygame.SRCALPHA)
             
             colours = phenotype.FindRed(phenotype, sprite_age, special='low')

@@ -3,6 +3,7 @@
     "easy_pickings": "Easy Pickings",
     "hostile_lands": "A Hostile Land",
     "radioactive": "Radioactive",
+    "no_genos": "Gene Blind",
     "lean_meat": "Lean Meat",
     "forsaken": "Forsaken",
     "for_the_throne": "Anything For The Throne",
@@ -38,6 +39,7 @@
     "prideful": "Prideful",
     "burnout": "Burnout",
     "pride_and_joy": "Pride And Joy",
-    "miasma": "Miasma"
+    "miasma": "Miasma",
+    "crowfood": "Crowfood Chaos"
   }
 }

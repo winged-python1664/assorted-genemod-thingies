@@ -73,6 +73,7 @@
         showxp = false
         fading = true
         save_faded_copy = false
+        thought_tooltips = true
         backgrounds = true
         "modded names" = true
         "new prefixes" = true

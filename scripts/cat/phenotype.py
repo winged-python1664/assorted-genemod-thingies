@@ -126,6 +126,13 @@ class Phenotype(Genotype):
                     colour = "ivory"
                 else:
                     colour = "cream"
+                    if is_today(SpecialDate.APRIL_FOOLS) and "Mr" in self.april_fools.get("mineral_red", []):
+                        if self.rufousing > 5:
+                            colour = "sulphur"
+                        elif self.rufousing > 2:
+                            colour = "sandstone"
+                        else:
+                            colour = "calcite"
 
                 if(self.dilutemd[0] == "Dm"):
                     colour += " apricot"
@@ -134,6 +141,13 @@ class Phenotype(Genotype):
                     colour = "honey"
                 else:
                     colour = "red"
+                    if is_today(SpecialDate.APRIL_FOOLS) and "Mr" in self.april_fools.get("mineral_red", []):
+                        if self.rufousing > 5:
+                            colour = "cinnabar"
+                        elif self.rufousing > 2:
+                            colour = "jasper"
+                        else:
+                            colour = "citrine"
         else:
             if(self.dilute[0] == "d"):
                 if(self.eumelanin[0] == "B"):
@@ -658,7 +672,7 @@ class Phenotype(Genotype):
                         "EYEBAGS", "revEYESPOT", "revHEART", "HONEY", "LEFTEAR_MID", "LEFTEAR_MOSTLY", "LEFTEAR_RING", "LEFTEAR_TIP", "LEFTEAR", "LITTLE", "PAWS", "REVERSEEYE", "REVERSEHEART", 
                         "RIGHTEAR_MID", "RIGHTEAR_MOSTLY", "RIGHTEAR_RING", "RIGHTEAR_TIP", "RIGHTEAR", "SCOURGE", "SPARKLE", "revTAIL", 'revTAILTWO', "TAILTIP", "TEARS", "TIP",
                         "TOES", "TOESTAIL", "MIDTOESTAIL", "MINTOESTAIL", "VEE", "HELMET", "TAILTIP_T", "PAW_FR_T", "PAW_FL_CLOVERTAIL", "PAW_BR_WING", "PAW_BL_SPLOTCH", "UNDERPAWS_T", "BELLY_T", "BOTHEARS_T", 
-                        "EYELINER_T", "LEAKY_EYE"]
+                        "EYELINER_T", "LEAKY_EYE", "REV_SHOOTINGSTAR"]
         
                 
         chosen = []
@@ -747,6 +761,7 @@ class Phenotype(Genotype):
         self.secondarycolour = ""
         self.caramel = ""
         self.peacock = False
+        self.mineral = False
 
         if x_colour is None:
             self.get_x_colours()
@@ -944,6 +959,9 @@ class Phenotype(Genotype):
                 colour = "honey"
             else:
                 colour = "red"
+
+        if is_today(SpecialDate.APRIL_FOOLS) and "Mr" in self.april_fools.get("mineral_red", []):
+            self.mineral = True
         
         maincolour += colour + str(self.fur_shade)
         

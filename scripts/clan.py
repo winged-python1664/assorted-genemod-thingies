@@ -55,13 +55,14 @@ from scripts.game_structure.game.switches import (
 )
 from scripts.game_structure import game
 from scripts.housekeeping.datadir import get_save_dir
-from scripts.housekeeping.version import get_version_info, SAVE_VERSION_NUMBER
+from scripts.housekeeping.game_version import get_version_info, SAVE_VERSION_NUMBER
 from scripts.clan_package.clan_symbols import clan_symbol_sprite
 from scripts.events_module.consequences import create_new_cat
 from scripts.clan_package.get_clan_cats import (
     get_living_clan_cat_count,
     find_alive_cats_with_rank,
 )
+from scripts.housekeeping.save_version_retrieval import get_version
 from scripts.screens.screens_core.screens_core import rebuild_top_menu_buttons
 
 
@@ -314,6 +315,14 @@ class Clan:
             self.all_leader_predecessors.append(self.instructor.ID)
         self.all_instructors.append(self.instructor.ID)
 
+        # remove any already loaded points of interest
+        clear_pois()
+
+        generate_and_add_new_poi(game.clan.biome, PoiType.GATHERING)
+        generate_and_add_new_poi(game.clan.biome, PoiType.MOONPLACE)
+        for i in range(3):
+            generate_and_add_new_poi(game.clan.biome, PoiType.TERRAIN, clan=self.group_ID)
+
         key_copy = tuple(Cat.all_cats.keys())
         for i in key_copy:  # Going through all currently existing cats
             # cat_class is a Cat-object
@@ -440,8 +449,6 @@ class Clan:
                 self.clan_cats.append(cat_id)
             the_cat = Cat.all_cats.get(cat_id)
             init_all_relationships(the_cat)
-            if the_cat not in [self.instructor] + [clan.instructor for clan in self.all_other_clans if clan.instructor]:
-                the_cat.backstory = "clan_founder"
             if the_cat.status.rank == CatRank.APPRENTICE:
                 the_cat.rank_change(CatRank.APPRENTICE, new_thought=False)
             the_cat.pelt.rebuild_sprite = True 
@@ -501,14 +508,6 @@ class Clan:
                 self.clan_cats.append(c.ID)
 
         save_cats(game.clan.save_id, Cat, game)
-
-        # remove any already loaded points of interest
-        clear_pois()
-
-        generate_and_add_new_poi(game.clan.biome, PoiType.GATHERING)
-        generate_and_add_new_poi(game.clan.biome, PoiType.MOONPLACE)
-        for i in range(3):
-            generate_and_add_new_poi(game.clan.biome, PoiType.TERRAIN, clan=self.group_ID)
 
         # create leader's ceremony and give lives
         if self.leader:
@@ -822,7 +821,8 @@ class Clan:
         ) or os.path.exists(
             get_save_dir() + "/" + switch_get_value(Switch.clan_list)[0] + "/clan.json"
         ):
-            version_info = self.load_clan_json()
+            version_info = get_version()
+            self.load_clan_json()
         elif os.path.exists(
             get_save_dir() + "/" + switch_get_value(Switch.clan_list)[0] + "clan.txt"
         ):
@@ -1204,13 +1204,6 @@ class Clan:
         if game.clan.game_mode != "classic":
             self.load_freshkill_pile(game.clan)
         switch_set_value(Switch.error_message, "")
-
-        # Return Version Info.
-        return {
-            "version_name": clan_data.get("version_name"),
-            "version_commit": clan_data.get("version_commit"),
-            "source_build": clan_data.get("source_build"),
-        }
 
     def load_pregnancy(self, clan):
         """
@@ -1864,7 +1857,7 @@ class OtherClan:
 
         if clancount == "multiclan":
             for i in range(3):
-                generate_and_add_new_poi(game.clan.biome, PoiType.TERRAIN, clan=self.group_ID)
+                generate_and_add_new_poi(self.biome, PoiType.TERRAIN, clan=self.group_ID)
 
             instructor_rank = choice(
                 (
@@ -1940,6 +1933,9 @@ class OtherClan:
                     if cat.ID in game.clan.clan_cats:
                         game.clan.clan_cats.remove(cat.ID)
                     continue
+        
+        if self.instructor:
+            self.instructor.assign_thought(CatThought.IS_GUIDE)
 
     @property
     def name(self):

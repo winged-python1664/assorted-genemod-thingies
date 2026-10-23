@@ -48,7 +48,7 @@ def check_if_can_have_kits(cat, for_surrogate=False):
     if cat.birth_cooldown:
         return False
 
-    if "recovering from birth" in cat.injuries or "pregnant" in cat.injuries:
+    if "recovering_from_birth" in cat.temporary_conditions or "pregnant" in cat.temporary_conditions:
         return False
 
     # decide chances of having kits, and if it's possible at all.
@@ -119,10 +119,10 @@ def check_second_parent(cat: Cat, second_parent: Cat) -> tuple[bool, bool]:
             return False, False, second_parent
 
         # Check to see if the pair can have kits.
-        if not xor(cat_is_amab(cat), cat_is_amab(second_parent[0])) or ("sterile" in cat.permanent_condition or "sterile" in second_parent[0].permanent_condition):
-            if same_sex_birth and not "sterile" in second_parent[0].permanent_condition and not "sterile" in cat.permanent_condition:
+        if not xor(cat_is_amab(cat), cat_is_amab(second_parent[0])) or ("sterile" in cat.permanent_conditions or "sterile" in second_parent[0].permanent_conditions):
+            if same_sex_birth and not "sterile" in second_parent[0].permanent_conditions and not "sterile" in cat.permanent_conditions:
                 return True, False, second_parent
-            elif (surrogates and second_parent[0].ID in (pot_par) and random() < get_config("pregnancy.surrogate_rate")) and not ("sterile" in second_parent[0].permanent_condition and "sterile" in cat.permanent_condition):
+            elif (surrogates and second_parent[0].ID in (pot_par) and random() < get_config("pregnancy.surrogate_rate")) and not ("sterile" in second_parent[0].permanent_conditions and "sterile" in cat.permanent_conditions):
                 return True, False, ["Surrogate"] + second_parent
             elif not same_sex_adoption:
                 return False, False, second_parent
@@ -143,7 +143,7 @@ def check_second_parent(cat: Cat, second_parent: Cat) -> tuple[bool, bool]:
         second_parent_copy = []
 
         for x in second_parent:
-            if (xor(cat_is_amab(cat), cat_is_amab(x)) or same_sex_birth) and not "sterile" in x.permanent_condition:
+            if (xor(cat_is_amab(cat), cat_is_amab(x)) or same_sex_birth) and not "sterile" in x.permanent_conditions:
                 second_parent_copy.append(x)
 
         if len(second_parent_copy) < 1:
@@ -153,7 +153,7 @@ def check_second_parent(cat: Cat, second_parent: Cat) -> tuple[bool, bool]:
                 return True, True, second_parent
             else:
                 return False, False, second_parent
-        if "sterile" in cat.permanent_condition:
+        if "sterile" in cat.permanent_conditions:
             if surrogates and second_parent[0].ID in (pot_par) and random() < get_config("pregnancy.surrogate_rate"):
                 return True, False, ["Surrogate"] + second_parent
             elif same_sex_adoption:
@@ -195,16 +195,16 @@ def get_second_parent(cat, clan):
     # if the sex does matter, choose the best solution to allow kits
     if not samesex and mate and not cat_is_amab(cat):
         opposite_mate = [cat.fetch_cat(mate_id) for mate_id in cat.mate if xor(cat_is_amab(cat.fetch_cat(
-            mate_id)), cat_is_amab(cat)) and "sterile" not in cat.fetch_cat(mate_id).permanent_condition
+            mate_id)), cat_is_amab(cat)) and "sterile" not in cat.fetch_cat(mate_id).permanent_conditions
             and (cat.fetch_cat(partner_id) for partner_id in cat.partner if xor(cat_is_amab(cat.fetch_cat(
-                partner_id)), cat_is_amab(cat)) and "sterile" not in cat.fetch_cat(partner_id).permanent_condition) if cat.partner]
+                partner_id)), cat_is_amab(cat)) and "sterile" not in cat.fetch_cat(partner_id).permanent_conditions) if cat.partner]
         if len(opposite_mate) > 0:
             mate = opposite_mate
             if not get_clan_setting('multisire'):
                 mate = [choice(opposite_mate)]
     elif not samesex and mate and cat_is_amab(cat):
         opposite_mate = [cat.fetch_cat(mate_id) for mate_id in cat.mate if xor(cat_is_amab(cat.fetch_cat(
-            mate_id)), cat_is_amab(cat)) and "sterile" not in cat.fetch_cat(mate_id).permanent_condition]
+            mate_id)), cat_is_amab(cat)) and "sterile" not in cat.fetch_cat(mate_id).permanent_conditions]
         if len(opposite_mate) > 0:
             mate = [choice(opposite_mate)]
 
@@ -271,7 +271,7 @@ def get_second_parent(cat, clan):
             if i.is_potential_mate(cat, for_love_interest=True) or i.is_potential_partner(cat, for_love_interest=True)
             and i.status.group_ID in [cat.status.group_ID, None]
             and (samesex or xor(cat_is_amab(i), cat_is_amab(cat)))
-            and "sterile" not in i.permanent_condition
+            and "sterile" not in i.permanent_conditions
             and i.ID not in (pot_par)
         ]
 
@@ -336,7 +336,7 @@ def handle_surrogate(cat, other_cats, clan):
     for cand_cat in Cat.all_cats:
         cand_cat = Cat.all_cats.get(cand_cat)
         if (not cand_cat.dead and not cand_cat.status.is_lost() and not cand_cat.status.is_exiled(clan.group_ID) and
-        not cand_cat in all_cats and "sterile" not in cand_cat.permanent_condition 
+        not cand_cat in all_cats and "sterile" not in cand_cat.permanent_conditions 
         and check_if_can_have_kits(cand_cat, True)
         and (get_clan_setting('same sex birth') or xor(cat_is_amab(cand_cat), cat_is_amab(cat)))):
             all_candidates.append(cand_cat)
@@ -400,7 +400,7 @@ def handle_surrogate(cat, other_cats, clan):
         [CatSocial.LONER, CatSocial.ROGUE, CatSocial.KITTYPET])
     mate_age = cat.moons + randint(0, 24)-12
     outside_parent = None
-    while not outside_parent or 'sterile' in outside_parent.permanent_condition:
+    while not outside_parent or 'sterile' in outside_parent.permanent_conditions:
         if outside_parent and Cat.all_cats[outside_parent.ID]:
             game.clan.remove_cat(outside_parent.ID)
         outside_parent = create_new_cat(Cat,
@@ -424,7 +424,7 @@ def handle_outside_parent(cat, clan, amount=0, background_category= "1"):
     possible_affair_partners = [i for i in unknowns if
                             i.is_potential_mate(cat, for_love_interest=True, outsider=True)
                             and check_if_can_have_kits(i)
-                            and 'sterile' not in i.permanent_condition
+                            and 'sterile' not in i.permanent_conditions
                             and (get_clan_setting('same sex birth') or cat_is_amab(i) != cat_is_amab(cat))
                                 and len(i.mate) == 0 and not i.birth_cooldown
                                 and i.ID not in game.clan.pregnancy_data
@@ -479,7 +479,7 @@ def handle_outside_parent(cat, clan, amount=0, background_category= "1"):
                 mate_age = cat.moons + randint(0, 24)-12
                 outside_parent = None
                 
-                while not outside_parent or 'sterile' in outside_parent.permanent_condition:
+                while not outside_parent or 'sterile' in outside_parent.permanent_conditions:
                     if outside_parent and Cat.all_cats[outside_parent.ID]:
                         game.clan.remove_cat(outside_parent.ID)
                     outside_parent = create_new_cat(Cat,

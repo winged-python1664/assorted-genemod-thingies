@@ -7,6 +7,7 @@ import i18n
 from scripts.cat.cats import Cat
 from scripts.cat.genotype import Genotype
 from scripts.cat.status import Status
+from scripts.cat.conditions.gain_conditions import gain_permanent_condition
 from scripts.cat.enums import (
     CatRank,
     CatAge,
@@ -17,7 +18,6 @@ from scripts.cat.enums import (
 )
 from scripts.cat.factories.new_cat_factory import NewCatFactory
 from scripts.cat.microservices.add_to_clan import add_to_clan, add_dependents_to_clan
-from scripts.cat.microservices.conditions import get_permanent_condition
 from scripts.cat.names import Name
 from scripts.cat_relations.cat_handle_funcs import create_relationships_new_cat
 from scripts.cat_relations.enums import RelType
@@ -28,7 +28,7 @@ from scripts.clan_package.settings import get_clan_setting
 from scripts.config import get_config
 from scripts.events_module.parameter_dicts import RelationshipChangeDict
 from scripts.game_structure import game
-from scripts.cat.constants import BACKSTORIES, PERMANENT
+from scripts.cat.constants import BACKSTORIES, PERMANENT_CONDITIONS
 from scripts.events_module.text_adjust import process_text, event_text_adjust, adjust_list_text
 from scripts.game_structure.game import game_setting_get
 from scripts.clan_package.get_clan_cats import get_alive_clan_queens
@@ -55,7 +55,7 @@ def create_bio_parents(Cat, flip=False, second_parent=True, age=None, clan=None)
                                   gender='fem' if flip else 'masc',
                                   outside=True,
                                   is_parent=True)[0]
-    while 'sterile' in blood_parent.permanent_condition:
+    while 'sterile' in blood_parent.permanent_conditions:
         if (blood_parent):
             game.clan.remove_cat(blood_parent.ID)
         blood_parent = create_new_cat(Cat,
@@ -81,7 +81,7 @@ def create_bio_parents(Cat, flip=False, second_parent=True, age=None, clan=None)
                                        gender='masc' if flip else 'fem',
                                        outside=True,
                                        is_parent=True)[0]
-        while 'sterile' in blood_parent2.permanent_condition:
+        while 'sterile' in blood_parent2.permanent_conditions:
             if blood_parent2 and Cat.all_cats[blood_parent2.ID]:
                 game.clan.remove_cat(blood_parent2.ID)
             blood_parent2 = create_new_cat(Cat,
@@ -122,7 +122,6 @@ def create_bio_parents(Cat, flip=False, second_parent=True, age=None, clan=None)
                 )
 
     return [blood_parent, blood_parent2, par2geno]
-
 
 def create_new_cat_block(
     Cat: Optional["Cat"],
@@ -610,7 +609,7 @@ def create_new_cat_block(
             is_parent="age:has_kits" in attribute_list,
             adoptive_parents=adoptive_parents if adoptive_parents else None
         )
-        while "age:has_kits" in attribute_list and "sterile" in new_cats[0].permanent_condition:
+        while "age:has_kits" in attribute_list and "sterile" in new_cats[0].permanent_conditions:
             game.clan.remove_cat(new_cats[0].ID)
             new_cats[0] = create_new_cat(
                 Cat,
@@ -931,7 +930,7 @@ def find_clan_cats(Cat, Relationship, event, in_event_cats: dict, i: int, attrib
             all_clan_cats = create_new_cat_block(
                 Cat, Relationship, event, in_event_cats, i, attribute_list+["clancat"], clan=clan, other_clan=other_clan)
 
-        all_clan_cats_healthy = [i for i in all_clan_cats if not i.not_working()]
+        all_clan_cats_healthy = [i for i in all_clan_cats if i.can_work()]
         picked_cats = [choice(all_clan_cats_healthy if all_clan_cats_healthy else all_clan_cats)]
         if blood_parent and not sibling:
             picked_parents = [picked_cats[0].parent1, picked_cats[0].parent2]
@@ -1361,49 +1360,27 @@ def create_new_cat(
             kittypet_n = get_config("tnr_mode.kittypet_neuter")
             loner_n = get_config("tnr_mode.loner_tnr")
             if original_social == CatSocial.KITTYPET and random() < kittypet_n:
-                get_permanent_condition(new_cat, "sterile", False)
+                gain_permanent_condition(new_cat, "sterile", False)
             if original_social in (CatSocial.LONER, CatSocial.ROGUE) and random() < loner_n:
-                get_permanent_condition(new_cat, "sterile", False)
+                gain_permanent_condition(new_cat, "sterile", False)
                 new_cat.pelt.scars = (*new_cat.pelt.scars, "TNR")
                 new_cat.pelt.rebuild_sprite = True
         if not int(random() * chance):
             possible_conditions = []
-            for condition in PERMANENT:
-                if (kit or litter) and PERMANENT[condition]["congenital"] not in [
-                    "always",
-                    "sometimes",
-                ]:
-                    continue
-                if condition in ['manx syndrome', "flat nose", 'ocular albinism', 'albinism', 'rabbit gait', 'fully hairless', 'partially hairless', "bad back", "narrowed chest", "bumpy skin"]:
-                    continue
-                # next part ensures that a kit won't get a condition that takes too long to reveal
-                moons = new_cat.moons
-                leeway = 5 - (PERMANENT[condition]["moons_until"] + 1)
-                if moons > leeway:
+            for condition in PERMANENT_CONDITIONS:
+                if (kit or litter) and PERMANENT_CONDITIONS[condition][
+                    "can_be_congenital"
+                ] and not PERMANENT_CONDITIONS[condition].get("genetic_only"):
                     continue
                 possible_conditions.append(condition)
 
             if possible_conditions:
                 chosen_condition = choice(possible_conditions)
-                if PERMANENT[chosen_condition]["congenital"] in [
-                    "always",
-                    "sometimes",
-                ]:
-                    get_permanent_condition(new_cat, chosen_condition, True)
-                    if (
-                        new_cat.permanent_condition[chosen_condition]["moons_until"]
-                        == 0
-                    ):
-                        new_cat.permanent_condition[chosen_condition][
-                            "moons_until"
-                        ] = -2
-
-                # assign scars
-
-                if chosen_condition in ("lost a leg", "born without a leg"):
-                    new_cat.pelt.scars = (*new_cat.pelt.scars, "NOPAW")
-                elif chosen_condition in ("lost their tail", "born without a tail"):
-                    new_cat.pelt.scars = (*new_cat.pelt.scars, "NOTAIL")
+                gain_permanent_condition(
+                    new_cat,
+                    chosen_condition,
+                    is_congenital=True,
+                )
 
         if outside:
             if new_cat.status.social is not CatSocial.CLANCAT:

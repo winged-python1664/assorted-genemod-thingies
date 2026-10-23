@@ -4698,7 +4698,7 @@
             "name": ["terrain_sunningrocks"]
         },
         "frequency": 4,
-        "event_text": "r_c gathered some pretty leaves and laid them out to dry on POI. When {PRONOUN/r_c/subject} returned days later to gather {PRONOUN/r_c/poss} new accessory, {PRONOUN/r_c/subject} discovered some cat has stolen them!",
+        "event_text": "r_c gathered some pretty leaves and laid them out to dry on POI. When {PRONOUN/r_c/subject} returned days later to gather {PRONOUN/r_c/poss} new accessory, {PRONOUN/r_c/subject} discovered some cat had stolen them!",
         "new_accessory": ["DRY HERBS", "DRY CATMINT", "DRY NETTLES", "DRY LAURELS"],
         "exclude_involved": ["m_c"],
         "m_c": {
@@ -4754,7 +4754,7 @@
         "injury": [
             {
                 "cats": ["m_c"],
-                "injuries": ["beak bite"]
+                "injuries": ["beak_bite"]
             }
         ],
         "history": [
@@ -4801,7 +4801,7 @@
         "injury": [
             {
                 "cats": ["r_c"],
-                "injuries": ["beak bite"]
+                "injuries": ["beak_bite"]
             }
         ],
         "history": [
@@ -13577,7 +13577,7 @@
             "failed_murder"
         ],
         "frequency": 4,
-        "event_text": "r_c saved m_c from a big dog but, rather then be happy, {PRONOUN/m_c/subject} seemed disappointed... Was that not what m_c wanted to happen?",
+        "event_text": "r_c saved m_c from a big dog, but rather than being happy, {PRONOUN/m_c/subject} seemed disappointed... Was that not what m_c wanted to happen?",
         "m_c": {
             "trait": [
                 "ambitious",
@@ -14275,7 +14275,7 @@
         "injury": [
             {
                 "cats": ["r_c"],
-                "injuries": ["claw-wound", "cat bite"]
+                "injuries": ["claw_wound", "cat_bite"]
             }
         ],
         "history": [
@@ -14342,11 +14342,11 @@
         "injury": [
             {
                 "cats": ["r_c"],
-                "injuries": ["claw-wound", "cat bite"]
+                "injuries": ["claw_wound", "cat_bite"]
             },
             {
                 "cats": ["m_c"],
-                "injuries": ["scrapes", "torn pelt"]
+                "injuries": ["scrapes", "torn_pelt"]
             }
         ],
         "history": [
@@ -14569,7 +14569,7 @@
         "injury": [
             {
                 "cats": ["r_c"],
-                "injuries": ["water in their lungs"]
+                "injuries": ["water_in_lungs"]
             }
         ],
         "history": [
@@ -14705,8 +14705,8 @@
         ],
         "injury": [
             {
-                "cats": [ "r_c" ],
-                "injuries": [ "cat bite" ]
+                "cats": ["r_c"],
+                "injuries": ["cat_bite"]
             }
         ],
         "history": [
